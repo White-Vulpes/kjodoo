@@ -27,6 +27,10 @@
 
         <field name="print_report_name">'Bill - %s' % (object.name)</field>
         <field name="paperformat_id" ref="custom_jewellery_billing.paperformat_custom_bill_a6"/>
+        <field name="groups_id" eval="[(4, ref('custom_jewellery_billing.group_bill_print'))]"/>
+    </record>
+    <record id="group_bill_print" model="res.groups">
+        <field name="name">Can Print Bill</field>
     </record>
     <template id="report_custom_bill">
         <t t-call="web.html_container">
