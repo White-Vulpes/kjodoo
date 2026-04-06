@@ -7,9 +7,8 @@ class CustomBill(models.Model):
 
     # --- Header Fields ---
     name = fields.Char(string='Reference', required=True, copy=False, default='New')
-    serial_number = fields.Integer(string='Serial Number', readonly=True, copy=False)
+    bill_number = fields.Integer(string='Bill Number', readonly=True, copy=False)
     date = fields.Date(string='Date', default=fields.Date.context_today)
-    customer_id = fields.Many2one('res.partner', string='Customer')
 
     # --- The Relational Table ---
     # This creates the table that holds the line items

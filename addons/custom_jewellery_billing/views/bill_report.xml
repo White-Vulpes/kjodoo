@@ -1,7 +1,4 @@
 <odoo>  
-    <record id="group_bill_print" model="res.groups">
-        <field name="name">Can Print Bill</field>
-    </record>
     <record id="paperformat_custom_bill_a6" model="report.paperformat">
         <field name="name">A6 Paper</field>
         <field name="default" eval="False"/>
@@ -30,13 +27,12 @@
 
         <field name="print_report_name">'Bill - %s' % (object.name)</field>
         <field name="paperformat_id" ref="custom_jewellery_billing.paperformat_custom_bill_a6"/>
-        <field name="groups_id" eval="[(6, 0, [ref('custom_jewellery_billing.group_bill_print')])]"/>
     </record>
     <template id="report_custom_bill">
         <t t-call="web.html_container">
             <t t-call="web.basic_layout">
                 <t t-foreach="docs" t-as="doc">
-                    <div class="page">
+                    <div class="page w-100">
 
                         <div style="text-align:center;">
                             ||SHREE||
@@ -53,7 +49,7 @@
                             </div>
                             <div class="col-4 text-end">
                                 Date:
-                                <span t-field="doc.date"/>
+                                <span t-field="doc.date" t-options='{"widget": "date", "format": "dd/MM"}'/>
                             </div>
                         </div>
 
@@ -101,7 +97,7 @@
                             <span style="font-style: italic; font-size: 0.8em;">*GST as applicable</span>
                         </div>
                         <t t-if="doc.rate_cut &gt; 0">
-                            <div class="w-100" style="display: flex; flex-direction: row; justify-content: space-between; margin-top: 10px; padding: 6px; background-color: #f8f9fa; font-weight: bold;">
+                            <div class="w-100" style="display: flex; flex-direction: column; justify-content: space-between; margin-top: 10px; padding: 6px; background-color: #f8f9fa; font-weight: bold;">
 
                                 <div>
                                     Rate: <span t-field="doc.rate_cut"/>

@@ -1,6 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-
+    <record id="view_custom_bill_line_form" model="ir.ui.view">
+        <field name="name">custom.bill.line.form</field>
+        <field name="model">custom.bill.line</field>
+        <field name="arch" type="xml">
+            <form string="Bill Line">
+                <sheet>
+                    <group>
+                        <group string="Item Details">
+                            <field name="name"/>
+                        </group>
+                        <group string="Quantity">
+                            <field name="weight"/>
+                            <field name="less"/>
+                            <field name="net_weight"/>
+                        </group>
+                    </group>
+                    
+                    <group string="Calculations">
+                        <group>
+                            <field name="melting"/>
+                            <field name="touch"/>
+                            <field name="charges"/>
+                        </group>
+                        <group>
+                            <field name="pure"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
     <record id="view_custom_bill_line_list" model="ir.ui.view">
         <field name="name">custom.bill.line.list</field>
         <field name="model">custom.bill.line</field>
@@ -35,11 +65,8 @@
                     </div>
                     <group>
                         <group>
-                            <field name="customer_id"/>
-                        </group>
-                        <group>
                             <field name="date"/>
-                            <field name="serial_number"/>
+                            <field name="bill_number"/>
                         </group>
                     </group>
                     <group>
