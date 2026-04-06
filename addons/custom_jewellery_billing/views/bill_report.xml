@@ -1,0 +1,121 @@
+<odoo>
+    <record id="paperformat_custom_bill_a6" model="report.paperformat">
+        <field name="name">A6 Paper</field>
+        <field name="default" eval="False"/>
+        <field name="format">A6</field>
+
+        <!-- Orientation -->
+        <field name="orientation">Landscape</field>
+
+        <!-- Margins (adjust as needed) -->
+        <field name="margin_top">5</field>
+        <field name="margin_bottom">5</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+
+        <!-- DPI -->
+        <field name="dpi">90</field>
+    </record>
+    <record id="action_report_custom_bill" model="ir.actions.report">
+        <field name="name">Jewelry Bill</field>
+        <field name="model">custom.bill</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">custom_jewellery_billing.report_custom_bill</field>
+        <field name="report_file">custom_jewellery_billing.report_custom_bill</field>
+        <field name="binding_model_id" ref="model_custom_bill"/>
+        <field name="binding_type">report</field>
+
+        <field name="print_report_name">'Bill - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="custom_jewellery_billing.paperformat_custom_bill_a6"/>
+    </record>
+    <template id="report_custom_bill">
+        <t t-call="web.html_container">
+            <t t-call="web.basic_layout">
+                <t t-foreach="docs" t-as="doc">
+                    <div class="page">
+
+                        <div style="text-align:center;">
+                            ||SHREE||
+                            <br/>
+                            <strong>Rough Estimate</strong>
+                        </div>
+
+                        <div class="row mt-2 mb-3">
+                            <div class="col-8">
+                                <h4>
+                                    <span t-field="doc.serial_number"/> -
+                                    <span t-field="doc.name"/>
+                                </h4>
+                            </div>
+                            <div class="col-4 text-end">
+                                Date:
+                                <span t-field="doc.date"/>
+                            </div>
+                        </div>
+
+                        <table class="table table-sm table-bordered mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th class="text-end">Weight</th>
+                                    <th class="text-end">Less</th>
+                                    <th class="text-end">Net Weight</th>
+                                    <th class="text-end">Melting</th>
+                                    <th class="text-end">Touch</th>
+                                    <th class="text-end">Pure</th>
+                                    <th class="text-end">Charges</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <t t-foreach="doc.item_ids" t-as="line">
+                                    <tr>
+                                        <td><span t-field="line.name"/></td>
+                                        <td class="text-end"><span t-field="line.weight"/></td>
+                                        <td class="text-end"><span t-field="line.less"/></td>
+                                        <td class="text-end"><span t-field="line.net_weight"/></td>
+                                        <td class="text-end"><span t-field="line.melting"/></td>
+                                        <td class="text-end"><span t-field="line.touch"/></td>
+                                        <td class="text-end"><span t-field="line.pure"/></td>
+                                        <td class="text-end"><span t-field="line.charges"/></td>
+                                    </tr>
+                                </t>
+
+                                <tr class="fw-bold" style="background-color: #f0f0f0;">
+                                    <td>Total</td>
+                                    <td class="text-end"><span t-field="doc.total_weight"/></td>
+                                    <td class="text-end"><span t-field="doc.total_less"/></td>
+                                    <td class="text-end"><span t-field="doc.total_net_weight"/></td>
+                                    <td/>
+                                    <td/>
+                                    <td class="text-end"><span t-field="doc.total_pure"/></td>
+                                    <td class="text-end"><span t-field="doc.total_charges"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="w-100 text-end m-0">
+                            <span style="font-style: italic; font-size: 0.8em;">*GST as applicable</span>
+                        </div>
+                        <t t-if="doc.rate_cut &gt; 0">
+                            <div class="w-100" style="display: flex; flex-direction: row; justify-content: space-between; margin-top: 10px; padding: 6px; background-color: #f8f9fa; font-weight: bold;">
+
+                                <div>
+                                    Rate: <span t-field="doc.rate_cut"/>
+                                </div>
+
+                                <div>
+                                    Pure: <span t-field="doc.total_pure"/>
+                                </div>
+
+                                <div>
+                                    Charges: <span t-field="doc.total_charges"/>
+                                </div>
+
+                            </div>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

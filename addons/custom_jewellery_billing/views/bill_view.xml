@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_custom_bill_line_list" model="ir.ui.view">
+        <field name="name">custom.bill.line.list</field>
+        <field name="model">custom.bill.line</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+                <field name="weight"/>
+                <field name="less"/>
+                <field name="net_weight"/>
+                <field name="melting"/>
+                <field name="touch"/>
+                <field name="pure"/>
+                <field name="charges"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_custom_bill_form" model="ir.ui.view">
+        <field name="name">custom.bill.form</field>
+        <field name="model">custom.bill</field>
+        <field name="arch" type="xml">
+            <form string="Jewelry Bill">
+                 <header>
+                    <button name="action_print_bill"
+                            type="object"
+                            string="Print Bill"
+                            class="btn-primary"/>
+                </header>
+
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Bill Reference..."/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="customer_id"/>
+                        </group>
+                        <group>
+                            <field name="date"/>
+                            <field name="serial_number"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="rate_cut"/>
+                    </group>
+                    <notebook>
+                        <page string="Bill Items">
+                            <field name="item_ids" context="{'list_view_ref': 'custom_jewellery_billing.view_custom_bill_line_list'}"/>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="total_weight"/>
+                                <field name="total_pure"/>
+                                <field name="total_charges"/>
+                            </group>
+                            
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_custom_bill" model="ir.actions.act_window">
+        <field name="name">Jewelry Bills</field>
+        <field name="res_model">custom.bill</field>
+    </record>
+
+    <menuitem id="menu_custom_bill_root" name="Jewelry Billing" web_icon="custom_bill,static/description/icon.png"/>
+    
+    <menuitem id="menu_custom_bills" name="Bills" parent="menu_custom_bill_root" action="action_custom_bill" sequence="10"/>
+
+</odoo>

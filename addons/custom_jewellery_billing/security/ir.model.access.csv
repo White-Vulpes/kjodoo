@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_custom_bill,custom.bill,model_custom_bill,base.group_user,1,1,1,1
+access_custom_bill_line,custom.bill.line,model_custom_bill_line,base.group_user,1,1,1,1
