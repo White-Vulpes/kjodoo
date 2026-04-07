@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_gram_record_form" model="ir.ui.view">
+        <field name="name">gram.record.form</field>
+        <field name="model">gram.record</field>
+        <field name="arch" type="xml">
+            <form string="Gram Record">
+                <header>
+                    <field name="status" widget="statusbar" options="{'clickable': '1'}" statusbar_visible="accepted,received,bill_generated,delivered"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="e.g. Order #001"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="grams"/>
+                            <field name="rate"/>
+                        </group>
+                        <group>
+                            <field name="amount"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_gram_record_kanban" model="ir.ui.view">
+        <field name="name">gram.record.kanban</field>
+        <field name="model">gram.record</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="status" class="o_kanban_small_column">
+                <field name="name"/>
+                <field name="grams"/>
+                <field name="rate"/>
+                <field name="amount"/>
+                <field name="status" />
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click">
+                            <div class="oe_kanban_details">
+                                <strong class="o_kanban_record_title">
+                                    <field name="name"/>
+                                </strong>
+                                <ul>
+                                    <li>Grams: <field name="grams"/></li>
+                                    <li>Rate: <field name="rate"/></li>
+                                    <li>Amount: <field name="amount"/></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="action_gram_record" model="ir.actions.act_window">
+        <field name="name">Gram Records</field>
+        <field name="res_model">gram.record</field>
+        <field name="view_mode">kanban,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Gram Record!
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_gram_root" name="Gram Tracker" sequence="10"/>
+    <menuitem id="menu_gram_records" name="Records" parent="menu_gram_root" action="action_gram_record" sequence="10"/>
+
+</odoo>
