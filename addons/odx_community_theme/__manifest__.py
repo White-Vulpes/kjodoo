@@ -29,6 +29,7 @@ A fully customized backend theme for Odoo 19 community edition using Odx UI comp
             'odx_community_theme/static/src/scss/_fonts.scss',
             'odx_community_theme/static/src/xml/webClient.xml',
             'odx_community_theme/static/src/xml/navbar.xml',
+            'odx_community_theme/static/src/xml/theme_toggle.xml',
             'odx_community_theme/static/src/scss/web_client.scss',
             'odx_community_theme/static/src/scss/_animations.scss',
             'odx_community_theme/static/src/scss/_views.scss',
@@ -37,6 +38,7 @@ A fully customized backend theme for Odoo 19 community edition using Odx UI comp
             'odx_community_theme/static/src/scss/_mail.scss',
             'odx_community_theme/static/src/js/sidebar_menu.js',
             'odx_community_theme/static/src/js/form_chatter_resize.js',
+            'odx_community_theme/static/src/js/theme_toggle.js',
         ],
     },
     'images': [
