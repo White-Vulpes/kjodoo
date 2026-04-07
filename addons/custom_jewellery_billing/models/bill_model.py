@@ -44,14 +44,14 @@ class CustomBill(models.Model):
             # Find the very last bill created in the database
             last_bill = self.search([], order='id desc', limit=1)
             
-            if last_bill and last_bill.serial_number:
-                next_num = last_bill.serial_number + 1
+            if last_bill and last_bill.bill_number:
+                next_num = last_bill.bill_number + 1
                 if next_num > 25:
                     next_num = 1
             else:
                 next_num = 1
                 
-            vals['serial_number'] = next_num
+            vals['bill_number'] = next_num
 
         # Save the record
         return super(CustomBill, self).create(vals_list)
