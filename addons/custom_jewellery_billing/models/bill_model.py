@@ -7,7 +7,7 @@ class CustomBill(models.Model):
 
     # --- Header Fields ---
     name = fields.Char(string='Reference', required=True, copy=False, default='New')
-    bill_number = fields.Integer(string='Bill Number', readonly=True, copy=False)
+    bill_number = fields.Integer(string='Bill Number', copy=False)
     date = fields.Date(string='Date', default=fields.Date.context_today)
 
     # --- The Relational Table ---
