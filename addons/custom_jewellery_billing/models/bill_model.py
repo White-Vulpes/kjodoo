@@ -1,47 +1,65 @@
 from odoo import models, fields, api
-print("🔥 BILL.PY LOADED")
-    
+import logging
+
+_logger = logging.getLogger(__name__)
+
 class CustomBill(models.Model):
     _name = 'custom.bill'
     _description = 'Jewelry Bill'
+    # This tells Odoo to use our 'name' char field as the record label
+    _rec_name = 'name' 
+    _order = 'id desc'
 
     # --- Header Fields ---
-    name = fields.Char(string='Reference', required=True, copy=False, default='New')
-    bill_number = fields.Integer(string='Bill Number', copy=False)
+    # Renamed from 'name' to 'partner_id' to stop the Database Integer Error
+    partner_id = fields.Many2one(
+        'res.partner', 
+        string='Contact', 
+        ondelete='restrict',
+        required=True,
+        help="Select Customer Name"
+    )
+    
+    # This is the "Display Name" (e.g., "Bill #5")
+    name = fields.Char(string='Bill Reference', required=True, copy=False, readonly=True, default='New')
+    
+    bill_number = fields.Integer(string='Bill Number', copy=False, readonly=True)
     date = fields.Date(string='Date', default=fields.Date.context_today)
 
     # --- The Relational Table ---
-    # This creates the table that holds the line items
     item_ids = fields.One2many('custom.bill.line', 'bill_id', string='Bill Items')
 
-    # --- The Totals (Computed automatically) ---
+    # --- The Totals ---
     total_weight = fields.Float(string='Total Weight', compute='_compute_totals', store=True, digits=(16, 3))
     total_pure = fields.Float(string='Total Pure', compute='_compute_totals', store=True, digits=(16, 3))
     total_net_weight = fields.Float(string='Total Net Weight', compute='_compute_totals', store=True, digits=(16, 3))
     total_charges = fields.Float(string='Total Charges', compute='_compute_totals', store=True)
     total_less = fields.Float(string='Total Less', compute='_compute_totals', store=True, digits=(16, 3))
 
-    rate_cut = fields.Integer(string='Rate', store=True, default=0, readonly=False)
-    # --- Python Logic: Calculate Totals ---
-    @api.depends('item_ids.weight', 'item_ids.pure', 'item_ids.charges', 'rate_cut')
+    rate_cut = fields.Integer(string='Rate', default=0)
+
+    @api.depends('item_ids.weight', 'item_ids.pure', 'item_ids.charges', 'item_ids.less', 'item_ids.net_weight', 'rate_cut')
     def _compute_totals(self):
         for bill in self:
-            # Native Python math instantly calculates the table without crashing wkhtmltopdf
-            bill.total_weight = sum(bill.item_ids.mapped('weight'))
-            bill.total_pure = sum(bill.item_ids.mapped('pure'))
-            bill.total_charges = sum(bill.item_ids.mapped('charges'))
-            bill.total_net_weight = sum(bill.item_ids.mapped('net_weight'))
-            bill.total_less = sum(bill.item_ids.mapped('less'))
-
+            # Using sum(line.field for line in bill.item_ids) is safer than mapped for empty sets
+            bill.total_weight = sum(line.weight for line in bill.item_ids)
+            bill.total_pure = sum(line.pure for line in bill.item_ids)
+            bill.total_less = sum(line.less for line in bill.item_ids)
+            bill.total_net_weight = sum(line.net_weight for line in bill.item_ids)
+            
+            base_charges = sum(line.charges for line in bill.item_ids)
+            
             if bill.rate_cut > 0:
-                bill.total_charges = (bill.total_pure * bill.rate_cut) + bill.total_charges
+                # If rate is cut, calculate charges based on purity and reset pure display
+                bill.total_charges = (bill.total_pure * bill.rate_cut) + base_charges
                 bill.total_pure = 0
+            else:
+                bill.total_charges = base_charges
 
-    # --- Python Logic: The 1-to-25 Looping Serial Number ---
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
-            # Find the very last bill created in the database
+            # Looping Serial Number Logic (1-25)
             last_bill = self.search([], order='id desc', limit=1)
             
             if last_bill and last_bill.bill_number:
@@ -52,9 +70,11 @@ class CustomBill(models.Model):
                 next_num = 1
                 
             vals['bill_number'] = next_num
+            # Set the Display Name properly
+            vals['name'] = f"Bill #{next_num}"
 
-        # Save the record
         return super(CustomBill, self).create(vals_list)
     
     def action_print_bill(self):
-        return self.env.ref('custom_jewellery_billing.action_report_custom_bill').report_action(self, config=False)
+        # Ensure you update your XML report ID to match this if it changes
+        return self.env.ref('custom_jewellery_billing.action_report_custom_bill').report_action(self)
