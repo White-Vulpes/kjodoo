@@ -9,16 +9,6 @@ class CustomBill(models.Model):
     # This tells Odoo to use our 'name' char field as the record label
     _rec_name = 'name' 
     _order = 'id desc'
-
-    # --- Header Fields ---
-    # Renamed from 'name' to 'partner_id' to stop the Database Integer Error
-    partner_id = fields.Many2one(
-        'res.partner', 
-        string='Contact', 
-        ondelete='restrict',
-        required=True,
-        help="Select Customer Name"
-    )
     
     # This is the "Display Name" (e.g., "Bill #5")
     name = fields.Char(string='Bill Reference', required=True, copy=False, readonly=True, default='New')
