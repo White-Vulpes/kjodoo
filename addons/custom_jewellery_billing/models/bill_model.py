@@ -67,4 +67,4 @@ class CustomBill(models.Model):
     
     def action_print_bill(self):
         # Ensure you update your XML report ID to match this if it changes
-        return self.env.ref('custom_jewellery_billing.action_report_custom_bill').report_action(self)
+        return self.env.ref('custom_jewellery_billing.action_report_custom_bill').report_action(self, config=False)
