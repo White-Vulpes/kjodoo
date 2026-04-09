@@ -89,7 +89,7 @@
     </record>
 
     <record id="action_custom_bill" model="ir.actions.act_window">
-        <field name="name">Jewelry Bills</field>
+        <field name="partner_id">Jewelry Bills</field>
         <field name="res_model">custom.bill</field>
     </record>
 
