@@ -1,2 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_gram_record,gram.record.access,model_gram_record,base.group_user,1,1,1,1
+access_gram_tag,gram.tag.access,model_gram_tag,base.group_user,1,1,1,1
