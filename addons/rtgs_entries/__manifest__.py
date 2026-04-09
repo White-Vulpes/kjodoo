@@ -7,7 +7,7 @@
         A custom module to calculate amounts and grams dynamically 
         with a status bar and Kanban view.
     """,
-    'depends': ['base'],
+    'depends': ['base', 'mail'],
     'data': [
         'security/ir.model.access.csv',
         'views/gram_record_views.xml',

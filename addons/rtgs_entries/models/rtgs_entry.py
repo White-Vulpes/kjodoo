@@ -3,7 +3,8 @@ from odoo import models, fields, api
 class GramRecord(models.Model):
     _name = 'gram.record'
     _description = 'Gram Record Management'
-
+    _inherit = ['mail.thread', 'mail.activity.mixin']
+    
     name = fields.Char(string='Reference', required=True, default='New')
     
     grams = fields.Float(string='Grams', digits=(16, 3))
