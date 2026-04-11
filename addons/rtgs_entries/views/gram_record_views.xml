@@ -25,7 +25,7 @@
                 <sheet>
                     <div class="oe_title">
                         <h1>
-                            <field name="name" placeholder="e.g. Order #001"/>
+                            <field name="partner_id" placeholder="Name..."/>
                         </h1>
                     </div>
                     <group>
@@ -38,6 +38,7 @@
                             <field name="amount"/>
                         </group>
                     </group>
+                    <field name='gst'/>
                 </sheet>
                 <chatter/>
             </form>
@@ -49,7 +50,7 @@
         <field name="model">gram.record</field>
         <field name="arch" type="xml">
             <kanban default_group_by="missing_tag_ids" class="o_kanban_small_column" records_draggable="false">
-                <field name="name"/>
+                <field name="partner_id"/>
                 <field name="tag_ids"/>
                 <field name="grams"/>
                 <field name="amount"/>
@@ -57,8 +58,8 @@
                     <t t-name="card">
                         <div class="oe_kanban_global_click">
                             <div class="oe_kanban_details">
-                                <strong class="o_kanban_record_title">
-                                    <field name="name"/>
+                                <strong class="o_kanban_record_title"> 
+                                    <field name="partner_id"/>
                                 </strong>
                                 
                                 <div class="mt-1 mb-1">
@@ -78,7 +79,7 @@
     </record>
 
     <record id="action_gram_record" model="ir.actions.act_window">
-        <field name="name">Gram Records</field>
+        <field name="name">Transactions</field>
         <field name="res_model">gram.record</field>
         <field name="view_mode">kanban,form</field>
         <field name="help" type="html">
@@ -89,7 +90,7 @@
     </record>
 
     <record id="action_gram_tags" model="ir.actions.act_window">
-        <field name="name">Gram Tags</field>
+        <field name="name">Transaction Tags</field>
         <field name="res_model">gram.tag</field>
         <field name="view_mode">list,form</field>
     </record>

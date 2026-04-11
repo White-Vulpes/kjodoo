@@ -88,9 +88,25 @@
         </field>
     </record>
 
+    <record id="view_custom_bill_list" model="ir.ui.view">
+        <field name="name">custom.bill.list</field>
+        <field name="model">custom.bill</field>
+        <field name="arch" type="xml">
+            <list string="Jewelry Bills">
+                <field name="bill_number"/>
+                <field name="partner_id" string="Customer"/>
+                <field name="date"/>
+                <field name="total_weight"/>
+                <field name="total_pure"/>
+                <field name="total_charges"/>
+            </list>
+        </field>
+    </record>
+
     <record id="action_custom_bill" model="ir.actions.act_window">
-        <field name="partner_id">Jewelry Bills</field>
+        <field name="name">Jewelry Bills</field> 
         <field name="res_model">custom.bill</field>
+        <field name="view_mode">list,form</field> 
     </record>
 
     <menuitem id="menu_custom_bill_root" name="Jewelry Billing" web_icon="custom_bill,static/description/icon.png"/>

@@ -16,16 +16,27 @@ class GramRecord(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     
     name = fields.Char(string='Reference', required=True, default='New', copy=False)
+    partner_id = fields.Many2one(comodel_name="res.partner", string="")
     
     grams = fields.Float(string='Grams', digits=(16, 3))
-    rate = fields.Integer(string='Rate')
-    amount = fields.Integer(string='Amount')
+    rate = fields.Float(string='Rate', digits=(16, 2))
+    amount = fields.Float(string='Amount', digits=(16, 2))
+
+    gst = fields.Char(string='Rate w/o GST', compute='_compute_gst', store=True)
+
+    @api.depends('rate', 'grams', 'amount')
+    def _compute_gst(self):
+        for record in self:
+            amountWithoutGST = record.amount / 1.03
+            rateWithoutGST = amountWithoutGST / record.grams
+            record.gst = f"{record.grams} * {rateWithoutGST:.2f} = {amountWithoutGST:.2f} + 3% GST = {record.amount}"
 
     # Completed Tags
     tag_ids = fields.Many2many(
         'gram.tag', 
         relation='gram_record_completed_tags_rel',
-        string='Completed Stages'
+        string='Status',
+        default=lambda self: self.env['gram.tag'].search([('name', 'in', ['RTGS Recieved', 'Ratecut Done'])]).ids
     )
 
     # Missing Tags (This drives the Kanban View)
