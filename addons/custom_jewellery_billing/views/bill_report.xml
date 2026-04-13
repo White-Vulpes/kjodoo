@@ -37,15 +37,15 @@
                         <div style="text-align:center;">
                             ||SHREE||
                             <br/>
-                            <strong>Rough Estimate</strong>
+                            <strong>Rough Estimate / On Approval</strong>
                         </div>
 
                         <div class="row mt-2 mb-3">
                             <div class="col-8">
-                                <h4>
+                                <h5>
                                     <span t-field="doc.bill_number"/> -
                                     <span t-field="doc.partner_id"/>
-                                </h4>
+                                </h5>
                             </div>
                             <div class="col-4 text-end">
                                 Date:
@@ -53,7 +53,7 @@
                             </div>
                         </div>
 
-                        <table class="table table-sm table-bordered mb-0">
+                        <table class="table table-sm table-bordered mb-0" style="font-size: 0.9em;">
                             <thead>
                                 <tr>
                                     <th>Name</th>
@@ -94,21 +94,13 @@
                                     <td class="text-end"><span t-field="doc.total_pure" t-options='{"widget": "float", "precision": 3}'/></td>
                                     <td class="text-end"><span t-field="doc.total_charges" t-options='{"widget": "float", "precision": 2}'/></td>
                                 </tr>
-                            </tbody>
-                        </table>
-                        <div class="w-100 text-end m-0">
-                            <span style="font-style: italic; font-size: 0.8em;">*GST as applicable</span>
-                        </div>
-                        
-                        <table class="table table-sm table-bordered mb-0">
-                            <tbody>
                                 <t t-if="doc.rate_cut &gt; 0">
-                                    <tr style="background-color: #f8f9fa;">
+                                    <tr style="background-color: #f8f9fa;  font-style: italic;">
                                         
                                         <td>
                                             Rate: <span t-field="doc.rate_cut" t-options='{"widget": "float", "precision": 2}'/>
                                         </td>
-                                        
+                                        <td colspan="5"/>
                                         <td class="text-end">
                                             Pure: <span t-field="doc.total_pure" t-options='{"widget": "float", "precision": 3}'/>
                                         </td>
@@ -120,6 +112,9 @@
                                 </t>
                             </tbody>
                         </table>
+                        <div class="w-100 text-end m-0">
+                            <span style="font-style: italic; font-size: 0.8em;">*GST as applicable</span>
+                        </div>
                     </div>
                 </t>
             </t>
