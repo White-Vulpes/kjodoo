@@ -97,7 +97,7 @@
                             <span style="font-style: italic; font-size: 0.8em;">*GST as applicable</span>
                         </div>
                         <t t-if="doc.rate_cut &gt; 0">
-                            <div class="w-100" style="display: flex; flex-direction: column; justify-content: space-between; margin-top: 10px; padding: 6px; background-color: #f8f9fa; font-weight: bold;">
+                            <div class="w-100" style="display: flex; flex-direction: row; justify-content: space-between; margin-top: 10px; padding: 6px; background-color: #f8f9fa; font-weight: bold;">
 
                                 <div>
                                     Rate: <span t-field="doc.rate_cut"/>
