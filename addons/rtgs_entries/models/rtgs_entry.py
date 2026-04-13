@@ -28,7 +28,7 @@ class GramRecord(models.Model):
     def _compute_gst(self):
         for record in self:
             amountWithoutGST = record.amount / 1.03
-            rateWithoutGST = amountWithoutGST / record.grams
+            rateWithoutGST = amountWithoutGST / record.grams if record.grams > 0 else 0
             record.gst = f"{record.grams} * {rateWithoutGST:.2f} = {amountWithoutGST:.2f} + 3% GST = {record.amount}"
 
     # Completed Tags
