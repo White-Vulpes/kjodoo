@@ -1,21 +1,20 @@
-<odoo>  
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
     <record id="paperformat_custom_bill_a6" model="report.paperformat">
         <field name="name">A6 Paper</field>
         <field name="default" eval="False"/>
         <field name="format">A6</field>
 
-        <!-- Orientation -->
         <field name="orientation">Landscape</field>
 
-        <!-- Margins (adjust as needed) -->
         <field name="margin_top">5</field>
         <field name="margin_bottom">5</field>
         <field name="margin_left">5</field>
         <field name="margin_right">5</field>
 
-        <!-- DPI -->
         <field name="dpi">90</field>
     </record>
+    
     <record id="action_report_custom_bill" model="ir.actions.report">
         <field name="name">Jewelry Bill</field>
         <field name="model">custom.bill</field>
@@ -28,6 +27,7 @@
         <field name="print_report_name">'Bill - %s' % (object.name)</field>
         <field name="paperformat_id" ref="custom_jewellery_billing.paperformat_custom_bill_a6"/>
     </record>
+    
     <template id="report_custom_bill">
         <t t-call="web.html_container">
             <t t-call="web.basic_layout">
@@ -71,45 +71,49 @@
                                 <t t-foreach="doc.item_ids" t-as="line">
                                     <tr>
                                         <td><span t-field="line.name"/></td>
-                                        <td class="text-end"><span t-field="line.weight"/></td>
-                                        <td class="text-end"><span t-field="line.less"/></td>
-                                        <td class="text-end"><span t-field="line.net_weight"/></td>
+                                        
+                                        <td class="text-end"><span t-field="line.weight" t-options='{"widget": "float", "precision": 3}'/></td>
+                                        <td class="text-end"><span t-field="line.less" t-options='{"widget": "float", "precision": 3}'/></td>
+                                        <td class="text-end"><span t-field="line.net_weight" t-options='{"widget": "float", "precision": 3}'/></td>
+                                        
                                         <td class="text-end"><span t-field="line.melting"/></td>
                                         <td class="text-end"><span t-field="line.touch"/></td>
-                                        <td class="text-end"><span t-field="line.pure"/></td>
-                                        <td class="text-end"><span t-field="line.charges"/></td>
+                                        
+                                        <td class="text-end"><span t-field="line.pure" t-options='{"widget": "float", "precision": 3}'/></td>
+                                        <td class="text-end"><span t-field="line.charges" t-options='{"widget": "float", "precision": 2}'/></td>
                                     </tr>
                                 </t>
 
                                 <tr class="fw-bold" style="background-color: #f0f0f0;">
                                     <td>Total</td>
-                                    <td class="text-end"><span t-field="doc.total_weight"/></td>
-                                    <td class="text-end"><span t-field="doc.total_less"/></td>
-                                    <td class="text-end"><span t-field="doc.total_net_weight"/></td>
+                                    <td class="text-end"><span t-field="doc.total_weight" t-options='{"widget": "float", "precision": 3}'/></td>
+                                    <td class="text-end"><span t-field="doc.total_less" t-options='{"widget": "float", "precision": 3}'/></td>
+                                    <td class="text-end"><span t-field="doc.total_net_weight" t-options='{"widget": "float", "precision": 3}'/></td>
                                     <td/>
                                     <td/>
-                                    <td class="text-end"><span t-field="doc.total_pure"/></td>
-                                    <td class="text-end"><span t-field="doc.total_charges"/></td>
+                                    <td class="text-end"><span t-field="doc.total_pure" t-options='{"widget": "float", "precision": 3}'/></td>
+                                    <td class="text-end"><span t-field="doc.total_charges" t-options='{"widget": "float", "precision": 2}'/></td>
                                 </tr>
                             </tbody>
                         </table>
                         <div class="w-100 text-end m-0">
                             <span style="font-style: italic; font-size: 0.8em;">*GST as applicable</span>
                         </div>
+                        
                         <table class="table table-sm table-bordered mb-0">
                             <tbody>
                                 <t t-if="doc.rate_cut &gt; 0">
                                     <tr style="background-color: #f8f9fa;">
                                         
                                         <td>
-                                            Rate: <span t-field="doc.rate_cut"/>
+                                            Rate: <span t-field="doc.rate_cut" t-options='{"widget": "float", "precision": 2}'/>
                                         </td>
                                         
                                         <td class="text-end">
-                                            Pure: <span t-field="doc.total_pure"/>
+                                            Pure: <span t-field="doc.total_pure" t-options='{"widget": "float", "precision": 3}'/>
                                         </td>
                                         <td class="text-end">
-                                            Charges: <span t-field="doc.total_charges"/>
+                                            Charges: <span t-field="doc.total_charges" t-options='{"widget": "float", "precision": 2}'/>
                                         </td>
                                         
                                     </tr>

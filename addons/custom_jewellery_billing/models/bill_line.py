@@ -9,21 +9,21 @@ class CustomBillLine(models.Model):
 
     # --- Line Item Fields ---
     name = fields.Char(string='Name', required=True)
-    weight = fields.Float(string='Weight', digits=(16, 3))
-    less = fields.Float(string='Less', digits=(16, 3))
+    weight = fields.Float(string='Weight', digits=(16, 4))
+    less = fields.Float(string='Less', digits=(16, 4))
     melting = fields.Float(string='Melting')
     touch = fields.Float(string='Touch')
     pure = fields.Float(
         string="Pure",
         compute="_compute_pure",
         store=True,
-        digits=(16, 3)
+        digits=(16, 4)
     )
     charges = fields.Float(string='Charges')
     net_weight = fields.Float(
         compute="_compute_net_weight",
         store=True,
-        digits=(16, 3)
+        digits=(16, 4)
     )
 
     @api.depends('weight', 'less')
