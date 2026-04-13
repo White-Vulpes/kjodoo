@@ -9,7 +9,6 @@ class GramTag(models.Model):
     color = fields.Integer(string='Color Index')
     sequence = fields.Integer(default=10, string='Sequence')
 
-
 class GramRecord(models.Model):
     _name = 'gram.record'
     _description = 'Gram Record Management'
@@ -59,8 +58,8 @@ class GramRecord(models.Model):
 
     @api.model
     def _read_group_missing_tags(self, tags, domain, order=None, **kwargs):
-        # This ensures every tag gets a column in the Kanban, even if empty
-        return self.env['gram.tag'].search([], order=order)
+        # We inject the context HERE, so only the Kanban column headers get renamed!
+        return self.env['gram.tag']
 
     # --- Calculations ---
     @api.onchange('grams', 'rate')

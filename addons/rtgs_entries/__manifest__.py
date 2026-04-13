@@ -15,4 +15,9 @@
     'installable': True,
     'application': True,
     'license': 'LGPL-3',
+    'assets': {
+        'web.assets_backend': [
+            'rtgs_entries/static/src/css/kanban_custom.css',
+        ],
+    },
 }

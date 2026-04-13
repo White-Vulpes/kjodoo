@@ -1,0 +1,9 @@
+/* This targets ONLY the column titles of your specific Gram Record Kanban board */
+.o_kanban_view.custom_pending_kanban
+  .o_kanban_header_title
+  .o_column_title::before {
+  content: "Pending: ";
+  font-weight: normal;
+  color: #666666; /* Makes the 'Pending:' slightly grayed out so the actual tag name pops */
+  margin-right: 4px;
+}
