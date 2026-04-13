@@ -96,23 +96,26 @@
                         <div class="w-100 text-end m-0">
                             <span style="font-style: italic; font-size: 0.8em;">*GST as applicable</span>
                         </div>
-                        <t t-if="doc.rate_cut &gt; 0">
-                            <div class="w-100" style="display: flex; flex-direction: row; justify-content: space-between; margin-top: 10px; padding: 6px; background-color: #f8f9fa; font-weight: bold;">
-
-                                <div>
-                                    Rate: <span t-field="doc.rate_cut"/>
-                                </div>
-
-                                <div>
-                                    Pure: <span t-field="doc.total_pure"/>
-                                </div>
-
-                                <div>
-                                    Charges: <span t-field="doc.total_charges"/>
-                                </div>
-
-                            </div>
-                        </t>
+                        <table class="table table-sm table-bordered mb-0">
+                            <tbody>
+                                <t t-if="doc.rate_cut &gt; 0">
+                                    <tr style="background-color: #f8f9fa;">
+                                        
+                                        <td>
+                                            Rate: <span t-field="doc.rate_cut"/>
+                                        </td>
+                                        
+                                        <td class="text-end">
+                                            Pure: <span t-field="doc.total_pure"/>
+                                        </td>
+                                        <td class="text-end">
+                                            Charges: <span t-field="doc.total_charges"/>
+                                        </td>
+                                        
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
                     </div>
                 </t>
             </t>
