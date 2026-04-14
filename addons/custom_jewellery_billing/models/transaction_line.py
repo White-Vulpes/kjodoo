@@ -7,7 +7,7 @@ class CustomBillTransaction(models.Model):
     _order = 'date asc, id asc'
 
     bill_id = fields.Many2one('custom.bill', string='Bill', required=True, ondelete='cascade')
-    date = fields.Date(string='Date', default=fields.Date.context_today, required=True)
+    date = fields.Date(string='Date', default=fields.Date.context_today, readonly=True, required=True)
     
     ttype = fields.Selection([
         ('metal_recv', 'Metal Received'),

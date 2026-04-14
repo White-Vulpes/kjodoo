@@ -71,9 +71,6 @@
                             <field name="bill_number"/>
                         </group>
                     </group>
-                    <group>
-                        <field name="rate_cut"/>
-                    </group>
                     <notebook>
                         <page string="Bill Items">
                             <field name="item_ids" context="{'list_view_ref': 'custom_jewellery_billing.view_custom_bill_line_list'}"/>

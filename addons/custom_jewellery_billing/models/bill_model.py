@@ -28,8 +28,6 @@ class CustomBill(models.Model):
     total_charges = fields.Float(string='Total Charges', compute='_compute_totals', store=True)
     total_less = fields.Float(string='Total Less', compute='_compute_totals', store=True, digits=(16, 4))
 
-    rate_cut = fields.Integer(string='Rate', default=0)
-
     # Add the relational field
     transaction_ids = fields.One2many('custom.bill.transaction', 'bill_id', string='Transactions')
 
@@ -63,22 +61,15 @@ class CustomBill(models.Model):
             bill.balance_pure = float_round(running_pure, precision_digits=3)
             bill.balance_charges = float_round(running_charges, precision_digits=2)
 
-    @api.depends('item_ids.weight', 'item_ids.pure', 'item_ids.charges', 'item_ids.less', 'item_ids.net_weight', 'rate_cut')
+    @api.depends('item_ids.weight', 'item_ids.pure', 'item_ids.charges', 'item_ids.less', 'item_ids.net_weight')
     def _compute_totals(self):
         for bill in self:
             bill.total_weight = float_round(sum(line.weight for line in bill.item_ids), precision_digits=4)
             bill.total_pure = float_round(sum(line.pure for line in bill.item_ids), precision_digits=4)
             bill.total_less = float_round(sum(line.less for line in bill.item_ids), precision_digits=4)
             bill.total_net_weight = float_round(sum(line.net_weight for line in bill.item_ids), precision_digits=4)
-            
             base_charges = float_round(sum(line.charges for line in bill.item_ids), precision_digits=4)
-            
-            if bill.rate_cut > 0:
-                raw_charges = (bill.total_pure * bill.rate_cut) + base_charges
-                bill.total_charges = float_round(raw_charges, precision_digits=2) 
-                bill.total_pure = 0.0000
-            else:
-                bill.total_charges = float_round(base_charges, precision_digits=2)
+            bill.total_charges = float_round(base_charges, precision_digits=2)
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -102,3 +93,9 @@ class CustomBill(models.Model):
     def action_print_bill(self):
         # Ensure you update your XML report ID to match this if it changes
         return self.env.ref('custom_jewellery_billing.action_report_custom_bill').report_action(self, config=False)
+    
+    @api.onchange("transaction_ids")
+    def _onchange_transaction_type(self):
+        for rec in self.transaction_ids:
+            if rec.ttype == 'rate_cut' and rec.pure_weight == 0 and self.balance_pure > 0:
+                rec.pure_weight = self.balance_pure  # Set the pure weight to the remaining balance for easy cutting
