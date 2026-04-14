@@ -30,22 +30,58 @@
                     </div>
                     <group>
                         <group>
+                            <field name="phone"/>
                             <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" context="{'custom_kanban_title': False}"/>
-                            <field name="grams"/>
+                            <field name="pure"/>
                             <field name="rate"/>
+                            <field name="amount"/>
                         </group>
                         <group>
-                            <field name="amount"/>
-                            <field name="pure"/>
+                            <field name="grams"/>
+                            <field name="touch"/>
+                            <field name="bill_flag"/>
                         </group>
                     </group>
                     <field name='gst'/>
+                    <br/>
+                    <field name='pure_calc'/>
                 </sheet>
                 <chatter/>
             </form>
         </field>
     </record>
-
+    <record id="view_gram_record_kanban_bill" model="ir.ui.view">
+        <field name="name">gram.record.kanban.bill</field>
+        <field name="model">gram.record</field>
+        <field name="arch" type="xml">
+            <kanban records_draggable="false">
+                <field name="partner_id"/>
+                <field name="tag_ids"/>
+                <field name="grams"/>
+                <field name="amount"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click">
+                            <div class="oe_kanban_details">
+                                <strong class="o_kanban_record_title"> 
+                                    <field name="partner_id"/>
+                                </strong>
+                                
+                                <div class="mt-1 mb-1">
+                                    <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" context="{'custom_kanban_title': False}"/>
+                                </div>
+                                
+                                <div class="mt-2 text-muted">
+                                    <span>Grams: <field name="grams"/></span><br/>
+                                    <span>Amount: <field name="amount"/></span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
     <record id="view_gram_record_kanban" model="ir.ui.view">
         <field name="name">gram.record.kanban</field>
         <field name="model">gram.record</field>
@@ -91,6 +127,19 @@
         </field>
     </record>
 
+    <record id="action_gram_record_list" model="ir.actions.act_window">
+        <field name="name">Generate Bill</field>
+        <field name="res_model">gram.record</field>
+        <field name="view_mode">kanban,form</field>
+        <field name="view_id" ref="view_gram_record_kanban_bill"/>
+        <field name="domain">[('bill_flag', '=', True)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new RTGS Entry!
+            </p>
+        </field>
+    </record>
+
     <record id="action_gram_tags" model="ir.actions.act_window">
         <field name="name">Transaction Tags</field>
         <field name="res_model">gram.tag</field>
@@ -99,7 +148,7 @@
 
     <menuitem id="menu_gram_root" name="RTGS Entry Management" sequence="10"/>
     <menuitem id="menu_gram_records" name="Entries" parent="menu_gram_root" action="action_gram_record" sequence="10"/>
-    
+    <menuitem id="menu_gram_records_bill" name="Bill Generation" parent="menu_gram_root" action="action_gram_record_list" sequence="20"/>
     <menuitem id="menu_gram_config" name="Configuration" parent="menu_gram_root" sequence="100"/>
     <menuitem id="menu_gram_tag_config" name="Tags" parent="menu_gram_config" action="action_gram_tags"/>
 

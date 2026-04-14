@@ -16,13 +16,23 @@ class GramRecord(models.Model):
     
     name = fields.Char(string='Reference', required=True, default='New', copy=False)
     partner_id = fields.Many2one(comodel_name="res.partner", string="")
-    
+    phone = fields.Char(string='Phone', related='partner_id.phone', store=True, readonly=False)
+
     grams = fields.Float(string='Grams', digits=(16, 3))
     rate = fields.Float(string='Rate', digits=(16, 2))
     pure = fields.Float(string='Pure', digits=(16, 3))
     amount = fields.Float(string='Amount', digits=(16, 2))
+    touch = fields.Float(string='Touch', digits=(16, 2), store=True, default=92)
+    bill_flag = fields.Boolean(string='Generate Bill', default=False)
 
     gst = fields.Char(string='Rate w/o GST', compute='_compute_gst', store=True)
+    pure_calc = fields.Char(string='Pure Calculation', compute='_compute_pure_calc', store=True)
+
+    @api.depends('amount', 'pure')
+    def _compute_pure_calc(self):
+        for record in self:
+            pure_rate = record.amount / record.pure if record.pure > 0 else 0
+            record.pure_calc = f"{record.pure:.3f} *{pure_rate:.2f} = {record.amount:.2f}"
 
     @api.depends('rate', 'grams', 'amount')
     def _compute_gst(self):
@@ -64,8 +74,26 @@ class GramRecord(models.Model):
         return self.env['gram.tag']
 
     # --- Calculations ---
-    @api.onchange('grams', 'amount')
-    def _onchange_grams_rate(self):
+    @api.onchange('pure', 'amount')
+    def _onchange_pure_rate(self):
         for record in self:
-            if record.grams > 0 and record.amount > 0:
-                record.rate = (record.amount / record.grams)
+            if record.pure > 0 and record.amount > 0:
+                record.rate = (record.amount / record.pure)
+
+    @api.onchange('phone')
+    def _onchange_phone(self):
+        for record in self:
+            if record.partner_id and record.partner_id.phone != record.phone:
+                record.partner_id.phone = record.phone
+
+    @api.onchange('rate')
+    def _onchange_rate(self):
+        for record in self:
+            if record.rate > 0 and record.pure > 0:
+                record.amount = record.rate * record.pure
+    
+    @api.onchange('pure', 'touch')
+    def _on_change_pure(self):
+        for record in self:
+            if record.touch > 0 and record.pure > 0:
+                record.grams = record.pure / (record.touch / 100)
