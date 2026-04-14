@@ -97,7 +97,7 @@
                             </tbody>
                         </table>
                         <t t-if="doc.transaction_ids">
-                            <table class="table table-sm table-bordered mt-2" style="font-size: 0.9em;">
+                            <table class="table table-sm table-bordered mt-2" style="font-size: 0.9em; font-style: italic;">
                                 <thead>
                                     <tr style="background-color: #f8f9fa;">
                                         <th>Date</th>

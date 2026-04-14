@@ -16,12 +16,6 @@ class CustomBillTransaction(models.Model):
         ('cash_pay', 'Cash Payment'),
         ('rate_cut', 'Rate Cut')
     ], string='Transaction Type', required=True)
-
-    # --- Metal Fields ---
-    metal_type = fields.Selection([
-        ('kacha', 'Kacha'),
-        ('pure', 'Pure')
-    ], string='Metal Type', default='pure')
     
     gross_weight = fields.Float(string='Gross Weight', digits=(16, 3))
     purity = fields.Float(string='Purity (%)', digits=(16, 2))
@@ -33,10 +27,10 @@ class CustomBillTransaction(models.Model):
     rate = fields.Float(string='Rate', digits=(16, 2))
     amount = fields.Float(string='Amount (Cash)', digits=(16, 2), compute='_compute_amount', store=True, readonly=False)
 
-    @api.depends('ttype', 'metal_type', 'gross_weight', 'purity')
+    @api.depends('ttype', 'gross_weight', 'purity')
     def _compute_pure_weight(self):
         for rec in self:
-            if rec.ttype in ['metal_recv', 'metal_pay'] and rec.metal_type == 'kacha':
+            if rec.ttype in ['metal_recv', 'metal_pay']:
                 # Convert Kacha to Pure
                 rec.pure_weight = float_round(rec.gross_weight * (rec.purity / 100.0), precision_digits=3)
 
@@ -46,12 +40,3 @@ class CustomBillTransaction(models.Model):
             if rec.ttype == 'rate_cut' and rec.rate:
                 # Convert Pure to Cash
                 rec.amount = float_round(rec.pure_weight * rec.rate, precision_digits=2)
-
-    @api.onchange('metal_type')
-    def _onchange_metal_type(self):
-        for rec in self:
-            if rec.metal_type == 'pure':
-                rec.purity = 100.00
-            elif rec.metal_type == 'kacha' and rec.purity == 100.00:
-                # Optional: Clear it back to 0 if they switch to Kacha so they don't accidentally save 100%
-                rec.purity = 0.00
