@@ -19,6 +19,7 @@ class GramRecord(models.Model):
     
     grams = fields.Float(string='Grams', digits=(16, 3))
     rate = fields.Float(string='Rate', digits=(16, 2))
+    pure = fields.Float(string='Pure', digits=(16, 3))
     amount = fields.Float(string='Amount', digits=(16, 2))
 
     gst = fields.Char(string='Rate w/o GST', compute='_compute_gst', store=True)
@@ -62,14 +63,8 @@ class GramRecord(models.Model):
         return self.env['gram.tag']
 
     # --- Calculations ---
-    @api.onchange('grams', 'rate')
+    @api.onchange('grams', 'amount')
     def _onchange_grams_rate(self):
         for record in self:
-            if record.grams and record.rate:
-                record.amount = int(record.grams * record.rate)
-
-    @api.onchange('amount')
-    def _onchange_amount(self):
-        for record in self:
-            if record.amount and record.rate and record.rate > 0:
-                record.grams = record.amount / record.rate
+            if record.grams > 0 and record.amount > 0:
+                record.rate = (record.amount / record.grams)
