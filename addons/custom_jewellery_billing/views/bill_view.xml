@@ -84,6 +84,29 @@
                             </group>
                         </page>
                     </notebook>
+                    <group class="oe_subtotal_footer oe_right" style="border-top: 2px solid #ccc; margin-top: 10px; padding-top: 10px;">
+                        <field name="balance_pure" class="fw-bold" style="font-size: 1.2em; color: #d9534f;"/>
+                        <field name="balance_charges" class="fw-bold" style="font-size: 1.2em; color: #5cb85c;"/>
+                    </group>
+                    <notebook>
+                        <page string="Ledger / Transactions">
+                            <field name="transaction_ids">
+                                <list editable="bottom">
+                                    <field name="date"/>
+                                    <field name="ttype"/>
+                                    
+                                    <field name="metal_type" invisible="ttype not in ('metal_recv', 'metal_pay')" required="ttype in ('metal_recv', 'metal_pay')"/>
+                                    <field name="gross_weight" invisible="metal_type != 'kacha' or ttype not in ('metal_recv', 'metal_pay')"/>
+                                    <field name="purity" invisible="metal_type != 'kacha' or ttype not in ('metal_recv', 'metal_pay')"/>
+                                    
+                                    <field name="pure_weight" invisible="ttype not in ('metal_recv', 'metal_pay', 'rate_cut')"/>
+                                    
+                                    <field name="rate" invisible="ttype != 'rate_cut'" required="ttype == 'rate_cut'"/>
+                                    <field name="amount" invisible="ttype not in ('cash_recv', 'cash_pay', 'rate_cut')"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>

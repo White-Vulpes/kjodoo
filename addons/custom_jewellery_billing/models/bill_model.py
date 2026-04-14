@@ -30,6 +30,39 @@ class CustomBill(models.Model):
 
     rate_cut = fields.Integer(string='Rate', default=0)
 
+    # Add the relational field
+    transaction_ids = fields.One2many('custom.bill.transaction', 'bill_id', string='Transactions')
+
+    # Add the live balance fields
+    balance_pure = fields.Float(string='Remaining Pure', compute='_compute_balances', store=True, digits=(16, 3))
+    balance_charges = fields.Float(string='Remaining Balance', compute='_compute_balances', store=True, digits=(16, 2))
+
+    @api.depends(
+        'total_pure', 'total_charges', 
+        'transaction_ids.ttype', 'transaction_ids.pure_weight', 'transaction_ids.amount'
+    )
+    def _compute_balances(self):
+        for bill in self:
+            # Start with the totals from the items
+            running_pure = bill.total_pure
+            running_charges = bill.total_charges
+
+            for txn in bill.transaction_ids:
+                if txn.ttype == 'metal_recv':
+                    running_pure -= txn.pure_weight
+                elif txn.ttype == 'metal_pay':
+                    running_pure += txn.pure_weight
+                elif txn.ttype == 'cash_recv':
+                    running_charges -= txn.amount
+                elif txn.ttype == 'cash_pay':
+                    running_charges += txn.amount
+                elif txn.ttype == 'rate_cut':
+                    running_pure -= txn.pure_weight
+                    running_charges += txn.amount  # Adds the cash value of the cut metal
+
+            bill.balance_pure = float_round(running_pure, precision_digits=3)
+            bill.balance_charges = float_round(running_charges, precision_digits=2)
+
     @api.depends('item_ids.weight', 'item_ids.pure', 'item_ids.charges', 'item_ids.less', 'item_ids.net_weight', 'rate_cut')
     def _compute_totals(self):
         for bill in self:

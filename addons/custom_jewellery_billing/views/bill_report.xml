@@ -94,24 +94,58 @@
                                     <td class="text-end"><span t-field="doc.total_pure" t-options='{"widget": "float", "precision": 3}'/></td>
                                     <td class="text-end"><span t-field="doc.total_charges" t-options='{"widget": "float", "precision": 2}'/></td>
                                 </tr>
-                                <t t-if="doc.rate_cut &gt; 0">
-                                    <tr style="background-color: #f8f9fa;  font-style: italic;">
-                                        
-                                        <td>
-                                            Rate: <span t-field="doc.rate_cut" t-options='{"widget": "float", "precision": 2}'/>
-                                        </td>
-                                        <td colspan="5"/>
-                                        <td class="text-end">
-                                            Pure: <span t-field="doc.total_pure" t-options='{"widget": "float", "precision": 3}'/>
-                                        </td>
-                                        <td class="text-end">
-                                            Charges: <span t-field="doc.total_charges" t-options='{"widget": "float", "precision": 2}'/>
-                                        </td>
-                                        
-                                    </tr>
-                                </t>
                             </tbody>
                         </table>
+                        <t t-if="doc.transaction_ids">
+                            <table class="table table-sm table-bordered mt-2" style="font-size: 0.9em;">
+                                <thead>
+                                    <tr style="background-color: #f8f9fa;">
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th class="text-end">Gr. Wt.</th>
+                                        <th class="text-end">Purity</th>
+                                        <th class="text-end">Pure Wt</th>
+                                        <th class="text-end">Rate</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="doc.transaction_ids" t-as="txn">
+                                        <tr>
+                                            <td><span t-field="txn.date" t-options='{"widget": "date", "format": "dd/MM"}'/></td>
+                                            <td>
+                                                <span t-if="txn.ttype == 'metal_recv'">Metal Received</span>
+                                                <span t-if="txn.ttype == 'metal_pay'">Metal Payment</span>
+                                                <span t-if="txn.ttype == 'cash_recv'">Cash Received</span>
+                                                <span t-if="txn.ttype == 'cash_pay'">Cash Payment</span>
+                                                <span t-if="txn.ttype == 'rate_cut'">Rate Cut</span>
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-if="txn.ttype in ('metal_recv', 'metal_pay')" t-field="txn.gross_weight" t-options='{"widget": "float", "precision": 3}'/>
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-if="txn.ttype in ('metal_recv', 'metal_pay')" t-field="txn.purity" t-options='{"widget": "float", "precision": 3}'/>
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-if="txn.ttype in ('metal_recv', 'metal_pay', 'rate_cut')" t-field="txn.pure_weight" t-options='{"widget": "float", "precision": 3}'/>
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-if="txn.ttype == 'rate_cut'" t-field="txn.rate" t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-if="txn.ttype in ('cash_recv', 'cash_pay', 'rate_cut')" t-field="txn.amount" t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+                        <!-- <div class="row mt-4">
+                            <div class="col-6 text-end">
+                                <strong>Pending Pure: </strong> <span t-field="doc.balance_pure" t-options='{"widget": "float", "precision": 3}'/> | 
+                                <strong>Pending Cash: </strong> <span t-field="doc.balance_charges" t-options='{"widget": "float", "precision": 2}'/>
+                            </div>
+                        </div> -->
                         <div class="w-100 text-end m-0">
                             <span style="font-style: italic; font-size: 0.8em;">*GST as applicable</span>
                         </div>

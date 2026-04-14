@@ -1,0 +1,57 @@
+from odoo import models, fields, api
+from odoo.tools.float_utils import float_round
+
+class CustomBillTransaction(models.Model):
+    _name = 'custom.bill.transaction'
+    _description = 'Bill Transaction Ledger'
+    _order = 'date asc, id asc'
+
+    bill_id = fields.Many2one('custom.bill', string='Bill', required=True, ondelete='cascade')
+    date = fields.Date(string='Date', default=fields.Date.context_today, required=True)
+    
+    ttype = fields.Selection([
+        ('metal_recv', 'Metal Received'),
+        ('metal_pay', 'Metal Payment'),
+        ('cash_recv', 'Cash Received'),
+        ('cash_pay', 'Cash Payment'),
+        ('rate_cut', 'Rate Cut')
+    ], string='Transaction Type', required=True)
+
+    # --- Metal Fields ---
+    metal_type = fields.Selection([
+        ('kacha', 'Kacha'),
+        ('pure', 'Pure')
+    ], string='Metal Type', default='pure')
+    
+    gross_weight = fields.Float(string='Gross Weight', digits=(16, 3))
+    purity = fields.Float(string='Purity (%)', digits=(16, 2))
+    
+    # Used for Metal transactions AND the weight used in a Rate Cut
+    pure_weight = fields.Float(string='Pure Weight', digits=(16, 3), compute='_compute_pure_weight', store=True, readonly=False)
+
+    # --- Cash / Rate Fields ---
+    rate = fields.Float(string='Rate', digits=(16, 2))
+    amount = fields.Float(string='Amount (Cash)', digits=(16, 2), compute='_compute_amount', store=True, readonly=False)
+
+    @api.depends('ttype', 'metal_type', 'gross_weight', 'purity')
+    def _compute_pure_weight(self):
+        for rec in self:
+            if rec.ttype in ['metal_recv', 'metal_pay'] and rec.metal_type == 'kacha':
+                # Convert Kacha to Pure
+                rec.pure_weight = float_round(rec.gross_weight * (rec.purity / 100.0), precision_digits=3)
+
+    @api.depends('ttype', 'pure_weight', 'rate')
+    def _compute_amount(self):
+        for rec in self:
+            if rec.ttype == 'rate_cut' and rec.rate:
+                # Convert Pure to Cash
+                rec.amount = float_round(rec.pure_weight * rec.rate, precision_digits=2)
+
+    @api.onchange('metal_type')
+    def _onchange_metal_type(self):
+        for rec in self:
+            if rec.metal_type == 'pure':
+                rec.purity = 100.00
+            elif rec.metal_type == 'kacha' and rec.purity == 100.00:
+                # Optional: Clear it back to 0 if they switch to Kacha so they don't accidentally save 100%
+                rec.purity = 0.00
