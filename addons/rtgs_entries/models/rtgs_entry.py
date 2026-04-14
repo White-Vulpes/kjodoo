@@ -2,7 +2,7 @@ from odoo import models, fields, api
 
 class GramTag(models.Model):
     _name = 'gram.tag'
-    _description = 'Gram Record Tags'
+    _description = 'RTGS Status Tags'
     _order = 'sequence, id'
 
     name = fields.Char(string='Tag Name', required=True)
@@ -11,7 +11,7 @@ class GramTag(models.Model):
 
 class GramRecord(models.Model):
     _name = 'gram.record'
-    _description = 'Gram Record Management'
+    _description = 'RTGS Entry Management'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     
     name = fields.Char(string='Reference', required=True, default='New', copy=False)
@@ -36,6 +36,7 @@ class GramRecord(models.Model):
         'gram.tag', 
         relation='gram_record_completed_tags_rel',
         string='Status',
+        tracking=True,
         default=lambda self: self.env['gram.tag'].search([('name', 'in', ['RTGS Recieved', 'Ratecut Done'])]).ids
     )
 

@@ -5,7 +5,7 @@
         <field name="name">gram.tag.form</field>
         <field name="model">gram.tag</field>
         <field name="arch" type="xml">
-            <form string="Gram Tag">
+            <form string="RTGS Status Tag">
                 <sheet>
                     <group>
                         <field name="name"/>
@@ -86,7 +86,7 @@
 
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Create a new Gram Record!
+                Create a new RTGS Entry!
             </p>
         </field>
     </record>
@@ -97,8 +97,8 @@
         <field name="view_mode">list,form</field>
     </record>
 
-    <menuitem id="menu_gram_root" name="RTGS Entries" sequence="10"/>
-    <menuitem id="menu_gram_records" name="Records" parent="menu_gram_root" action="action_gram_record" sequence="10"/>
+    <menuitem id="menu_gram_root" name="RTGS Entry Management" sequence="10"/>
+    <menuitem id="menu_gram_records" name="Entries" parent="menu_gram_root" action="action_gram_record" sequence="10"/>
     
     <menuitem id="menu_gram_config" name="Configuration" parent="menu_gram_root" sequence="100"/>
     <menuitem id="menu_gram_tag_config" name="Tags" parent="menu_gram_config" action="action_gram_tags"/>
