@@ -22,7 +22,7 @@ class GramRecord(models.Model):
     rate = fields.Float(string='Rate', digits=(16, 2))
     pure = fields.Float(string='Pure', digits=(16, 3))
     amount = fields.Float(string='Amount', digits=(16, 2))
-    touch = fields.Float(string='Touch', digits=(16, 2), store=True, default=92)
+    touch = fields.Float(string='Touch', digits=(16, 2), store=True, default=95)
     bill_flag = fields.Boolean(string='Generate Bill', default=False)
 
     gst = fields.Char(string='Rate w/o GST', compute='_compute_gst', store=True)

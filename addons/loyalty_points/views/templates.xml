@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="loyalty_points_page" model="website.page">
+        <field name="name">My Blank Page</field>
+        <field name="url">/loyaltypoints</field>
+        <field name="is_published">True</field>
+        <field name="key">loyalty_points.loyalty_points_template</field>
+        <field name="type">qweb</field>
+        <field name="arch" type="xml">
+            <t name="Blank Page" t-name="loyalty_points.loyalty_points_template">
+                <t t-call="website.layout">
+                    
+                    <t t-set="title">Loyalty Points</t>
+                    <t t-set="no_footer" t-value="True"/>
+                    <t t-set="no_header" t-value="True"/>
+                    <div id="wrap" class="oe_structure oe_empty">
+                        <header>
+        <h1>Brand Logo</h1>
+        <nav>
+            <a href="#">Dashboard</a>
+            <a href="#">Redeem Points</a>
+            <a href="#">My Referrals</a>
+            <a href="#">Settings</a>
+        </nav>
+    </header>
+
+    <main>
+        <h4 class="welcome-message">Welcome back, John Doe</h4>
+        <div class="hero-card">
+            <p>Available Balance</p>
+            <h2>4,250 <span style="font-size: 1.5rem; font-weight: 400; color: #9ca3af;">pts</span></h2>
+            <p style="margin-top: 1rem; font-size: 0.9rem;">Platinum Tier Member</p>
+        </div>
+
+        <h3 class="section-title">Your Exclusive Benefits</h3>
+        <div class="perks-grid">
+            <div class="perk-card">
+                <div class="perk-icon">🎂</div>
+                <div class="perk-title">Birthday Cake</div>
+                <div class="perk-desc">A complimentary cake delivered to your door on your special day.</div>
+            </div>
+            <div class="perk-card">
+                <div class="perk-icon">🎁</div>
+                <div class="perk-title">Anniversary Gift</div>
+                <div class="perk-desc">Exclusive curated gifts to celebrate your membership anniversary.</div>
+            </div>
+            <div class="perk-card">
+                <div class="perk-icon">✨</div>
+                <div class="perk-title">Priority Services</div>
+                <div class="perk-desc">Enjoy expedited support and complimentary premium services.</div>
+            </div>
+        </div>
+
+        <h3 class="section-title">Points History</h3>
+        <div class="history-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Activity</th>
+                        <th>Order Value</th>
+                        <th>Points Earned</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Apr 15, 2026</td>
+                        <td>
+                            <div class="transaction-type">Product Purchase</div>
+                            <div style="font-size: 0.8rem; color: #6b7280;">Order #INV-2026-0042</div>
+                        </td>
+                        <td>$450.00</td>
+                        <td class="points-earned">+450 pts</td>
+                    </tr>
+                    <tr>
+                        <td>Apr 10, 2026</td>
+                        <td>
+                            <div class="transaction-type type-referral">Successful Referral</div>
+                            <div style="font-size: 0.8rem; color: #6b7280;">Referred: John Doe</div>
+                        </td>
+                        <td>—</td>
+                        <td class="points-earned type-referral">+1,000 pts</td>
+                    </tr>
+                    <tr>
+                        <td>Mar 28, 2026</td>
+                        <td>
+                            <div class="transaction-type">Product Purchase</div>
+                            <div style="font-size: 0.8rem; color: #6b7280;">Order #INV-2026-0021</div>
+                        </td>
+                        <td>$1,200.00</td>
+                        <td class="points-earned">+1,200 pts</td>
+                    </tr>
+                    <tr>
+                        <td>Mar 28, 2026</td>
+                        <td>
+                            <div class="transaction-type">Tier Bonus Multiplier</div>
+                            <div style="font-size: 0.8rem; color: #6b7280;">Platinum Member Perk</div>
+                        </td>
+                        <td>—</td>
+                        <td class="points-earned">+120 pts</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer>
+        <p>2026 Kothari Jewels. All rights reserved.</p>
+        <p style="margin-top: 0.5rem;"><a href="#" style="color: #6b7280; text-decoration: none;">Terms &amp; Conditions</a> | <a href="#" style="color: #6b7280; text-decoration: none;">Privacy Policy</a></p>
+    </footer>
+                    </div>
+                </t>
+            </t>
+        </field>
+    </record>
+</odoo>
