@@ -102,8 +102,8 @@
                                                 <field name="ttype"/>
                                             </group>
                                             <group string="Values">
-                                                <field name="gross_weight" invisible="ttype not in ('metal_recv', 'metal_pay') or metal_type == 'pure'"/>
-                                                <field name="purity" invisible="ttype not in ('metal_recv', 'metal_pay') or metal_type == 'pure'"/>
+                                                <field name="gross_weight" invisible="ttype not in ('metal_recv', 'metal_pay')"/>
+                                                <field name="purity" invisible="ttype not in ('metal_recv', 'metal_pay')"/>
                                                 <field name="pure_weight" invisible="ttype not in ('metal_recv', 'metal_pay', 'rate_cut')"/>
                                                 
                                                 <field name="rate" invisible="ttype != 'rate_cut'" required="ttype == 'rate_cut'"/>
