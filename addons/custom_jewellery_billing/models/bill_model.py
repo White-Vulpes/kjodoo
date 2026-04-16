@@ -93,9 +93,3 @@ class CustomBill(models.Model):
     def action_print_bill(self):
         # Ensure you update your XML report ID to match this if it changes
         return self.env.ref('custom_jewellery_billing.action_report_custom_bill').report_action(self, config=False)
-    
-    @api.onchange("transaction_ids")
-    def _onchange_transaction_type(self):
-        for rec in self.transaction_ids:
-            if rec.ttype == 'rate_cut' and rec.pure_weight == 0 and self.balance_pure > 0:
-                rec.pure_weight = self.balance_pure  # Set the pure weight to the remaining balance for easy cutting

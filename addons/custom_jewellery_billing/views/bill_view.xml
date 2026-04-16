@@ -84,15 +84,35 @@
                     <notebook>
                         <page string="Ledger / Transactions">
                             <field name="transaction_ids">
-                                <list editable="bottom">
+                                <list>
                                     <field name="date"/>
                                     <field name="ttype"/>
                                     <field name="gross_weight" invisible="ttype not in ('metal_recv', 'metal_pay')"/>
                                     <field name="purity" invisible="ttype not in ('metal_recv', 'metal_pay')"/>
                                     <field name="pure_weight" invisible="ttype not in ('metal_recv', 'metal_pay', 'rate_cut')"/>
-                                    <field name="rate" invisible="ttype != 'rate_cut'" required="ttype == 'rate_cut'"/>
+                                    <field name="rate" invisible="ttype != 'rate_cut'"/>
                                     <field name="amount" invisible="ttype not in ('cash_recv', 'cash_pay', 'rate_cut')"/>
                                 </list>
+                                
+                                <form string="Transaction Details">
+                                    <sheet>
+                                        <group>
+                                            <group string="Basic Info">
+                                                <field name="date"/>
+                                                <field name="ttype"/>
+                                                <field name="metal_type" invisible="ttype not in ('metal_recv', 'metal_pay')" required="ttype in ('metal_recv', 'metal_pay')"/>
+                                            </group>
+                                            <group string="Values">
+                                                <field name="gross_weight" invisible="ttype not in ('metal_recv', 'metal_pay') or metal_type == 'pure'"/>
+                                                <field name="purity" invisible="ttype not in ('metal_recv', 'metal_pay') or metal_type == 'pure'"/>
+                                                <field name="pure_weight" invisible="ttype not in ('metal_recv', 'metal_pay', 'rate_cut')"/>
+                                                
+                                                <field name="rate" invisible="ttype != 'rate_cut'" required="ttype == 'rate_cut'"/>
+                                                <field name="amount" invisible="ttype not in ('cash_recv', 'cash_pay', 'rate_cut')"/>
+                                            </group>
+                                        </group>
+                                    </sheet>
+                                </form>
                             </field>
                         </page>
                     </notebook>
