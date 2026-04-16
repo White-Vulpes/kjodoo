@@ -100,7 +100,6 @@
                                             <group string="Basic Info">
                                                 <field name="date"/>
                                                 <field name="ttype"/>
-                                                <field name="metal_type" invisible="ttype not in ('metal_recv', 'metal_pay')" required="ttype in ('metal_recv', 'metal_pay')"/>
                                             </group>
                                             <group string="Values">
                                                 <field name="gross_weight" invisible="ttype not in ('metal_recv', 'metal_pay') or metal_type == 'pure'"/>
