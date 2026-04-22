@@ -77,9 +77,11 @@ class GramRecord(models.Model):
     @api.onchange('pure', 'amount')
     def _onchange_pure_rate(self):
         for record in self:
-            if record.pure > 0 and record.amount > 0:
+            if record.pure > 0:
                 record.rate = (record.amount / record.pure)
-
+            elif record.amount > 0 and record.rate > 0:
+                record.pure = record.amount / record.rate
+                
     @api.onchange('phone')
     def _onchange_phone(self):
         for record in self:
@@ -89,8 +91,10 @@ class GramRecord(models.Model):
     @api.onchange('rate')
     def _onchange_rate(self):
         for record in self:
-            if record.rate > 0 and record.pure > 0:
+            if record.pure > 0:
                 record.amount = record.rate * record.pure
+            elif record.amount > 0:
+                record.pure = record.amount / record.rate
     
     @api.onchange('pure', 'touch')
     def _on_change_pure(self):

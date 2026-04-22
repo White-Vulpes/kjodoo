@@ -105,6 +105,7 @@
                                 
                                 <div class="mt-2 text-muted">
                                     <span>Grams: <field name="grams"/></span><br/>
+                                    <span>Pure: <field name="pure"/></span><br/>
                                     <span>Amount: <field name="amount"/></span>
                                 </div>
                             </div>
@@ -132,7 +133,7 @@
         <field name="res_model">gram.record</field>
         <field name="view_mode">kanban,form</field>
         <field name="view_id" ref="view_gram_record_kanban_bill"/>
-        <field name="domain">[('bill_flag', '=', True)]</field>
+        <field name="domain">[('bill_flag', '=', True), '!', ('tag_ids.name', '=', 'Bill Generated')]</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Create a new RTGS Entry!
