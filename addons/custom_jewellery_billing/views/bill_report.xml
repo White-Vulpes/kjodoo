@@ -136,12 +136,22 @@
                                 </tbody>
                             </table>
                         </t>
-                        <!-- <div class="row mt-4">
-                            <div class="col-6 text-end">
-                                <strong>Pending Pure: </strong> <span t-field="doc.balance_pure" t-options='{"widget": "float", "precision": 3}'/> | 
-                                <strong>Pending Cash: </strong> <span t-field="doc.balance_charges" t-options='{"widget": "float", "precision": 2}'/>
+                        <t t-if="doc.remarks">
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <strong>Remarks:</strong>
+                                    <p style="white-space: pre-wrap;"><span t-field="doc.remarks"/></p>
+                                </div>
                             </div>
-                        </div> -->
+                        </t>
+                        <t t-if="len(doc.transaction_ids) > 0">
+                            <div class="row mt-4">
+                                <div class="col-6 text-end">
+                                    <strong>Pure: </strong> <span t-field="doc.balance_pure" t-options='{"widget": "float", "precision": 3}'/> | 
+                                    <strong>Cash: </strong> <span t-field="doc.balance_charges" t-options='{"widget": "float", "precision": 2}'/>
+                                </div>
+                            </div>
+                        </t>
                         <div class="w-100 text-end m-0">
                             <span style="font-style: italic; font-size: 0.8em;">*GST as applicable</span>
                         </div>

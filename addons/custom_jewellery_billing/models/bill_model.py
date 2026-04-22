@@ -35,6 +35,8 @@ class CustomBill(models.Model):
     balance_pure = fields.Float(string='Remaining Pure', compute='_compute_balances', store=True, digits=(16, 3))
     balance_charges = fields.Float(string='Remaining Balance', compute='_compute_balances', store=True, digits=(16, 2))
 
+    remarks = fields.Text(string='Remarks')
+
     @api.depends(
         'total_pure', 'total_charges', 
         'transaction_ids.ttype', 'transaction_ids.pure_weight', 'transaction_ids.amount'

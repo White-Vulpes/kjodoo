@@ -115,6 +115,9 @@
                             </field>
                         </page>
                     </notebook>
+                    <group string="Remarks">
+                        <field name="remarks" widget="text" placeholder="Add any remarks or notes about this bill here..."/>
+                    </group>
                     <group class="oe_subtotal_footer oe_right" style="border-top: 2px solid #ccc; margin-top: 10px; padding-top: 10px;">
                         <field name="balance_pure" class="fw-bold" style="font-size: 1.2em;"/>
                         <field name="balance_charges" class="fw-bold" style="font-size: 1.2em;"/>
