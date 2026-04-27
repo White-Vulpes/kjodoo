@@ -70,6 +70,7 @@
                                     <div class="d-flex justify-content-between px-3 py-2 rounded">
                                         <span t-if="item.size"><strong>Size:</strong> <span t-field="item.size"/></span>
                                         <span><strong>Wt:</strong> <span t-field="item.weight" t-options='{"widget": "float", "precision": 3}'/> g</span>
+                                        <span><strong>Pcs:</strong> <span t-field="item.pieces"/> </span>
                                     </div>
                                     
                                     <p class="mt-3 card-text text-start text-muted" style="font-size: 0.9em;">
