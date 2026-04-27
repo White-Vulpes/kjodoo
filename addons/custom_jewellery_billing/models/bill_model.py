@@ -93,5 +93,15 @@ class CustomBill(models.Model):
         return super(CustomBill, self).create(vals_list)
     
     def action_print_bill(self):
-        # Ensure you update your XML report ID to match this if it changes
-        return self.env.ref('custom_jewellery_billing.action_report_custom_bill').report_action(self, config=False)
+        # 1. Get the report reference
+        report = self.env.ref('custom_jewellery_billing.action_report_custom_bill')
+        
+        # 2. Construct the direct URL to the PDF
+        report_url = f'/report/pdf/{report.report_name}/{self.id}'
+        
+        # 3. Return a URL action to force a new tab
+        return {
+            'type': 'ir.actions.act_url',
+            'url': report_url,
+            'target': 'new',  # 'new' tells Odoo to open a new browser tab
+        }

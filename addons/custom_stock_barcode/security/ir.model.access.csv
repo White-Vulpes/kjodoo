@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_jewelry_barcode_item,jewelry.barcode.item.access,model_jewelry_barcode_item,base.group_user,1,1,1,1
+access_jewelry_item_less,jewelry.item.less.access,model_jewelry_item_less,base.group_user,1,1,1,1
+access_jewelry_item_charge,jewelry.item.charge.access,model_jewelry_item_charge,base.group_user,1,1,1,1
+access_jewelry_design_tag,jewelry.design.tag.access,model_jewelry_design_tag,base.group_user,1,1,1,1
+access_jewelry_mcode,jewelry.mcode.access,model_jewelry_mcode,base.group_user,1,1,1,1
+access_jewelry_size,jewelry.size.access,model_jewelry_size,base.group_user,1,1,1,1
+access_jewelry_less_type,jewelry.less.type.access,model_jewelry_less_type,base.group_user,1,1,1,1

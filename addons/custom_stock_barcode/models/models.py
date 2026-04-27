@@ -1,0 +1,106 @@
+from odoo import models, fields, api
+from odoo.tools.float_utils import float_round
+
+class JewelryMCode(models.Model):
+    _name = 'jewelry.mcode'
+    _description = 'Manufacturer Code'
+    
+    name = fields.Char(string='M. Code', required=True)
+    partner_id = fields.Many2one('res.partner', string='Vendor / Manufacturer') # Optional: link to actual vendor
+    
+    _sql_constraints = [('name_uniq', 'unique(name)', 'This Manufacturer Code already exists!')]
+
+class JewelrySize(models.Model):
+    _name = 'jewelry.size'
+    _description = 'Jewelry Size'
+    _order = 'name'
+    
+    name = fields.Char(string='Size Name', required=True)
+
+class JewelryLessType(models.Model):
+    _name = 'jewelry.less.type'
+    _description = 'Less Deduction Type'
+    
+    name = fields.Char(string='Type Name', required=True)
+
+class JewelryBarcodeItem(models.Model):
+    _name = 'jewelry.barcode.item'
+    _description = 'Barcode Tagged Jewelry Item'
+    _rec_name = 'barcode' # Makes the Barcode the default display name across Odoo
+
+    # Enforce strict database uniqueness for the Barcode
+    _sql_constraints = [
+        ('barcode_uniq', 'unique(barcode)', 'This Barcode ID already exists! Each tag must be unique.')
+    ]
+
+    # --- Core Identifiers ---
+    barcode = fields.Char(string='Barcode ID', required=True, copy=False, index=True)
+    name = fields.Char(string='Item Name', required=True)
+    m_code = fields.Many2one('jewelry.mcode', string='M. Code (Manufacturer)')
+    size = fields.Many2one('jewelry.size', string='Size')
+    
+    image_1920 = fields.Image(string='Design Photo', max_width=1920, max_height=1920)
+
+    # --- Specifications ---
+    
+    pieces = fields.Integer(string='Pieces', default=1, help='Number of pieces that make up this specific item.')
+    narration = fields.Text(string='Narration')
+
+    # --- Weights & Calculations ---
+    weight = fields.Float(string='Gross Weight', digits=(16, 3), required=True, default=0.0)
+    
+    less_ids = fields.One2many('jewelry.item.less', 'item_id', string='Less (Deductions)')
+    
+    net_weight = fields.Float(
+        string='Net Weight', 
+        compute='_compute_net_weight', 
+        store=True, 
+        readonly=True, 
+        digits=(16, 3)
+    )
+
+    # --- Financial & Categorization ---
+    charge_ids = fields.One2many('jewelry.item.charge', 'item_id', string='Charges')
+    design_tag_ids = fields.Many2many('jewelry.design.tag', string='Design Tags')
+
+    @api.depends('weight', 'less_ids.weight')
+    def _compute_net_weight(self):
+        for item in self:
+            total_less = sum(less_line.weight for less_line in item.less_ids)
+            # Using float_round to prevent floating point microscopic errors
+            item.net_weight = float_round(item.weight - total_less, precision_digits=3)
+
+
+# --- RELATIONAL SUB-MODELS ---
+
+class JewelryItemLess(models.Model):
+    _name = 'jewelry.item.less'
+    _description = 'Item Weight Deductions'
+
+    item_id = fields.Many2one('jewelry.barcode.item', string='Item', required=True, ondelete='cascade')
+    
+    less_type = fields.Many2one('jewelry.less.type', string='Type', required=True)
+    
+    name = fields.Char(string='Description (Optional)')
+    weight = fields.Float(string='Less Weight', digits=(16, 3), required=True)
+
+
+class JewelryItemCharge(models.Model):
+    _name = 'jewelry.item.charge'
+    _description = 'Item Charges'
+
+    item_id = fields.Many2one('jewelry.barcode.item', string='Item', required=True, ondelete='cascade')
+    name = fields.Char(string='Charge Name (e.g., Making, Hallmarking)', required=True)
+    amount = fields.Float(string='Amount', required=True, digits=(16, 2))
+
+
+class JewelryDesignTag(models.Model):
+    _name = 'jewelry.design.tag'
+    _description = 'Design Tag'
+
+    name = fields.Char(string='Tag Name', required=True)
+    color = fields.Integer(string='Color Index')
+
+    _sql_constraints = [
+        ('name_uniq', 'unique(name)', 'Tag name must be unique!')
+    ]
