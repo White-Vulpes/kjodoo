@@ -1,3 +1,4 @@
+import random
 from odoo import models, fields, api
 from odoo.tools.float_utils import float_round
 
@@ -34,7 +35,7 @@ class JewelryBarcodeItem(models.Model):
     ]
 
     # --- Core Identifiers ---
-    barcode = fields.Char(string='Barcode ID', required=True, copy=False, index=True)
+    barcode = fields.Char(string='Barcode ID', required=True, copy=False, readonly=True, index=True, default=lambda self: 'New')
     name = fields.Char(string='Item Name', required=True)
     m_code = fields.Many2one('jewelry.mcode', string='M. Code (Manufacturer)')
     size = fields.Many2one('jewelry.size', string='Size')
@@ -62,6 +63,28 @@ class JewelryBarcodeItem(models.Model):
     # --- Financial & Categorization ---
     charge_ids = fields.One2many('jewelry.item.charge', 'item_id', string='Charges')
     design_tag_ids = fields.Many2many('jewelry.design.tag', string='Design Tags')
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        # A safe alphabet excluding visually similar characters (O, 0, I, 1, L)
+        safe_alphabet = "qwertyuiopasdfghjklzxcvbnmABCDEFGHJKMNPQRSTOILUVWXYZ1234567890"
+        
+        for vals in vals_list:
+            if vals.get('barcode', 'New') == 'New':
+                # The Collision-Proof Loop
+                while True:
+                    # Generate a random 6-character string
+                    proposed_barcode = ''.join(random.choices(safe_alphabet, k=6))
+                    
+                    # Search the database to see if this string already exists
+                    existing = self.search([('barcode', '=', proposed_barcode)], limit=1)
+                    
+                    # If the search returns nothing, the barcode is unique!
+                    if not existing:
+                        vals['barcode'] = proposed_barcode
+                        break  # Exit the while loop and proceed with creation
+                        
+        return super(JewelryBarcodeItem, self).create(vals_list)
 
     @api.depends('weight', 'less_ids.weight')
     def _compute_net_weight(self):
