@@ -97,7 +97,7 @@ class CustomBill(models.Model):
         report = self.env.ref('custom_jewellery_billing.action_report_custom_bill')
         
         # 2. Construct the direct URL to the PDF
-        report_url = f'/report/pdf/{report.report_name}/{self.id}'
+        report_url = f'/report/pdf/{report.report_name}/{self.id}?time={fields.Datetime.now().timestamp()}'
         
         # 3. Return a URL action to force a new tab
         return {

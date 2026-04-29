@@ -2,25 +2,64 @@
 <odoo>
     <template id="jewelry_public_catalog" name="Jewelry Catalog">
         <t t-call="website.layout">
+            <t t-set="no_header" t-value="True"/>
+            <t t-set="no_footer" t-value="True"/>
             <div id="wrap" class="container mt-4 mb-5">
                 <h2 class="text-center mb-5" style="color: #333;">Our Exclusive Collection</h2>
 
                 <style>
+
+                    .select2-container{
+                        caret-color: transparent !important;
+                    }
+                    .select2-container .select2-search--inline .select2-search__field {
+                        margin-top: 0px !important;
+                        height: none !important;
+                        font-family: inherit !important;
+                        display: none !important;
+                    }
+                    .select2-container--default .select2-selection--multiple.select2-selection--clearable {
+                        padding-right: 0px !important;
+                    }
+
+                    .select2-container--default .select2-selection--multiple {
+                        padding-right: 0px !important;
+                        min-height: 38px !important;
+                    }
+                    .select2-container--default .select2-selection--multiple .select2-selection__clear{
+                        display: none !important;
+                    }
+                    .select2-container--default.select2-container .select2-selection--multiple {
+                        border: var(--border-width) solid var(--o-border-color) !important;
+                    }
+                    .select2-container--default .select2-selection--multiple {
+                        padding-bottom: 0px !important;
+                    }
+                    
+                    .select2-container .select2-selection--multiple .select2-selection__rendered {
+                        display: block !important;
+                        margin-bottom: 0px !important;
+                    }
                     .select2-container--default .select2-selection--multiple .select2-selection__choice {
                         background-color: #F0CDA8 !important;
                         color: #000000 !important;
                         border-radius: 15px !important; 
                         font-size: 0.75em !important;
                         font-weight: 200 !important;
-                        margin: 2px 2px 2px 0px !important;
+                        margin: 2px 2px 2px 2px !important;
                         text-align: center !important;
-                        padding-left: 13px !important;
+                        padding-left: 0px !important;
+                        border: none !important;
+                        padding: 1px !important;
                     }
                     
                     /* The 'x' button on the tag */
+                    
                     .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
                         color: #000000 !important;
                         border-right: 0px !important;
+                        padding: 0px 0px 0px 8px !important;
+                        position: relative !important;
                     }
 
                     /* Make the 'x' turn red when hovered */
@@ -51,31 +90,30 @@
                                 </t>
                             </select>
                         </div>
-
+                        <div class="col-md-3 mb-2">
+                            <select name="tag_ids" class="form-control o_select2_tags" style="caret-color: transparent;" multiple="multiple" data-placeholder="Choose Designs...">
+                                <t t-foreach="tags" t-as="t">
+                                    <option t-att-value="t.id" style="display: none;" t-att-selected="t.id in selected_tags">
+                                        <t t-esc="t.name"/>
+                                    </option>
+                                </t>
+                            </select>
+                        </div>
                         <div class="col-md-3 mb-2">
                             <div class="input-group">
-                                <span class="input-group-text">Min Wt</span>
+                                <span class="input-group-text" style="background-color: transparent;">Min Wt</span>
                                 <input type="number" step="0.01" name="min_weight" class="form-control" placeholder="0.00" t-att-value="min_weight"/>
                             </div>
                         </div>
 
                         <div class="col-md-3 mb-2">
                             <div class="input-group">
-                                <span class="input-group-text">Max Wt</span>
+                                <span class="input-group-text" style="background-color: transparent;">Max Wt</span>
                                 <input type="number" step="0.01" name="max_weight" class="form-control" placeholder="100.00" t-att-value="max_weight"/>
                             </div>
                         </div>
                     </div>
-                    <div class="row justify-content-center mt-3">
-                        <div class="col-md-6 mb-2">
-                            <select name="tag_ids" class="form-control o_select2_tags px-4 py-2" multiple="multiple" data-placeholder="Choose Designs...">
-                                <t t-foreach="tags" t-as="t">
-                                    <option t-att-value="t.id" t-att-selected="t.id in selected_tags">
-                                        <t t-esc="t.name"/>
-                                    </option>
-                                </t>
-                            </select>
-                        </div>
+                    <div class="row justify-content-center">
                     </div>
                 </form>
                 <div class="row">
@@ -110,13 +148,27 @@
                                 </div>
                                 
                                 <div class="card-footer bg-white border-0 text-center pb-4">
-                                    <a t-attf-href="mailto:info@yourbrand.com?subject=Inquiry for {{ item.barcode }} - {{ item.name }}" class="btn btn-outline-dark rounded-pill px-4">
-                                        Inquire Now
-                                    </a>
+                                    <div class="card-footer bg-white border-0 text-center pb-3 p-2">
+                                        <button type="button" 
+                                                class="btn btn-outline-dark rounded-pill w-100 toggle-item-btn" 
+                                                style="font-size: 0.9em;"
+                                                t-att-data-barcode="item.barcode"
+                                                t-att-data-name="item.name">
+                                            Select Item
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </t>
+                </div>
+                <div id="floating-cart" class="position-fixed bottom-0 end-0 m-4" style="z-index: 1050; display: none;">
+                    <a href="#" id="submit-inquiry-btn" class="btn btn-dark btn-lg rounded-pill shadow-lg px-4 py-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-cart-check" viewBox="0 0 16 16">
+                            <path d="M11.354 6.354a.5.5 0 0 0-.708-.708L8 8.293 6.854 7.146a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/>
+                            <path d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 0 4 2 2 0 0 0 0-4h7a2 2 0 1 0 0 4 2 2 0 0 0 0-4h1a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1zm3.915 10L3.102 4h10.796l-1.313 7zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0m7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                        </svg>
+                    </a>
                 </div>
                 <t t-if="not items">
                     <div class="alert alert-info text-center mt-5">
@@ -130,9 +182,77 @@
                 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
                 <script type="text/javascript">
                     $(document).ready(function() {
+                        // Initialize Select2 Badges
                         $('.o_select2_tags').select2({
                             width: '100%',
                             allowClear: true
+                        });
+
+                        // --- CART LOGIC ---
+                        // Load existing cart from browser memory, or start empty
+                        let selectedItems = JSON.parse(localStorage.getItem('jewelry_cart')) || {};
+
+                        function updateCartUI() {
+                            let count = Object.keys(selectedItems).length;
+                            $('#cart-count').text(count);
+                            
+                            // Show/hide the floating cart button
+                            if(count > 0) {
+                                $('#floating-cart').fadeIn();
+                            } else {
+                                $('#floating-cart').fadeOut();
+                            }
+
+                            // Loop through all buttons on the screen to update their colors
+                            $('.toggle-item-btn').each(function() {
+                                let barcode = $(this).data('barcode');
+                                if(selectedItems[barcode]) {
+                                    // Make it look 'Selected'
+                                    $(this).removeClass('btn-outline-dark').addClass('btn-success').text('Selected');
+                                } else {
+                                    // Revert to normal
+                                    $(this).removeClass('btn-success').addClass('btn-outline-dark').text('Select Item');
+                                }
+                            });
+                        }
+
+                        // Run once when page loads to highlight already-selected items
+                        updateCartUI();
+
+                        // When a user clicks a "Select Item" button
+                        $('.toggle-item-btn').on('click', function(e) {
+                            e.preventDefault();
+                            let barcode = $(this).data('barcode');
+                            let name = $(this).data('name');
+
+                            // Toggle logic: If it's already in the cart, remove it. If not, add it.
+                            if(selectedItems[barcode]) {
+                                delete selectedItems[barcode]; 
+                            } else {
+                                selectedItems[barcode] = name; 
+                            }
+                            
+                            // Save back to browser memory and update colors
+                            localStorage.setItem('jewelry_cart', JSON.stringify(selectedItems));
+                            updateCartUI();
+                        });
+
+                        // When a user clicks the floating "Inquire Selected" button
+                        $('#submit-inquiry-btn').on('click', function(e) {
+                            e.preventDefault();
+                            
+                            // Build the list of items for the email
+                            let itemList = "";
+                            for (const [barcode, name] of Object.entries(selectedItems)) {
+                                itemList += `- ${barcode}: ${name}%0D%0A`;
+                            }
+                            
+                            // Format the email subject and body
+                            let subject = "Bulk Inquiry - Jewelry Collection";
+                            let body = `Hello,%0D%0A%0D%0AI would like to inquire about the following items:%0D%0A%0D%0A${itemList}%0D%0A%0D%0APlease let me know the availability and pricing.%0D%0A%0D%0AThank you!`;
+                            
+                            // Trigger the email client
+                            window.location.href = ``;
                         });
                     });
                 </script>
