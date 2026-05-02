@@ -1,5 +1,8 @@
 from odoo import models, fields, api
 from odoo.tools.float_utils import float_round
+import logging
+
+_logger = logging.getLogger(__name__)
 
 class CustomBillTransaction(models.Model):
     _name = 'custom.bill.transaction'
@@ -17,11 +20,11 @@ class CustomBillTransaction(models.Model):
         ('rate_cut', 'Rate Cut')
     ], string='Transaction Type', required=True)
     
-    gross_weight = fields.Float(string='Gross Weight', digits=(16, 3))
+    gross_weight = fields.Float(string='Gross Weight', digits=(16, 4))
     purity = fields.Float(string='Purity (%)', digits=(16, 2))
     
     # Used for Metal transactions AND the weight used in a Rate Cut
-    pure_weight = fields.Float(string='Pure Weight', digits=(16, 3), compute='_compute_pure_weight', store=True, readonly=False)
+    pure_weight = fields.Float(string='Pure Weight', digits=(16, 4), compute='_compute_pure_weight', store=True, readonly=False)
 
     # --- Cash / Rate Fields ---
     rate = fields.Float(string='Rate', digits=(16, 2))
@@ -32,13 +35,14 @@ class CustomBillTransaction(models.Model):
         for rec in self:
             if rec.ttype in ['metal_recv', 'metal_pay']:
                 # Convert Kacha to Pure
-                rec.pure_weight = float_round(rec.gross_weight * (rec.purity / 100.0), precision_digits=3)
+                
+                rec.pure_weight = float_round(rec.gross_weight * (rec.purity / 100.0), precision_digits=4)
 
     @api.depends('ttype', 'pure_weight', 'rate')
     def _compute_amount(self):
         for rec in self:
             if rec.ttype == 'rate_cut' and rec.rate:
-                # Convert Pure to Cash
+                _logger.debug("Computing amount for record ID %s: pure_weight=%s, rate=%s", rec.id, rec.pure_weight, rec.rate)
                 rec.amount = float_round(rec.pure_weight * rec.rate, precision_digits=2)
     
     @api.onchange('ttype')

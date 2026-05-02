@@ -87,11 +87,11 @@
                                 <list>
                                     <field name="date"/>
                                     <field name="ttype"/>
-                                    <field name="gross_weight" invisible="ttype not in ('metal_recv', 'metal_pay')"/>
-                                    <field name="purity" invisible="ttype not in ('metal_recv', 'metal_pay')"/>
-                                    <field name="pure_weight" invisible="ttype not in ('metal_recv', 'metal_pay', 'rate_cut')"/>
-                                    <field name="rate" invisible="ttype != 'rate_cut'"/>
-                                    <field name="amount" invisible="ttype not in ('cash_recv', 'cash_pay', 'rate_cut')"/>
+                                    <field name="gross_weight" options="{'digits': [16, 3]}" invisible="ttype not in ('metal_recv', 'metal_pay')"/>
+                                    <field name="purity" options="{'digits': [16, 2]}" invisible="ttype not in ('metal_recv', 'metal_pay')"/>
+                                    <field name="pure_weight" options="{'digits': [16, 3]}" invisible="ttype not in ('metal_recv', 'metal_pay', 'rate_cut')"/>
+                                    <field name="rate" options="{'digits': [16, 2]}" invisible="ttype != 'rate_cut'"/>
+                                    <field name="amount" options="{'digits': [16, 2]}" invisible="ttype not in ('cash_recv', 'cash_pay', 'rate_cut')"/>
                                 </list>
                                 
                                 <form string="Transaction Details">
@@ -102,12 +102,12 @@
                                                 <field name="ttype"/>
                                             </group>
                                             <group string="Values">
-                                                <field name="gross_weight" invisible="ttype not in ('metal_recv', 'metal_pay')"/>
-                                                <field name="purity" invisible="ttype not in ('metal_recv', 'metal_pay')"/>
-                                                <field name="pure_weight" invisible="ttype not in ('metal_recv', 'metal_pay', 'rate_cut')"/>
+                                                <field name="gross_weight" options="{'digits': [16, 3]}" invisible="ttype not in ('metal_recv', 'metal_pay')"/>
+                                                <field name="purity" options="{'digits': [16, 2]}" invisible="ttype not in ('metal_recv', 'metal_pay')"/>
+                                                <field name="pure_weight" options="{'digits': [16, 3]}" invisible="ttype not in ('metal_recv', 'metal_pay', 'rate_cut')"/>
                                                 
-                                                <field name="rate" invisible="ttype != 'rate_cut'" required="ttype == 'rate_cut'"/>
-                                                <field name="amount" invisible="ttype not in ('cash_recv', 'cash_pay', 'rate_cut')"/>
+                                                <field name="rate" options="{'digits': [16, 2]}" invisible="ttype != 'rate_cut'" required="ttype == 'rate_cut'"/>
+                                                <field name="amount" options="{'digits': [16, 2]}" invisible="ttype not in ('cash_recv', 'cash_pay', 'rate_cut')"/>
                                             </group>
                                         </group>
                                     </sheet>
@@ -119,8 +119,8 @@
                         <field name="remarks" widget="text" placeholder="Add any remarks or notes about this bill here..."/>
                     </group>
                     <group class="oe_subtotal_footer oe_right" style="border-top: 2px solid #ccc; margin-top: 10px; padding-top: 10px;">
-                        <field name="balance_pure" class="fw-bold" style="font-size: 1.2em;"/>
-                        <field name="balance_charges" class="fw-bold" style="font-size: 1.2em;"/>
+                        <field name="balance_pure" options="{'digits': [16, 3]}" class="fw-bold" style="font-size: 1.2em;"/>
+                        <field name="balance_charges" options="{'digits': [16, 2]}" class="fw-bold" style="font-size: 1.2em;"/>
                     </group>
                 </sheet>
             </form>

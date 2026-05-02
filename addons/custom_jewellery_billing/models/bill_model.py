@@ -32,7 +32,7 @@ class CustomBill(models.Model):
     transaction_ids = fields.One2many('custom.bill.transaction', 'bill_id', string='Transactions')
 
     # Add the live balance fields
-    balance_pure = fields.Float(string='Remaining Pure', compute='_compute_balances', store=True, digits=(16, 3))
+    balance_pure = fields.Float(string='Remaining Pure', compute='_compute_balances', store=True, digits=(16, 4))
     balance_charges = fields.Float(string='Remaining Balance', compute='_compute_balances', store=True, digits=(16, 2))
 
     remarks = fields.Text(string='Remarks')
@@ -60,7 +60,7 @@ class CustomBill(models.Model):
                     running_pure -= txn.pure_weight
                     running_charges += txn.amount  # Adds the cash value of the cut metal
 
-            bill.balance_pure = float_round(running_pure, precision_digits=3)
+            bill.balance_pure = float_round(running_pure, precision_digits=4)
             bill.balance_charges = float_round(running_charges, precision_digits=2)
 
     @api.depends('item_ids.weight', 'item_ids.pure', 'item_ids.charges', 'item_ids.less', 'item_ids.net_weight')
