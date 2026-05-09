@@ -6,7 +6,7 @@ _logger = logging.getLogger(__name__)
 
 class CustomBill(models.Model):
     _name = 'custom.bill2'
-    _description = 'Jewelry Bill'
+    _description = 'Retail Bill'
     # This tells Odoo to use our 'name' char field as the record label
     _rec_name = 'name' 
     _order = 'id desc'
