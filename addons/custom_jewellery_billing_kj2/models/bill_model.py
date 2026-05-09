@@ -1,0 +1,74 @@
+from odoo import models, fields, api
+from odoo.tools.float_utils import float_round
+import logging
+
+_logger = logging.getLogger(__name__)
+
+class CustomBill(models.Model):
+    _name = 'custom.bill2'
+    _description = 'Jewelry Bill'
+    # This tells Odoo to use our 'name' char field as the record label
+    _rec_name = 'name' 
+    _order = 'id desc'
+    
+    # This is the "Display Name" (e.g., "Bill #5")
+    name = fields.Char(string='Bill Reference', required=True, copy=False)
+    partner_id = fields.Many2one('res.partner', string='Customer', required=True)
+    
+    bill_number = fields.Integer(string='Bill Number', copy=False, readonly=True)
+    date = fields.Date(string='Date', default=fields.Date.context_today)
+
+    # --- The Relational Table ---
+    item_ids = fields.One2many('custom.bill2.line', 'bill_id', string='Bill Items')
+
+    # --- The Totals ---
+    total_weight = fields.Float(string='Total Weight', compute='_compute_totals', store=True, digits=(16, 4))
+    total_pure = fields.Float(string='Total Pure', compute='_compute_totals', store=True, digits=(16, 4))
+    total_net_weight = fields.Float(string='Total Net Weight', compute='_compute_totals', store=True, digits=(16, 4))
+    total_charges = fields.Float(string='Total Charges', compute='_compute_totals', store=True)
+    total_less = fields.Float(string='Total Less', compute='_compute_totals', store=True, digits=(16, 4))
+
+    remarks = fields.Text(string='Remarks')
+
+    @api.depends('item_ids.weight', 'item_ids.total_wt', 'item_ids.charges', 'item_ids.less', 'item_ids.net_weight')
+    def _compute_totals(self):
+        for bill in self:
+            bill.total_weight = float_round(sum(line.weight for line in bill.item_ids), precision_digits=4)
+            bill.total_pure = float_round(sum(line.total_wt for line in bill.item_ids), precision_digits=4)
+            bill.total_less = float_round(sum(line.less for line in bill.item_ids), precision_digits=4)
+            bill.total_net_weight = float_round(sum(line.net_weight for line in bill.item_ids), precision_digits=4)
+            base_charges = float_round(sum(line.charges for line in bill.item_ids), precision_digits=4)
+            bill.total_charges = float_round(base_charges, precision_digits=2)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            # Looping Serial Number Logic (1-25)
+            last_bill = self.search([], order='id desc', limit=1)
+            
+            if last_bill and last_bill.bill_number:
+                next_num = last_bill.bill_number + 1
+                if next_num > 25:
+                    next_num = 1
+            else:
+                next_num = 1
+                
+            vals['bill_number'] = next_num
+            # Set the Display Name properly
+            vals['name'] = f"Bill #{next_num}"
+
+        return super(CustomBill, self).create(vals_list)
+    
+    def action_print_bill(self):
+        # 1. Get the report reference
+        report = self.env.ref('custom_jewellery_billing_kj2.action_report_custom_bill')
+
+        # 2. Construct the direct URL to the PDF
+        report_url = f'/report/pdf/{report.report_name}/{self.id}?time={fields.Datetime.now().timestamp()}'
+        
+        # 3. Return a URL action to force a new tab
+        return {
+            'type': 'ir.actions.act_url',
+            'url': report_url,
+            'target': 'new',  # 'new' tells Odoo to open a new browser tab
+        }
