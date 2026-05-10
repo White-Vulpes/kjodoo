@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-03 18:36+0000\n"
-"PO-Revision-Date: 2026-03-31 04:00+0000\n"
+"POT-Creation-Date: 2026-05-08 17:35+0000\n"
+"PO-Revision-Date: 2026-04-13 20:49+0000\n"
 "Last-Translator: \"Kwanghee Park (kwpa)\" <kwpa@odoo.com>\n"
 "Language-Team: Korean <https://translate.odoo.com/projects/odoo-19/mail/ko/"
 ">\n"
@@ -506,11 +506,6 @@ msgstr "1 새 메시지"
 #: code:addons/mail/static/src/discuss/core/common/thread_model_patch.js:0
 msgid "1 other"
 msgstr "1 명"
-
-#. module: mail
-#: model_terms:ir.ui.view,arch_db:mail.account_security_alert
-msgid "111.222.333.444"
-msgstr "111.222.333.444"
 
 #. module: mail
 #: model_terms:ir.actions.act_window,help:mail.action_email_server_tree
@@ -4578,12 +4573,10 @@ msgstr ""
 #. module: mail
 #. odoo-python
 #: code:addons/mail/models/mail_render_mixin.py:0
-#, fuzzy
-#| msgid "Failed to render inline_template template: %(template_txt)s"
 msgid ""
 "Failed to render inline_template template: %(template_txt)s\n"
 "Error details: %(error)s"
-msgstr "inline_template을 렌더링하지 못했습니다: %(template_txt)s"
+msgstr ""
 
 #. module: mail
 #. odoo-python
@@ -6804,10 +6797,8 @@ msgstr "메일 서식 재설정"
 #. module: mail
 #. odoo-python
 #: code:addons/mail/models/mail_render_mixin.py:0
-#, fuzzy
-#| msgid "Unnamed %(record_model_name)s (%(record_id)s)"
 msgid "Mail Template: '%(name)s' (ID: %(record_id)s)"
-msgstr "이름 없는 %(record_model_name)s (%(record_id)s)"
+msgstr ""
 
 #. module: mail
 #: model_terms:ir.ui.view,arch_db:mail.model_search_view
@@ -7177,7 +7168,7 @@ msgstr "구분 기호가 표시되어야 하는 메시지 ID"
 
 #. module: mail
 #. odoo-javascript
-#: code:addons/mail/static/src/core/common/composer.js:0
+#: code:addons/mail/static/src/core/common/store_service.js:0
 msgid "Message posted on \"%s\""
 msgstr "\"%s\"에 게시된 메시지"
 
@@ -7722,10 +7713,8 @@ msgstr "이전 메시지 내역이 없습니다."
 #. module: mail
 #. odoo-python
 #: code:addons/mail/models/mail_render_mixin.py:0
-#, fuzzy
-#| msgid "Result of the language detection based on its content."
 msgid "No language detected in context"
-msgstr "콘텐츠를 기반으로 한 언어 탐지 결과입니다."
+msgstr ""
 
 #. module: mail
 #. odoo-javascript
@@ -8304,10 +8293,6 @@ msgstr ""
 #. module: mail
 #. odoo-python
 #: code:addons/mail/models/mail_template.py:0
-#, fuzzy
-#| msgid ""
-#| "Oops! We couldn't save your template due to an issue with this value: %"
-#| "(template_txt)s. Correct it and try again."
 msgid ""
 "Oops! We couldn't save your template due to an issue.\n"
 "\n"
@@ -8315,8 +8300,6 @@ msgid ""
 "\n"
 "Correct it and try again."
 msgstr ""
-"죄송합니다! 템플릿을 저장할 수 없습니다. %(template_txt)s 값에 문제가 있습니"
-"다. 값을 수정한 후 다시 시도하세요."
 
 #. module: mail
 #. odoo-javascript
@@ -11093,10 +11076,8 @@ msgstr "컴포저에서 서식을 작성하려면 유효한 모델이 필요합�
 #. module: mail
 #. odoo-python
 #: code:addons/mail/models/mail_render_mixin.py:0
-#, fuzzy
-#| msgid "Message unique identifier"
 msgid "Template name not identified"
-msgstr "메시지 고유 식별 기호"
+msgstr ""
 
 #. module: mail
 #. odoo-python
@@ -12262,18 +12243,14 @@ msgstr "이름 없는 %(record_model_name)s (%(record_id)s)"
 #. module: mail
 #. odoo-python
 #: code:addons/mail/models/mail_render_mixin.py:0
-#, fuzzy
-#| msgid "Related Mail Template"
 msgid "Unnamed Mail Template"
-msgstr "관련 메일 서식"
+msgstr ""
 
 #. module: mail
 #. odoo-python
 #: code:addons/mail/models/mail_render_mixin.py:0
-#, fuzzy
-#| msgid "Unnamed"
 msgid "Unnamed Mailing"
-msgstr "이름 없음"
+msgstr ""
 
 #. module: mail
 #. odoo-javascript
@@ -13519,6 +13496,12 @@ msgid "created this channel."
 msgstr "이 채널을 생성했습니다."
 
 #. module: mail
+#. odoo-javascript
+#: code:addons/mail/static/src/js/rotting_mixin/rotting_statusbar.xml:0
+msgid "d"
+msgstr ""
+
+#. module: mail
 #: model_terms:ir.ui.view,arch_db:mail.account_security_alert
 msgid "day, month dd, yyyy - hh:mm:ss (GMT)"
 msgstr "일, 월 dd, yyyy - hh:mm:ss (GMT)"
@@ -14063,6 +14046,15 @@ msgstr "별칭"
 #: code:addons/mail/models/discuss/discuss_channel_member.py:0
 msgid "“%(member_name)s” in “%(channel_name)s”"
 msgstr "“%(member_name)s”의 “%(channel_name)s”"
+
+#. module: mail
+#. odoo-javascript
+#: code:addons/mail/static/src/core/web/activity.js:0
+msgid "“%s”"
+msgstr ""
+
+#~ msgid "111.222.333.444"
+#~ msgstr "111.222.333.444"
 
 #~ msgid ""
 #~ "Failed to render QWeb template: %(template_src)s\n"

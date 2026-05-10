@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server saas~18.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-03 18:37+0000\n"
-"PO-Revision-Date: 2026-03-25 08:43+0000\n"
+"POT-Creation-Date: 2026-05-08 17:35+0000\n"
+"PO-Revision-Date: 2026-05-02 09:41+0000\n"
 "Last-Translator: \"Marianna Ciofani (cima)\" <cima@odoo.com>\n"
 "Language-Team: Italian <https://translate.odoo.com/projects/odoo-19/"
 "account_edi_ubl_cii/it/>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.16.2\n"
+"X-Generator: Weblate 5.17\n"
 
 #. module: account_edi_ubl_cii
 #. odoo-python
@@ -49,13 +49,24 @@ msgid "(Un)Group lines by tax"
 msgstr "Raggruppa o meno le righe per imposta"
 
 #. module: account_edi_ubl_cii
+#: model_terms:ir.ui.view,arch_db:account_edi_ubl_cii.report_invoice_document
+msgid "<span class=\"text-muted\">FROM</span>"
+msgstr "<span class=\"text-muted\">DA</span>"
+
+#. module: account_edi_ubl_cii
+#: model_terms:ir.ui.view,arch_db:account_edi_ubl_cii.report_invoice_document
+msgid "<span class=\"text-muted\">TO</span>"
+msgstr "<span class=\"text-muted\">A</span>"
+
+#. module: account_edi_ubl_cii
 #: model_terms:ir.ui.view,arch_db:account_edi_ubl_cii.account_invoice_pdfa_3_facturx_metadata
-msgid "1.0"
-msgstr "1.0"
+msgid "A"
+msgstr "A"
 
 #. module: account_edi_ubl_cii
 #. odoo-python
 #: code:addons/account_edi_ubl_cii/models/account_edi_common.py:0
+#: code:addons/account_edi_ubl_cii/models/account_edi_ubl.py:0
 msgid "A payment of %s was detected."
 msgstr "È stato individuato un pagamento di %s."
 
@@ -184,6 +195,12 @@ msgstr "Business Registers Network"
 #. module: account_edi_ubl_cii
 #. odoo-python
 #: code:addons/account_edi_ubl_cii/models/account_move.py:0
+msgid "Cannot decode origin file, try by importing it again"
+msgstr ""
+
+#. module: account_edi_ubl_cii
+#. odoo-python
+#: code:addons/account_edi_ubl_cii/models/account_move.py:0
 msgid "Cannot find the origin file, try by importing it again"
 msgstr "Impossibile trovare il file di origine, prova a importarlo di nuovo"
 
@@ -243,6 +260,7 @@ msgstr "Contatto"
 #. module: account_edi_ubl_cii
 #. odoo-python
 #: code:addons/account_edi_ubl_cii/models/account_edi_common.py:0
+#: code:addons/account_edi_ubl_cii/models/account_edi_ubl.py:0
 msgid ""
 "Could not retrieve a partner corresponding to '%s'. A new partner was "
 "created."
@@ -253,6 +271,7 @@ msgstr ""
 #. module: account_edi_ubl_cii
 #. odoo-python
 #: code:addons/account_edi_ubl_cii/models/account_edi_common.py:0
+#: code:addons/account_edi_ubl_cii/models/account_edi_ubl.py:0
 msgid ""
 "Could not retrieve currency: %s. Did you enable the multicurrency option and "
 "activate the currency?"
@@ -280,6 +299,7 @@ msgstr ""
 #. module: account_edi_ubl_cii
 #. odoo-python
 #: code:addons/account_edi_ubl_cii/models/account_edi_common.py:0
+#: code:addons/account_edi_ubl_cii/models/account_edi_ubl.py:0
 msgid "Could not retrieve the tax: %(tax_percentage)s %% for line '%(line)s'."
 msgstr ""
 "Impossibile recuperare l'imposta: %(tax_percentage)s %% per la riga '%"
@@ -288,6 +308,7 @@ msgstr ""
 #. module: account_edi_ubl_cii
 #. odoo-python
 #: code:addons/account_edi_ubl_cii/models/account_edi_common.py:0
+#: code:addons/account_edi_ubl_cii/models/account_edi_ubl.py:0
 msgid "Could not retrieve the tax: %s for the document level allowance/charge."
 msgstr ""
 "Impossibile recuperare l'imposta: %s per il livello di indennità/onere del "
@@ -504,6 +525,12 @@ msgstr ""
 #: code:addons/account_edi_ubl_cii/models/account_edi_xml_ubl_bis3.py:0
 msgid "Format used to import the document: %s"
 msgstr "Formato utilizzato per importare il documento: %s"
+
+#. module: account_edi_ubl_cii
+#. odoo-python
+#: code:addons/account_edi_ubl_cii/models/account_edi_ubl.py:0
+msgid "Format used to import the invoice: %s"
+msgstr "Formato utilizzato per importare la fattura: %s"
 
 #. module: account_edi_ubl_cii
 #. odoo-python
@@ -894,6 +921,7 @@ msgstr "IVA Romania"
 #. module: account_edi_ubl_cii
 #. odoo-python
 #: code:addons/account_edi_ubl_cii/models/account_edi_common.py:0
+#: code:addons/account_edi_ubl_cii/models/account_edi_ubl.py:0
 msgid "Rounding"
 msgstr "Arrotondamento"
 
@@ -1009,6 +1037,11 @@ msgid "Tax Exemption Reason Code"
 msgstr "Codice motivo esenzione fiscale"
 
 #. module: account_edi_ubl_cii
+#: model_terms:ir.ui.view,arch_db:account_edi_ubl_cii.report_invoice_document
+msgid "Tax ID"
+msgstr "Partita IVA"
+
+#. module: account_edi_ubl_cii
 #. odoo-python
 #: code:addons/account_edi_ubl_cii/models/account_edi_common.py:0
 msgid ""
@@ -1076,6 +1109,7 @@ msgstr "L'IVA di %s dovrebbe avere il prefisso del codice Paese."
 #. module: account_edi_ubl_cii
 #. odoo-python
 #: code:addons/account_edi_ubl_cii/models/account_edi_common.py:0
+#: code:addons/account_edi_ubl_cii/models/account_edi_ubl.py:0
 msgid "The bank account couldn't be fetched: %s"
 msgstr "Non è stato possibile recuperare il conto bancario: %s"
 
@@ -1088,6 +1122,7 @@ msgstr "Il Paese è richiesto per %s."
 #. module: account_edi_ubl_cii
 #. odoo-python
 #: code:addons/account_edi_ubl_cii/models/account_edi_common.py:0
+#: code:addons/account_edi_ubl_cii/models/account_edi_ubl.py:0
 msgid "The currency '%s' is not active."
 msgstr "La valuta \"%s\" non è attiva."
 
@@ -1113,6 +1148,7 @@ msgstr ""
 
 #. module: account_edi_ubl_cii
 #. odoo-python
+#: code:addons/account_edi_ubl_cii/models/account_edi_ubl.py:0
 #: code:addons/account_edi_ubl_cii/models/account_edi_xml_cii_facturx.py:0
 #: code:addons/account_edi_ubl_cii/models/account_edi_xml_ubl_20.py:0
 msgid ""
@@ -1389,6 +1425,15 @@ msgid ""
 msgstr ""
 "VATEX-EU-132-1Q - Esenzione basata sull'articolo 132, sezione 1 (q) della "
 "direttiva 2006/112/CE del Consiglio"
+
+#. module: account_edi_ubl_cii
+#: model:ir.model.fields.selection,name:account_edi_ubl_cii.selection__account_tax__ubl_cii_tax_exemption_reason_code__vatex-eu-135-1
+msgid ""
+"VATEX-EU-135-1 - Exempt based on article 135, section 1 of Council Directive "
+"2006/112/EC"
+msgstr ""
+"VATEX-EU-135-1 - Esenzione ai sensi dell'articolo 135, paragrafo 1, della "
+"Direttiva 2006/112/CE del Consiglio"
 
 #. module: account_edi_ubl_cii
 #: model:ir.model.fields.selection,name:account_edi_ubl_cii.selection__account_tax__ubl_cii_tax_exemption_reason_code__vatex-eu-143
@@ -1901,10 +1946,12 @@ msgstr ""
 #: model:ir.model.fields.selection,name:account_edi_ubl_cii.selection__account_tax__ubl_cii_tax_exemption_reason_code__vatex-fr-cgi261d-3
 msgid ""
 "VATEX-FR-CGI261D-3 - Exempt based on 3° of article 261 D of the Code Général "
-"des Impôts (CGI ; General tax code)"
+"des Impôts (CGI ; General tax code) Exonération de TVA - Article 261 D-3° du "
+"Code Général des Impôts"
 msgstr ""
-"VATEX-FR-CGI261D-3 - Esenzione basata sul comma 3° dell'articolo 261 D del "
-"Code Général des Impôts (CGI, Codice generale delle imposte)"
+"VATEX-FR-CGI261D-3 - Esenzione ai sensi dell'articolo 261 D, paragrafo 3, "
+"del Code Général des Impôts (CGI; Codice generale delle imposte) Esenzione "
+"dall'IVA - Articolo 261 D, paragrafo 3, del Code Général des Impôts"
 
 #. module: account_edi_ubl_cii
 #: model:ir.model.fields.selection,name:account_edi_ubl_cii.selection__account_tax__ubl_cii_tax_exemption_reason_code__vatex-fr-cgi261d-4
@@ -1980,6 +2027,11 @@ msgid "Vatican VAT"
 msgstr "IVA Vaticano"
 
 #. module: account_edi_ubl_cii
+#: model_terms:ir.ui.view,arch_db:account_edi_ubl_cii.report_invoice_document
+msgid "Vendor Bill"
+msgstr "Fattura fornitore"
+
+#. module: account_edi_ubl_cii
 #. odoo-python
 #: code:addons/account_edi_ubl_cii/models/account_move_send.py:0
 msgid "View Partner(s)"
@@ -2007,6 +2059,12 @@ msgid "You can only (un)group lines of a draft invoice"
 msgstr ""
 "Puoi raggruppare o annullare il raggruppamento solo delle righe di una "
 "fattura in bozza"
+
+#. module: account_edi_ubl_cii
+#. odoo-python
+#: code:addons/account_edi_ubl_cii/models/account_move.py:0
+msgid "You can only group lines of an invoice"
+msgstr "È possibile raggruppare solo le righe di una fattura"
 
 #. module: account_edi_ubl_cii
 #. odoo-python
@@ -2045,6 +2103,16 @@ msgstr "fx"
 #: model_terms:ir.ui.view,arch_db:account_edi_ubl_cii.account_invoice_pdfa_3_facturx_metadata
 msgid "urn:factur-x:pdfa:CrossIndustryDocument:invoice:1p0#"
 msgstr "urn:factur-x:pdfa:CrossIndustryDocument:invoice:1p0#"
+
+#~ msgid "1.0"
+#~ msgstr "1.0"
+
+#~ msgid ""
+#~ "VATEX-FR-CGI261D-3 - Exempt based on 3° of article 261 D of the Code "
+#~ "Général des Impôts (CGI ; General tax code)"
+#~ msgstr ""
+#~ "VATEX-FR-CGI261D-3 - Esenzione basata sul comma 3° dell'articolo 261 D "
+#~ "del Code Général des Impôts (CGI, Codice generale delle imposte)"
 
 #~ msgid "Articles 226 items 11 to 15 Directive 2006/112/EN"
 #~ msgstr "Articolo 226 punti da 11 a 15 Direttiva 2006/112/EN"
@@ -2106,9 +2174,6 @@ msgstr "urn:factur-x:pdfa:CrossIndustryDocument:invoice:1p0#"
 
 #~ msgid "Factur-X (CII)"
 #~ msgstr "Factur-X (CII)"
-
-#~ msgid "Format used to import the invoice: %s"
-#~ msgstr "Formato utilizzato per importare la fattura: %s"
 
 #~ msgid "NLCIUS"
 #~ msgstr "NLCIUS"

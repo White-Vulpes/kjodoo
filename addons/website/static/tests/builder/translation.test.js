@@ -213,6 +213,16 @@ test("404 page in translate mode", async () => {
     expect(".o_popover .o_edit_website_dropdown_item:contains('Create page')").toHaveCount(1);
 });
 
+test("color span is inserted in a.btn (and s_badge) with a background to show the translation state", async () => {
+    await setupSidebarBuilderForTranslation({
+        websiteContent: getTranslateEditable({
+            inWrap: `<a class="btn">Hello</a> <span class="s_badge">Badge</span>`,
+        }),
+    });
+    expect(":iframe a .o_translation_state_inner_span").toHaveCount(1);
+    expect(":iframe .s_badge .o_translation_state_inner_span").toHaveCount(1);
+});
+
 test("translate attribute", async () => {
     const resultSave = [];
     onRpc("/website/field/translation/update", async (data) => {
@@ -420,6 +430,51 @@ describe("save translation", () => {
         await modifyBothTextsAndSave(getEditor());
         expect.verifySteps([{ 4: {} }, { 1: { srcSha1: "a1bc" } }, { 2: { srcSha2: "d1ef" } }]);
     });
+});
+
+test("TOC navbar translation entry follows the heading translation", async () => {
+    const headSha = "headSha";
+    const navSha = "navSha";
+    const { getEditor } = await setupSidebarBuilderForTranslation({
+        websiteContent: `
+            <section class="s_table_of_content">
+                <div class="s_table_of_content_navbar_wrap o_not_editable">
+                    <div class="s_table_of_content_navbar">
+                        <a class="table_of_content_link" href="#toc_h1">
+                            <span data-oe-model="ir.ui.view" data-oe-id="1" data-oe-field="arch_db" data-oe-translation-state="to_translate" data-oe-translation-source-sha="${navSha}" class="o_editable translate_branding">Heading</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="s_table_of_content_main">
+                    <h2 id="toc_h1">
+                        <span data-oe-model="ir.ui.view" data-oe-id="1" data-oe-field="arch_db" data-oe-translation-state="to_translate" data-oe-translation-source-sha="${headSha}" class="o_editable translate_branding">Heading</span>
+                    </h2>
+                </div>
+            </section>`,
+    });
+    const editor = getEditor();
+    await contains(".modal .btn:contains(Ok, never show me this again)").click();
+
+    // `handleToC` aliases the navbar's sha to the heading's and tags it
+    // `o_translation_without_style`.
+    const navSpan = editor.editable.querySelector(
+        ".s_table_of_content_navbar_wrap [data-oe-translation-source-sha]"
+    );
+    expect(navSpan).toHaveClass("o_translation_without_style");
+    expect(navSpan.dataset.oeTranslationSaveSha).toBe(navSha);
+    expect(navSpan.dataset.oeTranslationSourceSha).toBe(headSha);
+
+    const headingTextNode = editor.editable.querySelector(
+        `[data-oe-translation-source-sha=${headSha}]`
+    ).firstChild;
+    setSelection({ anchorNode: headingTextNode, anchorOffset: 0 });
+    await insertText(editor, "X");
+
+    // Replication copies the heading's plain text into the navbar entry, and
+    // `after_replication_handlers` flags it dirty so it reaches the save
+    // payload (where `cleanForSave` restores the navbar's original sha).
+    expect(navSpan).toHaveText("XHeading");
+    expect(navSpan).toHaveClass("o_dirty");
 });
 
 test("table of content snippet headings' translation updates its navbar items", async () => {

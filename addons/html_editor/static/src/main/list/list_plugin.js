@@ -345,7 +345,7 @@ export class ListPlugin extends Plugin {
             return this.baseContainerToList(element, mode);
         }
         // @todo @phoenix: check for callbacks registered as resources instead?
-        if (element.matches("td, th, li.nav-item")) {
+        if (element.matches("td, th, li.nav-item, blockquote")) {
             return this.blockContentsToList(element, mode);
         }
         let list;
@@ -501,7 +501,7 @@ export class ListPlugin extends Plugin {
             baseContainerNodeName: this.dependencies.baseContainer.getDefaultNodeName(),
             cursors,
         });
-        callbacksForCursorUpdate.unwrap(element);
+        cursors.update(callbacksForCursorUpdate.unwrap(element));
         unwrapContents(element);
         cursors.restore();
     }

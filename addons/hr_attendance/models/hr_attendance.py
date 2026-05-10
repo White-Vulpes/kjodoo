@@ -270,11 +270,17 @@ class HrAttendance(models.Model):
             return Domain.FALSE
         domain_list = []
         for employee, attendances in self.filtered(lambda att: att.check_out).grouped('employee_id').items():
-            tz = timezone(employee.sudo()._get_tz())
+            tz = timezone(employee.tz)
             local_check_in = utc.localize(min(attendances.mapped('check_in'))).astimezone(tz)
             local_check_out = utc.localize(max(attendances.mapped('check_out'))).astimezone(tz)
-            date_from = local_check_in.date() + relativedelta(weekday=MO(-1))
-            date_to = local_check_out.date() + relativedelta(weekday=SU)
+            rulesets = attendances.mapped(lambda att: att.employee_id.sudo()._get_version(att.date)).ruleset_id
+            # append this domain only for weekly rules
+            if any(rule.quantity_period == 'week' for rule in rulesets.sudo().rule_ids):
+                date_from = local_check_in.date() + relativedelta(weekday=MO(-1))
+                date_to = local_check_out.date() + relativedelta(weekday=SU)
+            else:
+                date_from = local_check_in.date()
+                date_to = local_check_out.date()
 
             domain_list.append(Domain.AND([
                 Domain('employee_id', '=', employee.id),
@@ -639,10 +645,11 @@ class HrAttendance(models.Model):
         ])
 
         for emp in absent_employees:
-            local_day_start = pytz.utc.localize(yesterday).astimezone(pytz.timezone(emp._get_tz()))
+            local_day_start = pytz.timezone(emp._get_tz()).localize(yesterday)
+            check_in_utc = local_day_start.astimezone(pytz.utc)
             technical_attendances_vals.append({
-                'check_in': local_day_start.strftime('%Y-%m-%d %H:%M:%S'),
-                'check_out': (local_day_start + relativedelta(seconds=1)).strftime('%Y-%m-%d %H:%M:%S'),
+                'check_in': check_in_utc.strftime('%Y-%m-%d %H:%M:%S'),
+                'check_out': (check_in_utc + relativedelta(seconds=1)).strftime('%Y-%m-%d %H:%M:%S'),
                 'in_mode': 'technical',
                 'out_mode': 'technical',
                 'employee_id': emp.id
@@ -689,8 +696,12 @@ class HrAttendance(models.Model):
                 week_interval = Intervals([(start_datetime, stop_datetime_for_week, self.env['resource.calendar'])])
 
                 attendance_interval = Intervals([(check_in, check_out, attendance)])
-                attendance_by_employee_by_day[employee][day] |= attendance_interval & day_interval
-                attendance_by_employee_by_week[employee][week_date] |= attendance_interval & week_interval
+                intersected_day_interval = attendance_interval & day_interval
+                intersected_week_interval = attendance_interval & week_interval
+                if intersected_day_interval:
+                    attendance_by_employee_by_day[employee][day] |= intersected_day_interval
+                if intersected_week_interval:
+                    attendance_by_employee_by_week[employee][week_date] |= intersected_week_interval
 
         return {
             'day': attendance_by_employee_by_day,

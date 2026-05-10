@@ -18,8 +18,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-03 18:36+0000\n"
-"PO-Revision-Date: 2026-03-27 06:27+0000\n"
+"POT-Creation-Date: 2026-05-08 17:35+0000\n"
+"PO-Revision-Date: 2026-05-06 07:04+0000\n"
 "Last-Translator: \"Junko Augias (juau)\" <juau@odoo.com>\n"
 "Language-Team: Japanese <https://translate.odoo.com/projects/odoo-19/mail/ja/"
 ">\n"
@@ -28,7 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.16.2\n"
+"X-Generator: Weblate 5.17\n"
 
 #. module: mail
 #: model:ir.model.fields,help:mail.field_ir_actions_server__followers_type
@@ -244,7 +244,7 @@ msgstr ""
 "%(new_line)s%(new_line)s  %(bold_start)s@username%(bold_end)s を入力して誰か"
 "をメンションし、注意を引きましょう。%(new_line)sチャネルをメンションするには "
 "%(bold_start)s#channel%(bold_end)s を入力します。%(new_line)sコマンドを実行す"
-"るには %(bold_start)s/command%(bold_end)s を入力します。%(new_line)s 定型返信"
+"るには %(bold_start)s/command%(bold_end)s を入力します。%(new_line)s 返信定型"
 "文をメッセージに入力するには %(bold_start)s::shortcut%(bold_end)sを入力しま"
 "す。 %(new_line)s 絵文字をメッセージに挿入するには %(bold_start)s:emoji:%"
 "(bold_end)sを入力します。"
@@ -506,11 +506,6 @@ msgstr "1新規メッセージ"
 #: code:addons/mail/static/src/discuss/core/common/thread_model_patch.js:0
 msgid "1 other"
 msgstr "他1名"
-
-#. module: mail
-#: model_terms:ir.ui.view,arch_db:mail.account_security_alert
-msgid "111.222.333.444"
-msgstr "111.222.333.444"
 
 #. module: mail
 #: model_terms:ir.actions.act_window,help:mail.action_email_server_tree
@@ -1349,7 +1344,7 @@ msgstr "詳細オプション"
 #. odoo-javascript
 #: code:addons/mail/static/src/discuss/core/web/thread_actions.js:0
 msgid "Advanced Settings"
-msgstr "構成設定"
+msgstr "詳細設定"
 
 #. module: mail
 #: model:ir.model.fields.selection,name:mail.selection__mail_activity_plan_template__delay_from__after_plan_date
@@ -1992,7 +1987,8 @@ msgid ""
 "Batch log cannot support attachments or tracking values on more than 1 "
 "document"
 msgstr ""
-"バッチログは、1つ以上のドキュメントの添付ファイルや追跡値に対応できません。"
+"バッチログでは、添付ファイルや、複数(2件以上)のドキュメントにまたがる変更履歴"
+"(値)をサポートしていません"
 
 #. module: mail
 #: model:ir.model.fields.selection,name:mail.selection__mail_activity_plan_template__delay_from__before_plan_date
@@ -2361,7 +2357,7 @@ msgstr "返信定型文"
 #. module: mail
 #: model:res.groups,name:mail.group_mail_canned_response_admin
 msgid "Canned Response Administrator"
-msgstr "返信定型文責任管理者"
+msgstr "返信定型文管理者"
 
 #. module: mail
 #: model:ir.actions.act_window,name:mail.mail_canned_response_action
@@ -3468,7 +3464,7 @@ msgstr "送信者の方へ、"
 #. odoo-python
 #: code:addons/mail/models/discuss/discuss_channel_member.py:0
 msgid "Decline"
-msgstr "拒否"
+msgstr "辞退"
 
 #. module: mail
 #: model:ir.model.fields,field_description:mail.field_mail_activity__activity_decoration
@@ -3629,7 +3625,7 @@ msgstr "削除済ドキュメント"
 #: code:addons/mail/static/src/core/common/notification_model.js:0
 #: model:ir.model.fields.selection,name:mail.selection__mail_notification__notification_status__sent
 msgid "Delivered"
-msgstr "配送済"
+msgstr "配信済"
 
 #. module: mail
 #: model:ir.model.fields.selection,name:mail.selection__mail_mail__state__exception
@@ -4564,7 +4560,7 @@ msgstr "失敗メール"
 #. module: mail
 #: model_terms:ir.ui.view,arch_db:mail.view_mail_search
 msgid "Failed"
-msgstr "不合格"
+msgstr "失敗"
 
 #. module: mail
 #. odoo-javascript
@@ -4606,12 +4602,10 @@ msgstr ""
 #. module: mail
 #. odoo-python
 #: code:addons/mail/models/mail_render_mixin.py:0
-#, fuzzy
-#| msgid "Failed to render inline_template template: %(template_txt)s"
 msgid ""
 "Failed to render inline_template template: %(template_txt)s\n"
 "Error details: %(error)s"
-msgstr "テンプレートのレンダリングに失敗しました: %(template_txt)s"
+msgstr ""
 
 #. module: mail
 #. odoo-python
@@ -5571,8 +5565,8 @@ msgid ""
 "If set every modification done to this field is tracked. Value is used to "
 "order tracking values."
 msgstr ""
-"設定すると、このフィールドに加えられたすべての変更が追跡されます。値は、追跡"
-"値を指示するために使用されます。"
+"設定すると、このフィールドに対するすべての変更が記録されます。この数値は、変"
+"更履歴の表示順を決定するために使用されます。"
 
 #. module: mail
 #: model:ir.model.fields,help:mail.field_discuss_channel_member__mute_until_dt
@@ -6844,10 +6838,8 @@ msgstr "メールテンプレートリセット"
 #. module: mail
 #. odoo-python
 #: code:addons/mail/models/mail_render_mixin.py:0
-#, fuzzy
-#| msgid "Unnamed %(record_model_name)s (%(record_id)s)"
 msgid "Mail Template: '%(name)s' (ID: %(record_id)s)"
-msgstr "無題%(record_model_name)s (%(record_id)s)"
+msgstr ""
 
 #. module: mail
 #: model_terms:ir.ui.view,arch_db:mail.model_search_view
@@ -7219,7 +7211,7 @@ msgstr "セパレータを表示する前のメッセージID"
 
 #. module: mail
 #. odoo-javascript
-#: code:addons/mail/static/src/core/common/composer.js:0
+#: code:addons/mail/static/src/core/common/store_service.js:0
 msgid "Message posted on \"%s\""
 msgstr "%s'に投稿されたメッセージ"
 
@@ -7351,7 +7343,7 @@ msgstr ""
 #. odoo-python
 #: code:addons/mail/models/mail_thread.py:0
 msgid "Messages with tracking values cannot be modified"
-msgstr "トラッキング値を持つメッセージは変更できません。"
+msgstr "変更履歴を含むメッセージは編集できません"
 
 #. module: mail
 #: model:ir.model,name:mail.model_discuss_voice_metadata
@@ -7376,7 +7368,7 @@ msgstr ""
 #. module: mail
 #: model:ir.model.fields.selection,name:mail.selection__mail_mail__failure_type__mail_email_missing
 msgid "Missing email"
-msgstr "Eメールがありません"
+msgstr "メールアドレス未設定"
 
 #. module: mail
 #. odoo-javascript
@@ -7724,7 +7716,7 @@ msgstr "活動がありません"
 #. module: mail
 #: model_terms:ir.actions.act_window,help:mail.mail_canned_response_action
 msgid "No canned response found. Let's create one!"
-msgstr "定型回答が見つかりません。作成しましょう!"
+msgstr "返信定型文が見つかりません。作成しましょう!"
 
 #. module: mail
 #. odoo-javascript
@@ -7765,10 +7757,8 @@ msgstr "過去メッセージはありません。"
 #. module: mail
 #. odoo-python
 #: code:addons/mail/models/mail_render_mixin.py:0
-#, fuzzy
-#| msgid "Result of the language detection based on its content."
 msgid "No language detected in context"
-msgstr "コンテンツに基づく言語検出の結果"
+msgstr ""
 
 #. module: mail
 #. odoo-javascript
@@ -8350,10 +8340,6 @@ msgstr ""
 #. module: mail
 #. odoo-python
 #: code:addons/mail/models/mail_template.py:0
-#, fuzzy
-#| msgid ""
-#| "Oops! We couldn't save your template due to an issue with this value: %"
-#| "(template_txt)s. Correct it and try again."
 msgid ""
 "Oops! We couldn't save your template due to an issue.\n"
 "\n"
@@ -8361,8 +8347,6 @@ msgid ""
 "\n"
 "Correct it and try again."
 msgstr ""
-"おっと！この値に問題があるため、テンプレートを保存できませんでした: %"
-"(template_txt)s。修正して再試行してください。"
 
 #. module: mail
 #. odoo-javascript
@@ -9812,7 +9796,7 @@ msgstr "再試行"
 #. odoo-javascript
 #: code:addons/mail/static/src/core/common/message_actions.js:0
 msgid "Revert"
-msgstr "復帰"
+msgstr "元に戻す"
 
 #. module: mail
 #: model_terms:ir.ui.view,arch_db:mail.res_config_settings_view_form
@@ -11153,10 +11137,8 @@ msgstr "Composerからテンプレートを作成するには、有効なモデ�
 #. module: mail
 #. odoo-python
 #: code:addons/mail/models/mail_render_mixin.py:0
-#, fuzzy
-#| msgid "Message unique identifier"
 msgid "Template name not identified"
-msgstr "メッセージ識別番号"
+msgstr ""
 
 #. module: mail
 #. odoo-python
@@ -12055,13 +12037,13 @@ msgstr "トラッキング値"
 #: model:ir.actions.act_window,name:mail.action_view_mail_tracking_value
 #: model:ir.ui.menu,name:mail.menu_mail_tracking_value
 msgid "Tracking Values"
-msgstr "値追跡"
+msgstr "変更履歴(値)"
 
 #. module: mail
 #: model:ir.model.fields,field_description:mail.field_mail_mail__tracking_value_ids
 #: model:ir.model.fields,field_description:mail.field_mail_message__tracking_value_ids
 msgid "Tracking values"
-msgstr "値追跡"
+msgstr "変更履歴(値)"
 
 #. module: mail
 #. odoo-javascript
@@ -12163,7 +12145,7 @@ msgstr ""
 #: model:ir.model.fields,help:mail.field_res_partner__activity_exception_decoration
 #: model:ir.model.fields,help:mail.field_res_users__activity_exception_decoration
 msgid "Type of the exception activity on record."
-msgstr "記録上の例外活動の種類。"
+msgstr "レコード上の例外の活動タイプ。"
 
 #. module: mail
 #: model:ir.model.fields,field_description:mail.field_mail_ice_server__uri
@@ -12332,18 +12314,14 @@ msgstr "無題%(record_model_name)s (%(record_id)s)"
 #. module: mail
 #. odoo-python
 #: code:addons/mail/models/mail_render_mixin.py:0
-#, fuzzy
-#| msgid "Related Mail Template"
 msgid "Unnamed Mail Template"
-msgstr "関連メールテンプレート"
+msgstr ""
 
 #. module: mail
 #. odoo-python
 #: code:addons/mail/models/mail_render_mixin.py:0
-#, fuzzy
-#| msgid "Unnamed"
 msgid "Unnamed Mailing"
-msgstr "無名"
+msgstr ""
 
 #. module: mail
 #. odoo-javascript
@@ -12542,8 +12520,8 @@ msgid ""
 "Use canned responses to quickly insert prewritten messages with "
 "<i>::shortcut</i>. You can edit the text before sending."
 msgstr ""
-"定型文を使用して、あらかじめ作成したメッセージを<i>::shortcut</i>で素早く挿入"
-"します。送信前にテキストを編集できます。"
+"返信定型文を使用して、あらかじめ作成したメッセージを<i>::shortcut</i>で素早く"
+"挿入します。送信前にテキストを編集できます。"
 
 #. module: mail
 #: model:ir.model.fields,help:mail.field_discuss_channel_member__custom_notifications
@@ -13600,6 +13578,12 @@ msgid "created this channel."
 msgstr "このチャンネルを作成しました"
 
 #. module: mail
+#. odoo-javascript
+#: code:addons/mail/static/src/js/rotting_mixin/rotting_statusbar.xml:0
+msgid "d"
+msgstr ""
+
+#. module: mail
 #: model_terms:ir.ui.view,arch_db:mail.account_security_alert
 msgid "day, month dd, yyyy - hh:mm:ss (GMT)"
 msgstr "曜日、月日、年、 - hh:mm:ss (GMT)"
@@ -14144,6 +14128,15 @@ msgstr "あなたのエイリアス"
 #: code:addons/mail/models/discuss/discuss_channel_member.py:0
 msgid "“%(member_name)s” in “%(channel_name)s”"
 msgstr "“%(member_name)s” 、 “%(channel_name)s内”"
+
+#. module: mail
+#. odoo-javascript
+#: code:addons/mail/static/src/core/web/activity.js:0
+msgid "“%s”"
+msgstr ""
+
+#~ msgid "111.222.333.444"
+#~ msgstr "111.222.333.444"
 
 #~ msgid ""
 #~ "Failed to render QWeb template: %(template_src)s\n"

@@ -198,9 +198,6 @@ class PurchaseOrder(models.Model):
                 if picking.state == 'done':
                     picking.message_post(body=self.env._("The purchase order %s this receipt is linked to was cancelled.", order._get_html_link()))
 
-            if order.reference_ids:
-                order.reference_ids.purchase_ids = [Command.unlink(order.id)]
-
         order_lines = self.env['purchase.order.line'].browse(order_lines_ids)
         moves_to_cancel_ids = OrderedSet()
         moves_to_recompute_ids = OrderedSet()
@@ -253,7 +250,7 @@ class PurchaseOrder(models.Model):
         for po in purchases:
             if po.user_id == self.env.user:
                 my_purchase_count += 1
-            if not po.effective_date or po.effective_date > po.date_planned:
+            if not po.effective_date or po.effective_date.date() > po.date_planned.date():
                 continue
             otd_purchase_count += 1
             if po.user_id == self.env.user:
@@ -461,3 +458,7 @@ class PurchaseOrder(models.Model):
         """ remove the given references from the list of references. """
         self.ensure_one()
         self.reference_ids = [Command.unlink(stock_reference.id) for stock_reference in reference]
+
+    def _merge_po_post_process(self, rfqs):
+        super()._merge_po_post_process(rfqs)
+        self.reference_ids += rfqs.reference_ids
