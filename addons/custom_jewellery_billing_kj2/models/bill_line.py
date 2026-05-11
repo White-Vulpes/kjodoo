@@ -11,20 +11,43 @@ class CustomBillLine(models.Model):
     name = fields.Char(string='Name', required=True)
     weight = fields.Float(string='Weight', digits=(16, 4))
     less = fields.Float(string='Less', digits=(16, 4))
-    melting = fields.Float(string='Melting')
-    VAT = fields.Float(string='VAT')
+    melting = fields.Float(string='Melting', digits=(16, 2))
+    touch = fields.Float(string='Touch', digits=(16, 2))
+    VAT = fields.Float(string='VAT', digits=(16, 2))
+    type = fields.Selection(
+        string='Type',
+        selection=[('22K', '22K'), ('18K', '18K')],
+        required=True
+    )
     total_wt = fields.Float(
         string="Total Wt.",
         compute="_compute_total_wt",
         store=True,
         digits=(16, 4)
     )
+    pure = fields.Float(string='Pure', compute="_compute_pure", store=True, digits=(16, 4))
     charges = fields.Float(string='Charges')
     net_weight = fields.Float(
         compute="_compute_net_weight",
         store=True,
         digits=(16, 4)
     )
+
+    @api.onchange('VAT')
+    def _onchange_VAT(self):
+        for line in self:
+            if line.type == '22K':
+                line.touch = (line.VAT + 100) * line.bill_id.karat_22 / line.bill_id.karat_24
+            elif line.type == '18K':
+                line.touch = (line.VAT + 100) * line.bill_id.karat_18 / line.bill_id.karat_24
+
+    @api.onchange('touch')
+    def _onchange_touch(self):
+        for line in self:
+            if line.type == '22K':
+                line.VAT = (line.touch * line.bill_id.karat_24 / line.bill_id.karat_22) - 100
+            elif line.type == '18K':
+                line.VAT = (line.touch * line.bill_id.karat_24 / line.bill_id.karat_18) - 100
 
     @api.depends('weight', 'less')
     def _compute_net_weight(self):
@@ -36,4 +59,12 @@ class CustomBillLine(models.Model):
         for line in self:
             net_weight = line.weight - line.less
             line.total_wt = net_weight * ((line.VAT / 100.0) + 1)
+    
+    @api.depends('weight', 'touch')
+    def _compute_pure(self):
+        for line in self:
+            if line.touch > 0:
+                line.pure = line.weight * (line.touch / 100.0)
+            else:
+                line.pure = 0.0
     

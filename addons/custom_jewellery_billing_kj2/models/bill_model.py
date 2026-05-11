@@ -23,6 +23,7 @@ class CustomBill(models.Model):
 
     # --- The Totals ---
     total_weight = fields.Float(string='Total Weight', compute='_compute_totals', store=True, digits=(16, 4))
+    total_wt = fields.Float(string='Total Wt.', compute='_compute_totals', store=True, digits=(16, 4))
     total_pure = fields.Float(string='Total Pure', compute='_compute_totals', store=True, digits=(16, 4))
     total_net_weight = fields.Float(string='Total Net Weight', compute='_compute_totals', store=True, digits=(16, 4))
     total_charges = fields.Float(string='Total Charges', compute='_compute_totals', store=True)
@@ -30,16 +31,45 @@ class CustomBill(models.Model):
 
     remarks = fields.Text(string='Remarks')
 
-    @api.depends('item_ids.weight', 'item_ids.total_wt', 'item_ids.charges', 'item_ids.less', 'item_ids.net_weight')
+    karat_24 = fields.Float(string='24K', digits=(16, 2), default=24.0)
+    karat_22 = fields.Float(string='22K', digits=(16, 2), compute="_compute_karat_22", readonly=False)
+    karat_18 = fields.Float(string='18K', digits=(16, 2), compute="_compute_karat_18", readonly=False)
+
+    total_cash = fields.Float(string='Total Cash', compute='_compute_total_cash', store=False, digits=(16, 2))
+
+    def _compute_karat_22(self):
+        for bill in self:
+            rate_22k_str = self.env['ir.config_parameter'].sudo().get_param('jewelry.gold_rate_22k', default='0')
+            rate_22k = float(rate_22k_str)
+            bill.karat_22 = rate_22k
+
+    def _compute_karat_18(self):
+        for bill in self:
+            rate_18k_str = self.env['ir.config_parameter'].sudo().get_param('jewelry.gold_rate_18k', default='0')
+            rate_18k = float(rate_18k_str)
+            bill.karat_18 = rate_18k
+
+    @api.depends('item_ids.weight', 'item_ids.total_wt', 'item_ids.charges', 'item_ids.less', 'item_ids.net_weight', 'item_ids.pure')
     def _compute_totals(self):
         for bill in self:
             bill.total_weight = float_round(sum(line.weight for line in bill.item_ids), precision_digits=4)
-            bill.total_pure = float_round(sum(line.total_wt for line in bill.item_ids), precision_digits=4)
+            bill.total_wt = float_round(sum(line.total_wt for line in bill.item_ids), precision_digits=4)
+            bill.total_pure = float_round(sum(line.pure for line in bill.item_ids), precision_digits=4)
             bill.total_less = float_round(sum(line.less for line in bill.item_ids), precision_digits=4)
             bill.total_net_weight = float_round(sum(line.net_weight for line in bill.item_ids), precision_digits=4)
             base_charges = float_round(sum(line.charges for line in bill.item_ids), precision_digits=4)
             bill.total_charges = float_round(base_charges, precision_digits=2)
 
+    @api.depends('total_wt', 'karat_22', 'karat_18', 'item_ids')
+    def _compute_total_cash(self):
+        for bill in self:
+            bill.total_cash = 0.0
+            for line in bill.item_ids:
+                if line.type == '22K':
+                    bill.total_cash += float_round(line.total_wt * bill.karat_22 + line.charges, precision_digits=2)
+                elif line.type == '18K':
+                    bill.total_cash += float_round(line.total_wt * bill.karat_18 + line.charges, precision_digits=2)
+        
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
@@ -66,6 +96,20 @@ class CustomBill(models.Model):
         # 2. Construct the direct URL to the PDF
         report_url = f'/report/pdf/{report.report_name}/{self.id}?time={fields.Datetime.now().timestamp()}'
         
+        # 3. Return a URL action to force a new tab
+        return {
+            'type': 'ir.actions.act_url',
+            'url': report_url,
+            'target': 'new',  # 'new' tells Odoo to open a new browser tab
+        }
+    
+    def action_print_bill_retail(self):
+        # 1. Get the report reference
+        report = self.env.ref('custom_jewellery_billing_kj2.action_report_custom_bill_retail')
+
+        # 2. Construct the direct URL to the PDF
+        report_url = f'/report/pdf/{report.report_name}/{self.id}?time={fields.Datetime.now().timestamp()}'
+
         # 3. Return a URL action to force a new tab
         return {
             'type': 'ir.actions.act_url',

@@ -1,6 +1,8 @@
 from odoo import models, fields, api
 from odoo.tools.float_utils import float_round
 import logging
+import requests
+import re
 
 _logger = logging.getLogger(__name__)
 
@@ -105,3 +107,49 @@ class CustomBill(models.Model):
             'url': report_url,
             'target': 'new',  # 'new' tells Odoo to open a new browser tab
         }
+
+class JewelryGoldRate(models.AbstractModel):
+    # AbstractModels don't create database tables, they are just for holding logic!
+    _name = 'jewelry.gold.rate'
+    _description = 'Gold Rate Scraper'
+
+    @api.model
+    def fetch_and_update_rates(self):
+        endpoint = "https://production-sfo.browserless.io/chromium/bql"
+        query_string = {
+            "token": "RsN4qBdqAWs4QF29af15f986412011f7f7743334ab",
+        }
+        headers = {
+            "Content-Type": "application/json",
+        }
+        payload = {
+            "query": "mutation scraping_example {\n  goto(\n    url: \"https://thejewellersassociation.org/\"\n    waitUntil: load\n    timeout: 12000\n  ) {\n    status\n  }\n  \n  posts: querySelectorAll(selector: \"span.gold_rate\", visible: true) {\n    rates: innerHTML\n  }\n}",
+            "operationName": "scraping_example",
+        }
+
+        try:
+            response = requests.post(endpoint, params=query_string, headers=headers, json=payload)
+            data = response.json()
+            raw_rates = [post.get("rates", "") for post in data.get("data", {}).get("posts", [])]
+
+            numeric_rates = []
+            for rate in raw_rates:
+                clean_rate = re.sub(r'[^\d.]', '', str(rate))
+                if clean_rate:
+                    numeric_rates.append(float(clean_rate))
+
+            valid_rates = sorted([r for r in numeric_rates if r > 0])
+
+            rate_18k = valid_rates[0] if len(valid_rates) >= 1 else 0.0
+            rate_22k = valid_rates[1] if len(valid_rates) >= 2 else 0.0
+
+            # Save to System Parameters
+            if rate_18k > 0:
+                self.env['ir.config_parameter'].sudo().set_param('jewelry.gold_rate_18k', str(rate_18k))
+            if rate_22k > 0:
+                self.env['ir.config_parameter'].sudo().set_param('jewelry.gold_rate_22k', str(rate_22k))
+                
+            _logger.info(f"Successfully updated Gold Rates - 18K: {rate_18k}, 22K: {rate_22k}")
+
+        except Exception as e:
+            _logger.error(f"Failed to fetch gold rates. Error: {str(e)}")

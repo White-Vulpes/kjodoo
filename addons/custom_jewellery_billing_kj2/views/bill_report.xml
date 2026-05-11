@@ -27,7 +27,110 @@
         <field name="print_report_name">'Bill - %s' % (object.name)</field>
         <field name="paperformat_id" ref="custom_jewellery_billing_kj2.paperformat_custom_bill_a6"/>
     </record>
-    
+    <record id="action_report_custom_bill_retail" model="ir.actions.report">
+        <field name="name">Retail Jewelry Bill</field>
+        <field name="model">custom.bill2</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">custom_jewellery_billing_kj2.report_custom_bill_retail</field>
+        <field name="report_file">custom_jewellery_billing_kj2.report_custom_bill_retail</field>
+        <field name="binding_model_id" ref="model_custom_bill2"/>
+        <field name="binding_type">report</field>
+
+        <field name="print_report_name">'Retail Bill - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="custom_jewellery_billing_kj2.paperformat_custom_bill_a6"/>
+    </record>
+    <template id="report_custom_bill_retail">
+        <t t-call="web.html_container">
+            <t t-call="web.basic_layout">
+                <t t-foreach="docs" t-as="doc">
+                    <div class="page w-100">
+
+                        <div style="text-align:center;">
+                            ||SHREE||
+                            <br/>
+                            <strong>Rough Estimate / On Approval</strong>
+                        </div>
+
+                        <div class="row mt-2 mb-3">
+                            <div class="col-8">
+                                <h5>
+                                    <span t-field="doc.bill_number"/> -
+                                    <span t-field="doc.partner_id"/>
+                                </h5>
+                            </div>
+                            <div class="col-4 text-end">
+                                Date:
+                                <span t-field="doc.date" t-options='{"widget": "date", "format": "dd/MM"}'/>
+                            </div>
+                        </div>
+
+                        <table class="table table-sm table-bordered mb-0" style="font-size: 0.9em;">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th class="text-end">Weight</th>
+                                    <th class="text-end">Less</th>
+                                    <th class="text-end">Nt. Wt</th>
+                                    <th class="text-end">Type</th>
+                                    <th class="text-end">VAT</th>
+                                    <th class="text-end">Total Wt.</th>
+                                    <th class="text-end">Charges</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <t t-foreach="doc.item_ids" t-as="line">
+                                    <tr>
+                                        <td><span t-field="line.name"/></td>
+                                        
+                                        <td class="text-end"><span t-field="line.weight" t-options='{"widget": "float", "precision": 3}'/></td>
+                                        <td class="text-end"><span t-field="line.less" t-options='{"widget": "float", "precision": 3}'/></td>
+                                        <td class="text-end"><span t-field="line.net_weight" t-options='{"widget": "float", "precision": 3}'/></td>
+                                        
+                                        <td class="text-end"><span t-field="line.type"/></td>
+                                        <td class="text-end"><span t-field="line.VAT"/></td>
+                                        
+                                        <td class="text-end"><span t-field="line.total_wt" t-options='{"widget": "float", "precision": 3}'/></td>
+                                        <td class="text-end"><span t-field="line.charges" t-options='{"widget": "float", "precision": 2}'/></td>
+                                    </tr>
+                                </t>
+
+                                <tr class="fw-bold" style="background-color: #f0f0f0;">
+                                    <td>Total</td>
+                                    <td class="text-end"><span t-field="doc.total_weight" t-options='{"widget": "float", "precision": 3}'/></td>
+                                    <td class="text-end"><span t-field="doc.total_less" t-options='{"widget": "float", "precision": 3}'/></td>
+                                    <td class="text-end"><span t-field="doc.total_net_weight" t-options='{"widget": "float", "precision": 3}'/></td>
+                                    <td/>
+                                    <td/>
+                                    <td class="text-end"><span t-field="doc.total_wt" t-options='{"widget": "float", "precision": 3}'/></td>
+                                    <td class="text-end"><span t-field="doc.total_charges" t-options='{"widget": "float", "precision": 2}'/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="w-100 text-end m-0">
+                            <span style="font-style: italic; font-size: 0.8em;">*GST as applicable</span>
+                        </div>
+                        <t t-if="doc.total_cash">
+                            <div class="row mt-1">
+                                <div class="col-12" style="font-size: 0.9em;">
+                                    <strong>Total Cash:</strong>
+                                    <span t-field="doc.total_cash"/>
+                                </div>
+                            </div>
+                        </t>
+                        <t t-if="doc.remarks">
+                            <div class="row mt-1">
+                                <div class="col-12" style="font-size: 0.9em;">
+                                    <strong>Remarks:</strong>
+                                    <span t-field="doc.remarks"/>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
     <template id="report_custom_bill">
         <t t-call="web.html_container">
             <t t-call="web.basic_layout">
@@ -61,8 +164,8 @@
                                     <th class="text-end">Less</th>
                                     <th class="text-end">Nt. Wt</th>
                                     <th class="text-end">Melting</th>
-                                    <th class="text-end">VAT</th>
-                                    <th class="text-end">Total Wt.</th>
+                                    <th class="text-end">Touch</th>
+                                    <th class="text-end">Pure</th>
                                     <th class="text-end">Charges</th>
                                 </tr>
                             </thead>
@@ -77,9 +180,9 @@
                                         <td class="text-end"><span t-field="line.net_weight" t-options='{"widget": "float", "precision": 3}'/></td>
                                         
                                         <td class="text-end"><span t-field="line.melting"/></td>
-                                        <td class="text-end"><span t-field="line.VAT"/></td>
+                                        <td class="text-end"><span t-field="line.touch"/></td>
                                         
-                                        <td class="text-end"><span t-field="line.total_wt" t-options='{"widget": "float", "precision": 3}'/></td>
+                                        <td class="text-end"><span t-field="line.pure" t-options='{"widget": "float", "precision": 3}'/></td>
                                         <td class="text-end"><span t-field="line.charges" t-options='{"widget": "float", "precision": 2}'/></td>
                                     </tr>
                                 </t>
@@ -112,4 +215,5 @@
             </t>
         </t>
     </template>
+
 </odoo>
