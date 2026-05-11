@@ -60,11 +60,11 @@ class CustomBillLine(models.Model):
             net_weight = line.weight - line.less
             line.total_wt = net_weight * ((line.VAT / 100.0) + 1)
     
-    @api.depends('weight', 'touch')
+    @api.depends('net_weight', 'touch')
     def _compute_pure(self):
         for line in self:
             if line.touch > 0:
-                line.pure = line.weight * (line.touch / 100.0)
+                line.pure = line.net_weight * (line.touch / 100.0)
             else:
                 line.pure = 0.0
     
