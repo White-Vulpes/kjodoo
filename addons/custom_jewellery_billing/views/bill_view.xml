@@ -148,7 +148,7 @@
         <field name="view_mode">list,form</field> 
     </record>
 
-    <menuitem id="menu_custom_bill_root" name="Jewelry Billing" web_icon="custom_bill,static/description/icon.png"/>
+    <menuitem id="menu_custom_bill_root" name="Jewelry Billing" web_icon="custom_jewellery_billing,static/description/icon.png"/>
     
     <menuitem id="menu_custom_bills" name="Bills" parent="menu_custom_bill_root" action="action_custom_bill" sequence="10"/>
 
