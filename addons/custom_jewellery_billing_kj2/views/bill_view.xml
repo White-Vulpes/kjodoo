@@ -20,6 +20,7 @@
                     <group string="Calculations">
                         <group>
                             <field name="melting"/>
+                            <field name="touch"/>
                             <field name="VAT"/>
                             <field name="charges" options="{'digits': [16, 2]}"/>
                         </group>
