@@ -51,7 +51,7 @@
                             <strong>Rough Estimate / On Approval</strong>
                         </div>
 
-                        <div class="row mt-2 mb-3">
+                        <div class="row mt-2">
                             <div class="col-8">
                                 <h5>
                                     <span t-field="doc.bill_number"/> -
@@ -59,11 +59,20 @@
                                 </h5>
                             </div>
                             <div class="col-4 text-end">
-                                Date:
-                                <span t-field="doc.date" t-options='{"widget": "date", "format": "dd/MM"}'/>
+                                Date: <span t-field="doc.date" t-options='{"widget": "date", "format": "dd/MM"}'/>
                             </div>
                         </div>
-
+                        <div class="row">
+                            <div class="col-6">
+                                <span style="font-style: italic; font-size: 0.8em;">Phone: <span t-field="doc.partner_id.phone"/></span>
+                            </div>
+                            <div class="col-6 text-end">
+                                <span style="font-style: italic; font-size: 0.8em;">
+                                    22K: <span t-field="doc.karat_22" t-options='{"widget": "float", "precision": 2}'/> | 
+                                    18K: <span t-field="doc.karat_18" t-options='{"widget": "float", "precision": 2}'/>
+                                </span>
+                            </div>
+                        </div>
                         <table class="table table-sm table-bordered mb-0" style="font-size: 0.9em;">
                             <thead>
                                 <tr>
@@ -71,30 +80,28 @@
                                     <th class="text-end">Weight</th>
                                     <th class="text-end">Less</th>
                                     <th class="text-end">Nt. Wt</th>
-                                    <th class="text-end">Type</th>
-                                    <th class="text-end">VAT</th>
-                                    <th class="text-end">Total Wt.</th>
                                     <th class="text-end">Charges</th>
+                                    <th class="text-end">VA</th>
+                                    <th class="text-end">Total Wt.</th>
+                                    <th class="text-end">Cash</th>
                                 </tr>
                             </thead>
 
                             <tbody>
                                 <t t-foreach="doc.item_ids" t-as="line">
                                     <tr>
-                                        <td><span t-field="line.name"/></td>
-                                        
+                                        <td><span t-field="line.type"/>: <span t-field="line.name"/></td>
                                         <td class="text-end"><span t-field="line.weight" t-options='{"widget": "float", "precision": 3}'/></td>
                                         <td class="text-end"><span t-field="line.less" t-options='{"widget": "float", "precision": 3}'/></td>
                                         <td class="text-end"><span t-field="line.net_weight" t-options='{"widget": "float", "precision": 3}'/></td>
-                                        
-                                        <td class="text-end"><span t-field="line.type"/></td>
-                                        <td class="text-end"><span t-field="line.VAT"/></td>
-                                        
-                                        <td class="text-end"><span t-field="line.total_wt" t-options='{"widget": "float", "precision": 3}'/></td>
                                         <td class="text-end"><span t-field="line.charges" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td class="text-end"><span t-field="line.VAT"/></td>
+                                        <td class="text-end"><span t-field="line.total_wt" t-options='{"widget": "float", "precision": 3}'/></td>
+                                        <td class="text-end"><span t-field="line.cash" t-options='{"widget": "float", "precision": 2}'/></td>
                                     </tr>
                                 </t>
 
+                                <!-- Subtotal Row -->
                                 <tr class="fw-bold" style="background-color: #f0f0f0;">
                                     <td>Total</td>
                                     <td class="text-end"><span t-field="doc.total_weight" t-options='{"widget": "float", "precision": 3}'/></td>
@@ -103,23 +110,32 @@
                                     <td/>
                                     <td/>
                                     <td class="text-end"><span t-field="doc.total_wt" t-options='{"widget": "float", "precision": 3}'/></td>
-                                    <td class="text-end"><span t-field="doc.total_charges" t-options='{"widget": "float", "precision": 2}'/></td>
+                                    <td class="text-end"><span t-field="doc.total_cash" t-options='{"widget": "float", "precision": 2}'/></td>
+                                </tr>
+
+                                <!-- NEW: GST Row -->
+                                <tr>
+                                    <td colspan="4" class="border-0 pt-2 pe-3" style="font-style: italic; font-size: 0.8em;">No Return / No Exchange After Delivery</td>
+                                    <td colspan="3" class="text-end border-0 pt-2 pe-3">GST (3%):</td>
+                                    <td class="text-end border-0 pt-2">
+                                        <!-- Calculates 3% dynamically -->
+                                        <span t-esc="doc.total_cash * 0.03" t-options='{"widget": "float", "precision": 2}'/>
+                                    </td>
+                                </tr>
+
+                                <!-- NEW: Grand Total Row -->
+                                <tr class="fw-bold" style="font-size: 1.1em;">
+                                    <td colspan="7" class="text-end border-0 pe-3">Grand Total:</td>
+                                    <td class="text-end border-0" style="border-top: 1px solid #000 !important; border-bottom: 2px solid #000 !important;">
+                                        <!-- Calculates Cash + 3% dynamically -->
+                                        <span t-esc="doc.total_cash * 1.03" t-options='{"widget": "float", "precision": 2}'/>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
-                        <div class="w-100 text-end m-0">
-                            <span style="font-style: italic; font-size: 0.8em;">*GST as applicable</span>
-                        </div>
-                        <t t-if="doc.total_cash">
-                            <div class="row mt-1">
-                                <div class="col-12" style="font-size: 0.9em;">
-                                    <strong>Total Cash:</strong>
-                                    <span t-field="doc.total_cash"/>
-                                </div>
-                            </div>
-                        </t>
+
                         <t t-if="doc.remarks">
-                            <div class="row mt-1">
+                            <div class="row mt-3">
                                 <div class="col-12" style="font-size: 0.9em;">
                                     <strong>Remarks:</strong>
                                     <span t-field="doc.remarks"/>

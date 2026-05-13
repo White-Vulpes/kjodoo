@@ -9,6 +9,7 @@
                     <group>
                         <group string="Item Details">
                             <field name="name"/>
+                            <field name="type" class="sm"/>
                         </group>
                         <group string="Quantity">
                             <field name="weight" options="{'digits': [16, 3]}"/>
@@ -39,16 +40,18 @@
         <field name="model">custom.bill2.line</field>
         <field name="arch" type="xml">
             <list editable="bottom">
+                <field name="type" class="sm"/>
                 <field name="name"/>
                 <field name="weight" options="{'digits': [16, 3]}"/>
                 <field name="less" options="{'digits': [16, 3]}"/>
                 <field name="net_weight" options="{'digits': [16, 3]}"/>
                 <field name="melting"/>
-                <field name="type"/>
                 <field name="touch"/>
                 <field name="VAT"/>
                 <field name="total_wt" options="{'digits': [16, 3]}"/>
+                <field name="pure" options="{'digits': [16, 3]}"/>
                 <field name="charges" options="{'digits': [16, 2]}"/>
+                <field name="cash" options="{'digits': [16, 2]}"/>
             </list>
         </field>
     </record>

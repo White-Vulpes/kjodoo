@@ -33,6 +33,8 @@ class CustomBillLine(models.Model):
         digits=(16, 4)
     )
 
+    cash = fields.Float(string='Cash', compute="_compute_cash", store=True, digits=(16, 2))
+
     @api.onchange('VAT')
     def _onchange_VAT(self):
         for line in self:
@@ -67,4 +69,12 @@ class CustomBillLine(models.Model):
                 line.pure = line.net_weight * (line.touch / 100.0)
             else:
                 line.pure = 0.0
+
+    @api.depends('total_wt', 'charges')
+    def _compute_cash(self):
+        for line in self:
+            if line.type == '22K':
+                line.cash = line.total_wt * line.bill_id.karat_22 + line.charges
+            elif line.type == '18K':
+                line.cash = line.total_wt * line.bill_id.karat_18 + line.charges
     
