@@ -73,7 +73,7 @@
                                 </span>
                             </div>
                         </div>
-                        <table class="table table-sm table-bordered mb-0" style="font-size: 0.9em;">
+                        <table class="table table-sm table-bordered mb-0" style="font-size: 0.9em; border-collapse: collapse;">
                             <thead>
                                 <tr>
                                     <th>Name</th>
@@ -114,8 +114,8 @@
                                 </tr>
 
                                 <!-- NEW: GST Row -->
-                                <tr>
-                                    <td colspan="4" class="border-0 pt-2 pe-3" style="font-style: italic; font-size: 0.8em;">No Return / No Exchange After Delivery</td>
+                                <tr style="border: none;">
+                                    <td colspan="4" class="pt-2 pe-3" style="border: none; font-style: italic; font-size: 0.8em; font-weight: 500;">No Return / No Exchange After Delivery</td>
                                     <td colspan="3" class="text-end border-0 pt-2 pe-3">GST (3%):</td>
                                     <td class="text-end border-0 pt-2">
                                         <!-- Calculates 3% dynamically -->
@@ -124,7 +124,7 @@
                                 </tr>
 
                                 <!-- NEW: Grand Total Row -->
-                                <tr class="fw-bold" style="font-size: 1.1em;">
+                                <tr class="fw-bold" style="border: none; font-size: 1.1em;">
                                     <td colspan="7" class="text-end border-0 pe-3">Grand Total:</td>
                                     <td class="text-end border-0" style="border-top: 1px solid #000 !important; border-bottom: 2px solid #000 !important;">
                                         <!-- Calculates Cash + 3% dynamically -->
@@ -215,6 +215,52 @@
                                 </tr>
                             </tbody>
                         </table>
+                        <t t-if="doc.transaction_ids">
+                            <table class="table table-sm table-bordered mt-2 mb-0" style="font-size: 0.9em; font-style: italic;">
+                                <thead>
+                                    <tr style="background-color: #f8f9fa;">
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th class="text-end">Gr. Wt.</th>
+                                        <th class="text-end">Purity</th>
+                                        <th class="text-end">Pure</th>
+                                        <th class="text-end">Rate</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="doc.transaction_ids" t-as="txn">
+                                        <tr>
+                                            <td><span t-field="txn.date" t-options='{"widget": "date", "format": "dd/MM"}'/></td>
+                                            <td>
+                                                <span t-if="txn.ttype == 'metal_recv'">Metal Received</span>
+                                                <span t-if="txn.ttype == 'metal_pay'">Metal Payment</span>
+                                                <span t-if="txn.ttype == 'cash_recv'">Cash Received</span>
+                                                <span t-if="txn.ttype == 'cash_pay'">Cash Payment</span>
+                                                <span t-if="txn.ttype == 'rate_cut'">Rate Cut</span>
+                                                <span t-if="txn.ttype == 'old_item'">Old Item</span>
+                                                <span t-if="txn.ttype == 'return_item'">Return Item</span>
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-if="txn.ttype in ('metal_recv', 'metal_pay', 'old_item', 'return_item')" t-field="txn.gross_weight" t-options='{"widget": "float", "precision": 3}'/>
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-if="txn.ttype in ('metal_recv', 'metal_pay', 'old_item', 'return_item')" t-field="txn.purity" t-options='{"widget": "float", "precision": 3}'/>
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-if="txn.ttype in ('metal_recv', 'metal_pay', 'rate_cut', 'old_item', 'return_item')" t-field="txn.pure_weight" t-options='{"widget": "float", "precision": 3}'/>
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-if="txn.ttype in ('rate_cut', 'old_item')" t-field="txn.rate" t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-if="txn.ttype in ('cash_recv', 'cash_pay', 'rate_cut')" t-field="txn.amount" t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
                         <div class="w-100 text-end m-0">
                             <span style="font-style: italic; font-size: 0.8em;">*GST as applicable</span>
                         </div>

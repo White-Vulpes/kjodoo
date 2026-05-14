@@ -5,11 +5,11 @@ import logging
 _logger = logging.getLogger(__name__)
 
 class CustomBillTransaction(models.Model):
-    _name = 'custom.bill.transaction'
+    _name = 'custom.bill2.transaction'
     _description = 'Bill Transaction Ledger'
     _order = 'date asc, id asc'
 
-    bill_id = fields.Many2one('custom.bill', string='Bill', required=True, ondelete='cascade')
+    bill_id = fields.Many2one('custom.bill2', string='Bill', required=True, ondelete='cascade')
     date = fields.Date(string='Date', default=fields.Date.context_today, readonly=True, required=True)
     
     ttype = fields.Selection([
@@ -35,8 +35,7 @@ class CustomBillTransaction(models.Model):
     @api.depends('ttype', 'gross_weight', 'purity')
     def _compute_pure_weight(self):
         for rec in self:
-            if rec.ttype in ['metal_recv', 'metal_pay']:
-                # Convert Kacha to Pure
+            if rec.ttype in ['metal_recv', 'metal_pay', ]:
                 
                 rec.pure_weight = float_round(rec.gross_weight * (rec.purity / 100.0), precision_digits=4)
 
@@ -44,7 +43,6 @@ class CustomBillTransaction(models.Model):
     def _compute_amount(self):
         for rec in self:
             if rec.ttype == 'rate_cut' and rec.rate:
-                _logger.debug("Computing amount for record ID %s: pure_weight=%s, rate=%s", rec.id, rec.pure_weight, rec.rate)
                 rec.amount = float_round(rec.pure_weight * rec.rate, precision_digits=2)
     
     @api.onchange('ttype')
@@ -54,7 +52,7 @@ class CustomBillTransaction(models.Model):
             if rec.ttype == 'rate_cut' and rec.pure_weight == 0:
                 
                 # Access the parent bill's live balance_pure
-                if rec.bill_id and rec.bill_id.balance_pure > 0:
+                if rec.bill_id:
                     rec.pure_weight = rec.bill_id.balance_pure
 
     @api.onchange('pure_weight', 'rate', 'ttype')
@@ -76,3 +74,4 @@ class CustomBillTransaction(models.Model):
                 elif rec.rate > 0:
                     # If I type a new total amount, and I already have a rate, figure out the weight
                     rec.pure_weight = float_round(rec.amount / rec.rate, precision_digits=4)
+                

@@ -117,16 +117,21 @@
                                                 <span t-if="txn.ttype == 'metal_pay'">Metal Payment</span>
                                                 <span t-if="txn.ttype == 'cash_recv'">Cash Received</span>
                                                 <span t-if="txn.ttype == 'cash_pay'">Cash Payment</span>
-                                                <span t-if="txn.ttype == 'rate_cut'">Rate Cut: <span t-field="txn.rate" t-options='{"widget": "float", "precision": 2}'/></span>
+                                                <span t-if="txn.ttype == 'rate_cut'">Rate Cut</span>
+                                                <span t-if="txn.ttype == 'old_item'">Old Item</span>
+                                                <span t-if="txn.ttype == 'return_item'">Return Item</span>
                                             </td>
                                             <td class="text-end">
-                                                <span t-if="txn.ttype in ('metal_recv', 'metal_pay')" t-field="txn.gross_weight" t-options='{"widget": "float", "precision": 3}'/>
+                                                <span t-if="txn.ttype in ('metal_recv', 'metal_pay', 'old_item', 'return_item')" t-field="txn.gross_weight" t-options='{"widget": "float", "precision": 3}'/>
                                             </td>
                                             <td class="text-end">
-                                                <span t-if="txn.ttype in ('metal_recv', 'metal_pay')" t-field="txn.purity" t-options='{"widget": "float", "precision": 3}'/>
+                                                <span t-if="txn.ttype in ('metal_recv', 'metal_pay', 'old_item', 'return_item')" t-field="txn.purity" t-options='{"widget": "float", "precision": 3}'/>
                                             </td>
                                             <td class="text-end">
-                                                <span t-if="txn.ttype in ('metal_recv', 'metal_pay', 'rate_cut')" t-field="txn.pure_weight" t-options='{"widget": "float", "precision": 3}'/>
+                                                <span t-if="txn.ttype in ('metal_recv', 'metal_pay', 'rate_cut', 'old_item', 'return_item')" t-field="txn.pure_weight" t-options='{"widget": "float", "precision": 3}'/>
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-if="txn.ttype in ('rate_cut', 'old_item')" t-field="txn.rate" t-options='{"widget": "float", "precision": 2}'/>
                                             </td>
                                             <td class="text-end">
                                                 <span t-if="txn.ttype in ('cash_recv', 'cash_pay', 'rate_cut')" t-field="txn.amount" t-options='{"widget": "float", "precision": 2}'/>

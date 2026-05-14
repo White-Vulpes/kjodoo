@@ -95,8 +95,46 @@
                             </group>
                         </page>
                     </notebook>
+                    <notebook>
+                        <page string="Ledger / Transactions">
+                            <field name="transaction_ids">
+                                <list>
+                                    <field name="date"/>
+                                    <field name="ttype"/>
+                                    <field name="gross_weight" options="{'digits': [16, 3]}" invisible="ttype not in ('metal_recv', 'metal_pay')"/>
+                                    <field name="purity" options="{'digits': [16, 2]}" invisible="ttype not in ('metal_recv', 'metal_pay')"/>
+                                    <field name="pure_weight" options="{'digits': [16, 3]}" invisible="ttype not in ('metal_recv', 'metal_pay', 'rate_cut')"/>
+                                    <field name="rate" options="{'digits': [16, 2]}" invisible="ttype != 'rate_cut'"/>
+                                    <field name="amount" options="{'digits': [16, 2]}" invisible="ttype not in ('cash_recv', 'cash_pay', 'rate_cut')"/>
+                                </list>
+                                
+                                <form string="Transaction Details">
+                                    <sheet>
+                                        <group>
+                                            <group string="Basic Info">
+                                                <field name="date"/>
+                                                <field name="ttype"/>
+                                            </group>
+                                            <group string="Values">
+                                                <field name="gross_weight" options="{'digits': [16, 3]}" invisible="ttype not in ('metal_recv', 'metal_pay', 'old_item', 'return_item')"/>
+                                                <field name="purity" options="{'digits': [16, 2]}" invisible="ttype not in ('metal_recv', 'metal_pay', 'old_item', 'return_item')"/>
+                                                <field name="pure_weight" options="{'digits': [16, 3]}" invisible="ttype not in ('metal_recv', 'metal_pay', 'rate_cut', 'old_item', 'return_item')"/>
+
+                                                <field name="rate" options="{'digits': [16, 2]}" invisible="ttype not in ('rate_cut', 'old_item')" required="ttype == 'rate_cut'"/>
+                                                <field name="amount" options="{'digits': [16, 2]}" invisible="ttype not in ('cash_recv', 'cash_pay', 'rate_cut')"/>
+                                            </group>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+                    </notebook>
                     <group string="Remarks">
                         <field name="remarks" widget="text" placeholder="Add any remarks or notes about this bill here..."/>
+                    </group>
+                    <group class="oe_subtotal_footer oe_right" style="border-top: 2px solid #ccc; margin-top: 10px; padding-top: 10px;">
+                        <field name="balance_pure" options="{'digits': [16, 3]}" class="fw-bold" style="font-size: 1.2em;"/>
+                        <field name="balance_charges" options="{'digits': [16, 2]}" class="fw-bold" style="font-size: 1.2em;"/>
                     </group>
                 </sheet>
             </form>

@@ -52,6 +52,10 @@ class CustomBill(models.Model):
             for txn in bill.transaction_ids:
                 if txn.ttype == 'metal_recv':
                     running_pure -= txn.pure_weight
+                elif txn.ttype == 'old_item':
+                    running_pure -= txn.pure_weight
+                elif txn.ttype == 'return_item':
+                    running_pure -= txn.pure_weight
                 elif txn.ttype == 'metal_pay':
                     running_pure += txn.pure_weight
                 elif txn.ttype == 'cash_recv':

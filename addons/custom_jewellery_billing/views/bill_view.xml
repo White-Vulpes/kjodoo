@@ -102,11 +102,11 @@
                                                 <field name="ttype"/>
                                             </group>
                                             <group string="Values">
-                                                <field name="gross_weight" options="{'digits': [16, 3]}" invisible="ttype not in ('metal_recv', 'metal_pay')"/>
-                                                <field name="purity" options="{'digits': [16, 2]}" invisible="ttype not in ('metal_recv', 'metal_pay')"/>
-                                                <field name="pure_weight" options="{'digits': [16, 3]}" invisible="ttype not in ('metal_recv', 'metal_pay', 'rate_cut')"/>
-                                                
-                                                <field name="rate" options="{'digits': [16, 2]}" invisible="ttype != 'rate_cut'" required="ttype == 'rate_cut'"/>
+                                                <field name="gross_weight" options="{'digits': [16, 3]}" invisible="ttype not in ('metal_recv', 'metal_pay', 'old_item', 'return_item')"/>
+                                                <field name="purity" options="{'digits': [16, 2]}" invisible="ttype not in ('metal_recv', 'metal_pay', 'old_item', 'return_item')"/>
+                                                <field name="pure_weight" options="{'digits': [16, 3]}" invisible="ttype not in ('metal_recv', 'metal_pay', 'rate_cut', 'old_item', 'return_item')"/>
+
+                                                <field name="rate" options="{'digits': [16, 2]}" invisible="ttype not in ('rate_cut', 'old_item')" required="ttype == 'rate_cut'"/>
                                                 <field name="amount" options="{'digits': [16, 2]}" invisible="ttype not in ('cash_recv', 'cash_pay', 'rate_cut')"/>
                                             </group>
                                         </group>

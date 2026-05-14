@@ -35,7 +35,7 @@ class CustomBillLine(models.Model):
 
     cash = fields.Float(string='Cash', compute="_compute_cash", store=True, digits=(16, 2))
 
-    @api.onchange('VAT')
+    @api.onchange('VAT', 'bill_id.karat_22', 'bill_id.karat_18', 'bill_id.karat_24', 'type')
     def _onchange_VAT(self):
         for line in self:
             if line.type == '22K':
@@ -43,7 +43,7 @@ class CustomBillLine(models.Model):
             elif line.type == '18K':
                 line.touch = (line.VAT + 100) * line.bill_id.karat_18 / line.bill_id.karat_24
 
-    @api.onchange('touch')
+    @api.onchange('touch', 'bill_id.karat_22', 'bill_id.karat_18', 'bill_id.karat_24', 'type')
     def _onchange_touch(self):
         for line in self:
             if line.type == '22K':
@@ -70,7 +70,7 @@ class CustomBillLine(models.Model):
             else:
                 line.pure = 0.0
 
-    @api.depends('total_wt', 'charges')
+    @api.depends('total_wt', 'charges', 'type', 'bill_id.karat_22', 'bill_id.karat_18')
     def _compute_cash(self):
         for line in self:
             if line.type == '22K':
