@@ -57,7 +57,10 @@ class CustomBill(models.Model):
                 if txn.ttype == 'metal_recv':
                     running_pure -= txn.pure_weight
                 elif txn.ttype == 'old_item':
-                    running_pure -= txn.pure_weight
+                    if txn.amount > 0:
+                        running_charges -= txn.amount  # Subtract the cash value of the old item
+                    else:
+                        running_pure -= txn.pure_weight
                 elif txn.ttype == 'return_item':
                     running_pure -= txn.pure_weight
                 elif txn.ttype == 'metal_pay':
