@@ -47,8 +47,8 @@
                 <field name="net_weight" options="{'digits': [16, 3]}"/>
                 <field name="melting"/>
                 <field name="touch"/>
-                <field name="VAT"/>
-                <field name="total_wt" options="{'digits': [16, 3]}"/>
+                <field string="V.A." name="VAT"/>
+                <field string="Wt. + VA" name="total_wt" options="{'digits': [16, 3]}"/>
                 <field name="pure" options="{'digits': [16, 3]}"/>
                 <field name="charges" options="{'digits': [16, 2]}"/>
                 <field name="cash" options="{'digits': [16, 2]}"/>

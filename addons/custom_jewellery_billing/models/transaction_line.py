@@ -58,7 +58,7 @@ class CustomBillTransaction(models.Model):
             if rec.ttype == 'rate_cut' and rec.pure_weight == 0:
                 
                 # Access the parent bill's live balance_pure
-                if rec.bill_id and rec.bill_id.balance_pure > 0:
+                if rec.bill_id and rec.bill_id.balance_pure != 0:
                     rec.pure_weight = rec.bill_id.balance_pure
 
     @api.onchange('pure_weight', 'rate', 'ttype')

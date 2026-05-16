@@ -82,7 +82,7 @@
                                     <th class="text-end">Nt. Wt</th>
                                     <th class="text-end">Charges</th>
                                     <th class="text-end">VA</th>
-                                    <th class="text-end">Total Wt.</th>
+                                    <th class="text-end">Wt. + VA</th>
                                     <th class="text-end">Cash</th>
                                 </tr>
                             </thead>
@@ -115,7 +115,7 @@
 
                                 <!-- NEW: GST Row -->
                                 <tr style="border: none;">
-                                    <td colspan="4" class="pt-2 pe-3" style="border: none; font-style: italic; font-size: 0.8em; font-weight: 500;">No Return / No Exchange After Delivery</td>
+                                    <td colspan="4" class="pt-2 pe-3" style="border: none; font-size: 1em; font-weight: 500;">No Return / No Exchange After Delivery</td>
                                     <td colspan="3" class="text-end border-0 pt-2 pe-3">GST (3%):</td>
                                     <td class="text-end border-0 pt-2">
                                         <!-- Calculates 3% dynamically -->
@@ -163,13 +163,18 @@
                                                 <span t-if="txn.ttype in ('metal_recv', 'metal_pay', 'old_item', 'return_item')" t-field="txn.net_weight" t-options='{"widget": "float", "precision": 3}'/>
                                             </td>
                                             <td class="text-end">
-                                                <span t-if="txn.ttype in ('metal_recv', 'metal_pay', 'old_item', 'return_item')" t-field="txn.purity" t-options='{"widget": "float", "precision": 2}'/>
+                                                <span t-if="txn.ttype in ('metal_recv', 'metal_pay', 'return_item')" t-field="txn.purity" t-options='{"widget": "float", "precision": 2}'/>
                                             </td>
                                             <td class="text-end">
-                                                <span t-if="txn.ttype in ('metal_recv', 'metal_pay', 'rate_cut', 'old_item', 'return_item')" t-field="txn.pure_weight" t-options='{"widget": "float", "precision": 3}'/>
+                                                <span t-if="txn.ttype in ('metal_recv', 'metal_pay', 'rate_cut', 'return_item')" t-field="txn.pure_weight" t-options='{"widget": "float", "precision": 3}'/>
                                             </td>
                                             <td class="text-end">
-                                                <span t-if="txn.ttype in ('rate_cut', 'old_item')" t-field="txn.rate" t-options='{"widget": "float", "precision": 2}'/>
+                                                <t t-if="txn.ttype == 'rate_cut'">
+                                                    <span t-field="txn.rate" t-options='{"widget": "float", "precision": 2}'/>
+                                                </t>
+                                                <t t-if="txn.ttype == 'old_item'">
+                                                    <span t-esc="txn.rate * txn.purity / 100" t-options='{"widget": "float", "precision": 2}'/>
+                                                </t>
                                             </td>
                                             <td class="text-end">
                                                 <span t-if="txn.ttype in ('cash_recv', 'cash_pay', 'rate_cut', 'old_item')" t-field="txn.amount" t-options='{"widget": "float", "precision": 2}'/>
@@ -216,7 +221,16 @@
                                 <span t-field="doc.date" t-options='{"widget": "date", "format": "dd/MM"}'/>
                             </div>
                         </div>
-
+                        <div class="row">
+                            <div class="col-6">
+                                <span style="font-style: italic; font-size: 0.8em;">Phone: <span t-field="doc.partner_id.phone"/></span>
+                            </div>
+                            <div class="col-6 text-end">
+                                <span style="font-style: italic; font-size: 0.8em;">
+                                    24K: <span t-field="doc.karat_24" t-options='{"widget": "float", "precision": 2}'/>
+                                </span>
+                            </div>
+                        </div>
                         <table class="table table-sm table-bordered mb-0" style="font-size: 0.9em;">
                             <thead>
                                 <tr>
@@ -306,7 +320,8 @@
                                 </tbody>
                             </table>
                         </t>
-                        <div class="w-100 text-end m-0">
+                        <div class="w-100 text-end m-0" style="display: flex !important; justify-content: space-between !important;">
+                            <span style="font-size: 0.8em; font-weight: 500;">No Return / No Exchange After Delivery</span>
                             <span style="font-style: italic; font-size: 0.8em;">*GST as applicable</span>
                         </div>
                         <t t-if="doc.remarks">
