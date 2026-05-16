@@ -7,6 +7,7 @@
     'data': [
         'security/ir.model.access.csv',
         'views/order_views.xml',
+        'reports/order_report.xml',  # <-- ADD THIS LINE
     ],
     'installable': True,
     'application': True,
