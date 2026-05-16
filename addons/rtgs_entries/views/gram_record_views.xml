@@ -147,7 +147,7 @@
         <field name="view_mode">list,form</field>
     </record>
 
-    <menuitem id="menu_gram_root" name="RTGS Entry Management" sequence="10"/>
+    <menuitem id="menu_gram_root" name="RTGS Entry Management" sequence="10" web_icon="rtgs_entries,static/description/icon.png"/>
     <menuitem id="menu_gram_records" name="Entries" parent="menu_gram_root" action="action_gram_record" sequence="10"/>
     <menuitem id="menu_gram_records_bill" name="Bill Generation" parent="menu_gram_root" action="action_gram_record_list" sequence="20"/>
     <menuitem id="menu_gram_config" name="Configuration" parent="menu_gram_root" sequence="100"/>
