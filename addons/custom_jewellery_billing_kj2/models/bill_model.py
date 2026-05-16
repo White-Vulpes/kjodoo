@@ -29,6 +29,8 @@ class CustomBill(models.Model):
     total_charges = fields.Float(string='Total Charges', compute='_compute_totals', store=True)
     total_less = fields.Float(string='Total Less', compute='_compute_totals', store=True, digits=(16, 4))
 
+    show_transaction = fields.Boolean(string="Show Transaction")
+
     remarks = fields.Text(string='Remarks')
 
     karat_24 = fields.Float(string='24K', digits=(16, 2), store=True, default=24.0)

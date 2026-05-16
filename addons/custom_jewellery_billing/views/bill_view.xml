@@ -70,6 +70,9 @@
                             <field name="date"/>
                             <field name="bill_number"/>
                         </group>
+                        <group>
+                            <field name="show_transaction"/>
+                        </group>
                     </group>
                     <notebook>
                         <page string="Bill Items">

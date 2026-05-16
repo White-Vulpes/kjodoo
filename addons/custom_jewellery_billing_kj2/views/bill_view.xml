@@ -84,6 +84,9 @@
                             <field name="karat_18"/>
                             <field name="karat_24"/>
                         </group>
+                        <group>
+                            <field name="show_transaction"></field>
+                        </group>
                     </group>
                     <notebook>
                         <page string="Bill Items">

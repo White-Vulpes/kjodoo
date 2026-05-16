@@ -23,6 +23,8 @@ class CustomBill(models.Model):
     # --- The Relational Table ---
     item_ids = fields.One2many('custom.bill.line', 'bill_id', string='Bill Items')
 
+    show_transaction = fields.Boolean(string="Show Transaction")
+
     # --- The Totals ---
     total_weight = fields.Float(string='Total Weight', compute='_compute_totals', store=True, digits=(16, 4))
     total_pure = fields.Float(string='Total Pure', compute='_compute_totals', store=True, digits=(16, 4))

@@ -133,7 +133,7 @@
                                 </tr>
                             </tbody>
                         </table>
-                        <t t-if="doc.transaction_ids">
+                        <t t-if="doc.transaction_ids and doc.show_transaction">
                             <table class="table table-sm table-bordered mt-2 mb-0" style="font-size: 0.9em; font-style: italic;">
                                 <thead>
                                     <tr style="background-color: #f8f9fa;">
@@ -274,7 +274,7 @@
                                 </tr>
                             </tbody>
                         </table>
-                        <t t-if="doc.transaction_ids">
+                        <t t-if="doc.transaction_ids and doc.show_transaction">
                             <table class="table table-sm table-bordered mt-2 mb-0" style="font-size: 0.9em; font-style: italic;">
                                 <thead>
                                     <tr style="background-color: #f8f9fa;">
