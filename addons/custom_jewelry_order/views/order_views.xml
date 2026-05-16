@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- FORM VIEW -->
+    <record id="view_custom_jewelry_order_form" model="ir.ui.view">
+        <field name="name">custom.jewelry.order.form</field>
+        <field name="model">custom.jewelry.order</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,manufacturing,ready,delivered"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="item_type"/>
+                            <field name="karat_purity"/>
+                        </group>
+                        <group>
+                            <field name="date_order"/>
+                            <field name="expected_date"/>
+                            <field name="advance_payment"/>
+                            <field name="estimated_weight"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Design Details">
+                            <group>
+                                <field name="description"/>
+                            </group>
+                            <!-- NEW: The Multiple Image Gallery -->
+                            <separator string="Reference Photos"/>
+                            <field name="reference_image_ids" nolabel="1">
+                                <!-- The Grid View for Thumbnails -->
+                                <kanban>
+                                    <field name="id"/>
+                                    <field name="name"/>
+                                    <field name="image"/>
+                                    <templates>
+                                        <t t-name="card">
+                                            <div class="oe_kanban_global_click text-center p-2">
+                                                <field name="image" widget="image" options="{'size': [120, 120]}"/>
+                                                <div class="mt-1">
+                                                    <strong><field name="name"/></strong>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </templates>
+                                </kanban>
+                                <!-- The Pop-up Form when you click "Add a line" -->
+                                <form>
+                                    <sheet>
+                                        <group>
+                                            <group>
+                                                <field name="name"/>
+                                                <field name="notes"/>
+                                            </group>
+                                            <group>
+                                                <field name="image" widget="image" class="oe_avatar"/>
+                                            </group>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- list/LIST VIEW -->
+    <record id="view_custom_jewelry_order_list" model="ir.ui.view">
+        <field name="name">custom.jewelry.order.list</field>
+        <field name="model">custom.jewelry.order</field>
+        <field name="arch" type="xml">
+            <list decoration-info="state == 'draft'" decoration-success="state == 'ready'" decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="date_order"/>
+                <field name="item_type"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ACTION AND MENUS -->
+    <record id="action_custom_jewelry_order" model="ir.actions.act_window">
+        <field name="name">Custom Orders</field>
+        <field name="res_model">custom.jewelry.order</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Main App Menu -->
+    <menuitem id="menu_custom_orders_root" name="Custom Orders" sequence="10" web_icon="custom_jewelry_order,static/description/icon.png"/>
+    <menuitem id="menu_custom_orders_list" name="Orders" parent="menu_custom_orders_root" action="action_custom_jewelry_order" sequence="1"/>
+</odoo>
