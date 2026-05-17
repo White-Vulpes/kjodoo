@@ -7,7 +7,15 @@
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <field name="state" widget="statusbar" options="{'clickable': '1'}" statusbar_visible="draft,confirmed,manufacturing,ready,delivered"/>
+                    <button name="action_print_order"
+                            type="object"
+                            string="Generate PDF"
+                            class="btn-primary"/>
+                    <field 
+                       name="state" 
+                       widget="statusbar" 
+                       options="{'clickable': '1'}" 
+                       statusbar_visible="cancelled,draft,confirmed,manufacturing,ready,delivered"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -62,16 +70,97 @@
                 <field name="date_order"/>
                 <field name="item_type"/>
                 <field name="total_wt" sum="Total Gold Weight"/>
-                <field name="state" widget="badge"/>
+                <field name="state" widget="badge" decoration-muted="state == 'draft'"
+                           decoration-info="state == 'confirmed'"
+                           decoration-warning="state == 'manufacturing'"
+                           decoration-success="state in ('ready', 'delivered')"
+                           decoration-danger="state == 'cancelled'"/>
             </list>
         </field>
     </record>
+    <!-- KANBAN VIEW (Odoo 18 Format) -->
+    <record id="view_custom_jewelry_order_kanban" model="ir.ui.view">
+        <field name="name">custom.jewelry.order.kanban</field>
+        <field name="model">custom.jewelry.order</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_small_column" sample="1" decoration-info="state == 'draft'" decoration-success="state == 'ready'" decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="item_type"/>
+                <field name="total_wt"/>
+                <field name="state"/>
+                <!-- REQUIRED: Load the images into the Kanban memory -->
+                <field name="reference_image_ids"/>
+                
+                <templates>
+                    <t t-name="card">
+                        <!-- We removed p-2 from the main div so the image can touch the edges -->
+                        <div class="oe_kanban_global_click p-0">
+                            
+                            <!-- THE COVER IMAGE -->
+                            <!-- This checks if at least 1 image exists, and grabs the 1st one (index [0]) -->
+                            <t t-if="record.reference_image_ids.raw_value.length > 0">
+                                <img t-attf-src="/web/image/#{record.reference_image_ids.raw_value[0]}" 
+                                     class="w-100" 
+                                     style="height: 180px; object-fit: cover; border-top-left-radius: 4px; border-top-right-radius: 4px;" 
+                                     alt="Design Reference"/>
+                            </t>
+                            
+                            <!-- THE CARD DETAILS (Added padding here instead) -->
+                            <div class="p-2">
+                                <!-- Top Row: Order Number & Weight -->
+                                <div class="d-flex justify-content-between mb-1">
+                                    <strong class="fs-5"><field name="name"/></strong>
+                                    <span class="badge text-bg-secondary fs-6"><field name="weight"/> x <field name="pieces"/> = <field name="total_wt"/></span>
+                                </div>
+                                
+                                <!-- Middle: Customer & Item -->
+                                <div class="mt-2">
+                                    <div><i class="fa fa-user me-2"/> <field name="partner_id"/></div>
+                                    <div class="text-muted"><i class="fa fa-diamond me-2"/> <field name="item_type"/></div>
+                                </div>
+                                
+                                <!-- Bottom: State Indicator (Color coded) -->
+                                <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                                    
+                                    <!-- The Mini Thumbnail Gallery -->
+                                    <div class="d-flex align-items-center gap-1">
+                                        <!-- Loop through only the first 3 images to keep the card clean -->
+                                        <t t-foreach="record.reference_image_ids.raw_value.slice(0, 3)" t-as="img_id">
+                                            <img t-attf-src="/web/image/#{img_id}" 
+                                                 class="rounded border" 
+                                                 style="width: 26px; height: 26px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.1);" 
+                                                 alt="Thumb"/>
+                                        </t>
+                                        <!-- Show a +X counter if there are more than 3 images -->
+                                        <t t-if="record.reference_image_ids.raw_value.length > 3">
+                                            <span class="text-muted ms-1 fw-bold" style="font-size: 0.75em;">
+                                                +<t t-esc="record.reference_image_ids.raw_value.length - 3"/>
+                                            </span>
+                                        </t>
+                                    </div>
+                                    
+                                    <!-- The Status Badge -->
+                                    <field name="state" widget="badge" 
+                                           decoration-muted="state == 'draft'"
+                                           decoration-info="state == 'confirmed'"
+                                           decoration-warning="state == 'manufacturing'"
+                                           decoration-success="state in ('ready', 'delivered')"
+                                           decoration-danger="state == 'cancelled'"/>
+                                </div>
+                            </div>
 
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
     <!-- MAIN ACTION -->
     <record id="action_custom_jewelry_order" model="ir.actions.act_window">
         <field name="name">Custom Orders</field>
         <field name="res_model">custom.jewelry.order</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">kanban,list,form</field>
     </record>
 
     <!-- ACTIONS FOR CONFIGURATION MENUS -->

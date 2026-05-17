@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- 1. The Print Action (Adds the 'Print' button to the UI) -->
+
+    <!-- 1. Custom Paper Format for Landscape -->
+    <record id="paperformat_landscape_jewelry" model="report.paperformat">
+        <field name="name">Landscape Jewelry Report</field>
+        <field name="default" eval="True"/>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">15</field>
+        <field name="margin_bottom">15</field>
+        <field name="margin_left">15</field>
+        <field name="margin_right">15</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+    </record>
+
+    <!-- 2. The Print Action (Linked to the Landscape Format) -->
     <record id="action_report_custom_jewelry_order" model="ir.actions.report">
         <field name="name">Jewelry Order Details</field>
         <field name="model">custom.jewelry.order</field>
@@ -10,83 +25,115 @@
         <field name="binding_model_id" ref="model_custom_jewelry_order"/>
         <field name="binding_type">report</field>
         <field name="print_report_name">'Order - %s' % (object.name)</field>
+        <!-- Tells Odoo to use the Landscape format we created above -->
+        <field name="paperformat_id" ref="paperformat_landscape_jewelry"/> 
     </record>
 
-    <!-- 2. The PDF Template -->
+    <!-- 3. The PDF Template -->
     <template id="report_jewelry_order_document">
         <t t-call="web.html_container">
-            <t t-call="web.external_layout">
+            <!-- web.basic_layout removes the company logo and standard header/footer -->
+            <t t-call="web.basic_layout">
                 <t t-foreach="docs" t-as="doc">
                     <div class="page">
                         
-                        <!-- Header -->
-                        <div class="row mb-4">
-                            <div class="col-12 text-center">
-                                <h2 style="border-bottom: 2px solid #000; padding-bottom: 10px;">
-                                    Custom Jewelry Order: <span t-field="doc.name"/>
-                                </h2>
-                            </div>
-                        </div>
-
-                        <!-- Customer & Dates -->
-                        <div class="row mb-4">
+                        <!-- Main 50/50 Split Container -->
+                        <div class="row">
+                            
+                            <!-- ==========================================
+                                 LEFT HALF: TABULAR DETAILS
+                                 ========================================== -->
                             <div class="col-6">
-                                <strong>Customer Details:</strong><br/>
-                                <span t-field="doc.partner_id.name"/><br/>
-                                <span t-field="doc.partner_id.phone"/><br/>
-                                <span t-field="doc.partner_id.email"/>
-                            </div>
-                            <div class="col-6 text-end">
-                                <strong>Order Date:</strong> <span t-field="doc.date_order"/><br/>
-                                <strong>Expected Delivery:</strong> <span t-field="doc.expected_date"/><br/>
-                                <strong>Current Status:</strong> <span t-field="doc.state"/>
-                            </div>
-                        </div>
+                                <h3 class="mb-3" style="border-bottom: 2px solid #000; padding-bottom: 5px;">
+                                    Order: <span t-field="doc.name"/>
+                                </h3>
+                                
+                                <table class="table table-sm table-bordered" style="font-size: 0.9em;">
+                                    <tbody>
+                                        <tr>
+                                            <th style="width: 35%; background-color: #f8f9fa;">Customer</th>
+                                            <td>
+                                                <strong t-field="doc.partner_id.name"/><br/>
+                                                <span t-field="doc.partner_id.phone"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th style="background-color: #f8f9fa;">Order Date</th>
+                                            <td><span t-field="doc.date_order"/></td>
+                                        </tr>
+                                        <tr>
+                                            <th style="background-color: #f8f9fa;">Expected Delivery</th>
+                                            <td><span t-field="doc.expected_date"/></td>
+                                        </tr>
+                                        <tr>
+                                            <th style="background-color: #f8f9fa;">Status</th>
+                                            <td><strong><span t-field="doc.state"/></strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="padding: 0; border: none; height: 10px;"></td>
+                                        </tr>
+                                        <tr>
+                                            <th style="background-color: #f8f9fa;">Item Type</th>
+                                            <td><span t-field="doc.item_type"/></td>
+                                        </tr>
+                                        <tr>
+                                            <th style="background-color: #f8f9fa;">Karat / Purity</th>
+                                            <td><span t-field="doc.karat_purity"/></td>
+                                        </tr>
+                                        <tr>
+                                            <th style="background-color: #f8f9fa;">Seal / Hallmark</th>
+                                            <td><span t-field="doc.seal"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="padding: 0; border: none; height: 10px;"></td>
+                                        </tr>
+                                        <tr>
+                                            <th style="background-color: #f8f9fa;">Pieces</th>
+                                            <td><span t-field="doc.pieces"/></td>
+                                        </tr>
+                                        <tr>
+                                            <th style="background-color: #f8f9fa;">Wt. per Piece</th>
+                                            <td><span t-field="doc.weight" t-options='{"widget": "float", "precision": 3}'/> g</td>
+                                        </tr>
+                                        <tr>
+                                            <th style="background-color: #e9ecef;">Total Weight</th>
+                                            <td style="background-color: #e9ecef;"><strong><span t-field="doc.total_wt" t-options='{"widget": "float", "precision": 3}'/> g</strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
 
-                        <!-- Order Specifications -->
-                        <h4 class="mt-4 border-bottom pb-2">Order Specifications</h4>
-                        <table class="table table-sm table-bordered mt-3">
-                            <tr>
-                                <th style="width: 25%; background-color: #f8f9fa;">Item Type</th>
-                                <td style="width: 25%;"><span t-field="doc.item_type"/></td>
-                                <th style="width: 25%; background-color: #f8f9fa;">Gold Purity</th>
-                                <td style="width: 25%;"><span t-field="doc.karat_purity"/></td>
-                            </tr>
-                            <tr>
-                                <th style="background-color: #f8f9fa;">Est. Weight</th>
-                                <td><span t-field="doc.estimated_weight"/> g</td>
-                                <th style="background-color: #f8f9fa;">Advance Deposit</th>
-                                <td><span t-field="doc.advance_payment" t-options='{"widget": "monetary", "display_currency": res_company.currency_id}'/></td>
-                            </tr>
-                        </table>
-
-                        <!-- Design Notes -->
-                        <t t-if="doc.description">
-                            <h4 class="mt-4 border-bottom pb-2">Design Notes &amp; Description</h4>
-                            <p class="mt-2" style="white-space: pre-wrap;"><span t-field="doc.description"/></p>
-                        </t>
-
-                        <!-- Reference Images Gallery -->
-                        <t t-if="doc.reference_image_ids">
-                            <h4 class="mt-4 border-bottom pb-2">Reference Gallery</h4>
-                            <div class="row mt-3">
-                                <t t-foreach="doc.reference_image_ids" t-as="img">
-                                    <div class="col-4 text-center mb-4">
-                                        <div style="border: 1px solid #ddd; padding: 5px; border-radius: 5px;">
-                                            <span t-field="img.image" t-options="{'widget': 'image', 'style': 'max-width: 100%; max-height: 200px; object-fit: contain;'}"/>
-                                            <div class="mt-2 text-muted" style="font-size: 0.9em;">
-                                                <strong><span t-field="img.name"/></strong>
-                                                <t t-if="img.notes">
-                                                    <br/><i><span t-field="img.notes"/></i>
-                                                </t>
-                                            </div>
-                                        </div>
+                                <t t-if="doc.description">
+                                    <div class="mt-3 p-2" style="border: 1px solid #ddd; background-color: #fcfcfc; border-radius: 4px; font-size: 0.85em;">
+                                        <strong>Design Notes:</strong><br/>
+                                        <span t-field="doc.description" style="white-space: pre-wrap;"/>
                                     </div>
                                 </t>
                             </div>
-                        </t>
 
-                    </div>
+                            <!-- ==========================================
+                                 RIGHT HALF: FLEX IMAGES
+                                 ========================================== -->
+                            <div class="col-6">
+                                <t t-if="doc.reference_image_ids">
+                                    <!-- Flexbox Container -->
+                                    <div class="d-flex flex-wrap align-content-start gap-2" style="height: 100%;">
+                                        <t t-foreach="doc.reference_image_ids" t-as="img">
+                                            <!-- Flex Child Item -->
+                                            <div style="flex: 1 1 45%; max-width: 48%; border: 1px solid #ccc; padding: 5px; border-radius: 5px; text-align: center; box-shadow: 1px 1px 3px rgba(0,0,0,0.1);">
+                                                <span t-field="img.datas" t-options="{'widget': 'image', 'style': 'max-width: 100%; max-height: 220px; object-fit: contain;'}"/>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <div class="text-center text-muted" style="margin-top: 40%; border: 2px dashed #ddd; padding: 20px;">
+                                        <i>No reference images attached to this order.</i>
+                                    </div>
+                                </t>
+                            </div>
+
+                        </div> <!-- End Row -->
+                    </div> <!-- End Page -->
                 </t>
             </t>
         </t>

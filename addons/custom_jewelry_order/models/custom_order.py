@@ -47,13 +47,13 @@ class CustomJewelryOrder(models.Model):
     )
     
     state = fields.Selection([
+        ('cancelled', 'Cancelled'),
         ('draft', 'Draft / Estimation'),
         ('confirmed', 'Confirmed'),
         ('manufacturing', 'In Manufacturing'),
         ('ready', 'Ready for Pickup'),
-        ('delivered', 'Delivered'),
-        ('cancelled', 'Cancelled')
-    ], string='Status', default='draft', readonly=False, tracking=True)
+        ('delivered', 'Delivered')
+    ], string='Status', default='draft', readonly=False, tracking=True, group_expand='_read_group_state')
 
     @api.depends('weight', 'pieces')
     def _compute_total_weight(self):
@@ -70,3 +70,28 @@ class CustomJewelryOrder(models.Model):
                     next_num = 1  # Reset to 1 if it exceeds 50
                 vals['name'] = f"ORD-{next_num:04d}"
         return super().create(vals_list)
+    
+    def action_print_order(self):
+        # 1. Get the report reference
+        report = self.env.ref('custom_jewelry_order.action_report_custom_jewelry_order')
+
+        # 2. Construct the direct URL to the PDF
+        report_url = f'/report/pdf/{report.report_name}/{self.id}?time={fields.Datetime.now().timestamp()}'
+        
+        # 3. Return a URL action to force a new tab
+        return {
+            'type': 'ir.actions.act_url',
+            'url': report_url,
+            'target': 'new',  # 'new' tells Odoo to open a new browser tab
+        }
+    
+    @api.model
+    def _read_group_state(self, *args, **kwargs):
+        return [
+            'draft', 
+            'confirmed', 
+            'manufacturing', 
+            'ready', 
+            'delivered', 
+            'cancelled'
+        ]
