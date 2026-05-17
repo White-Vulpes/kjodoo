@@ -1,17 +1,26 @@
 from odoo import models, fields, api
 
-# 1. NEW MODEL: This creates a separate table to hold unlimited images
-class CustomJewelryOrderImage(models.Model):
-    _name = 'custom.jewelry.order.image'
-    _description = 'Order Reference Image'
+class CustomJewelryOrderItemType(models.Model):
+    _name = 'custom.jewelry.item.type'
+    _description = 'Custom Jewelry Item Type'
+    _order = 'name'
 
-    order_id = fields.Many2one('custom.jewelry.order', string='Order Reference', ondelete='cascade')
-    name = fields.Char(string='Title', required=True, default='Reference Photo')
-    image = fields.Image(string='Image', required=True, max_width=1024, max_height=1024)
-    notes = fields.Text(string='Specific Notes (e.g., "Make this part thicker")')
+    name = fields.Char(string='Item Type', required=True)
 
+class CustomJewelryOrderKarat(models.Model):
+    _name = 'custom.jewelry.karat'
+    _description = 'Custom Jewelry Karat'
+    _order = 'name'
 
-# 2. MAIN MODEL: Your existing order model, updated to link to the images
+    name = fields.Char(string='Karat', required=True)
+
+class CustomJewelryOrderSeal(models.Model):
+    _name = 'custom.jewelry.seal'
+    _description = 'Custom Jewelry Seal'
+    _order = 'name'
+
+    name = fields.Char(string='Seal', required=True)
+
 class CustomJewelryOrder(models.Model):
     _name = 'custom.jewelry.order'
     _description = 'Custom Jewelry Order'
@@ -21,28 +30,21 @@ class CustomJewelryOrder(models.Model):
     name = fields.Char(string='Order Reference', required=True, copy=False, readonly=True, default='New')
     partner_id = fields.Many2one('res.partner', string='Customer', required=True, tracking=True)
     date_order = fields.Date(string='Order Date', default=fields.Date.context_today)
-    expected_date = fields.Date(string='Expected Delivery')
+    expected_date = fields.Date(string='Expected Delivery', tracking=True)
     
-    item_type = fields.Selection([
-        ('ring', 'Ring'),
-        ('necklace', 'Necklace'),
-        ('bangle', 'Bangle/Bracelet'),
-        ('repair', 'Repair/Polish')
-    ], string='Item Type', required=True)
+    item_type = fields.Many2one('custom.jewelry.item.type', string='Item Type', required=True)
+    karat_purity = fields.Many2one('custom.jewelry.karat', string='Karat/Purity', required=True)
+    seal = fields.Many2one('custom.jewelry.seal', string='Seal', required=True)
     
-    karat_purity = fields.Selection([
-        ('18k', '18K'),
-        ('22k', '22K'),
-        ('24k', '24K')
-    ], string='Gold Purity')
+    weight = fields.Float(string='Weight per Piece (g)', required=True, tracking=True)
+    pieces = fields.Integer(string='Number of Pieces', required=True, default=1)
+    total_wt = fields.Float(string='Total Weight (g)', compute='_compute_total_weight', store=True, readonly=True)
     
-    description = fields.Text(string='Design Notes / Description')
-    
-    # CHANGED: Replaced the single image with a link to our new image table
-    reference_image_ids = fields.One2many('custom.jewelry.order.image', 'order_id', string='Reference Gallery')
-    
-    estimated_weight = fields.Float(string='Estimated Weight (g)', digits=(16, 3))
-    advance_payment = fields.Float(string='Advance Deposit (₹)', tracking=True)
+    description = fields.Text(string='Design Notes / Description', tracking=True)
+    reference_image_ids = fields.Many2many(
+        'ir.attachment', 
+        string='Reference Gallery'
+    )
     
     state = fields.Selection([
         ('draft', 'Draft / Estimation'),
@@ -51,7 +53,12 @@ class CustomJewelryOrder(models.Model):
         ('ready', 'Ready for Pickup'),
         ('delivered', 'Delivered'),
         ('cancelled', 'Cancelled')
-    ], string='Status', default='draft', tracking=True)
+    ], string='Status', default='draft', readonly=False, tracking=True)
+
+    @api.depends('weight', 'pieces')
+    def _compute_total_weight(self):
+        for order in self:
+            order.total_wt = order.weight * order.pieces
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -59,5 +66,7 @@ class CustomJewelryOrder(models.Model):
             if vals.get('name', 'New') == 'New':
                 last_order = self.search([], order='id desc', limit=1)
                 next_num = int(last_order.name.split('-')[1]) + 1 if last_order and '-' in last_order.name else 1
+                if next_num > 50:
+                    next_num = 1  # Reset to 1 if it exceeds 50
                 vals['name'] = f"ORD-{next_num:04d}"
         return super().create(vals_list)

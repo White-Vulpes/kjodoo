@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,manufacturing,ready,delivered"/>
+                    <field name="state" widget="statusbar" options="{'clickable': '1'}" statusbar_visible="draft,confirmed,manufacturing,ready,delivered"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -16,57 +16,33 @@
                         </h1>
                     </div>
                     <group>
-                        <group>
-                            <field name="partner_id"/>
-                            <field name="item_type"/>
-                            <field name="karat_purity"/>
-                        </group>
-                        <group>
+                        <!-- Left Column: Customer & Dates -->
+                        <group string="Order Info">
+                            <field name="partner_id" widget="res_partner_many2one"/>
                             <field name="date_order"/>
                             <field name="expected_date"/>
-                            <field name="advance_payment"/>
-                            <field name="estimated_weight"/>
+                        </group>
+                        
+                        <!-- Right Column: Specs & Measurements -->
+                        <group string="Specifications">
+                            <!-- no_quick_create prevents users from typing typos and pressing enter -->
+                            <field name="weight"/>
+                            <field name="pieces"/>
+                            <field name="total_wt" class="oe_subtotal_footer_separator"/>
+                            <hr colspan="2"/>
+                            <field name="item_type" options="{'no_quick_create': True}"/>
+                            <field name="karat_purity" options="{'no_quick_create': True}"/>
+                            <field name="seal" options="{'no_quick_create': True}"/>
                         </group>
                     </group>
+                    
                     <notebook>
-                        <page string="Design Details">
+                        <page string="Design &amp; Attachments">
                             <group>
                                 <field name="description"/>
                             </group>
-                            <!-- NEW: The Multiple Image Gallery -->
                             <separator string="Reference Photos"/>
-                            <field name="reference_image_ids" nolabel="1">
-                                <!-- The Grid View for Thumbnails -->
-                                <kanban>
-                                    <field name="id"/>
-                                    <field name="name"/>
-                                    <field name="image"/>
-                                    <templates>
-                                        <t t-name="card">
-                                            <div class="oe_kanban_global_click text-center p-2">
-                                                <field name="image" widget="image" options="{'size': [120, 120]}"/>
-                                                <div class="mt-1">
-                                                    <strong><field name="name"/></strong>
-                                                </div>
-                                            </div>
-                                        </t>
-                                    </templates>
-                                </kanban>
-                                <!-- The Pop-up Form when you click "Add a line" -->
-                                <form>
-                                    <sheet>
-                                        <group>
-                                            <group>
-                                                <field name="name"/>
-                                                <field name="notes"/>
-                                            </group>
-                                            <group>
-                                                <field name="image" widget="image" class="oe_avatar"/>
-                                            </group>
-                                        </group>
-                                    </sheet>
-                                </form>
-                            </field>
+                            <field name="reference_image_ids" widget="many2many_binary" nolabel="1"/>
                         </page>
                     </notebook>
                 </sheet>
@@ -75,7 +51,7 @@
         </field>
     </record>
 
-    <!-- list/LIST VIEW -->
+    <!-- LIST VIEW (Odoo 18 Format) -->
     <record id="view_custom_jewelry_order_list" model="ir.ui.view">
         <field name="name">custom.jewelry.order.list</field>
         <field name="model">custom.jewelry.order</field>
@@ -85,19 +61,45 @@
                 <field name="partner_id"/>
                 <field name="date_order"/>
                 <field name="item_type"/>
+                <field name="total_wt" sum="Total Gold Weight"/>
                 <field name="state" widget="badge"/>
             </list>
         </field>
     </record>
 
-    <!-- ACTION AND MENUS -->
+    <!-- MAIN ACTION -->
     <record id="action_custom_jewelry_order" model="ir.actions.act_window">
         <field name="name">Custom Orders</field>
         <field name="res_model">custom.jewelry.order</field>
         <field name="view_mode">list,form</field>
     </record>
 
-    <!-- Main App Menu -->
-    <menuitem id="menu_custom_orders_root" name="Jewelry Orders" sequence="10" web_icon="custom_jewelry_order,static/description/icon.png"/>
+    <!-- ACTIONS FOR CONFIGURATION MENUS -->
+    <record id="action_config_item_type" model="ir.actions.act_window">
+        <field name="name">Item Types</field>
+        <field name="res_model">custom.jewelry.item.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_config_karat" model="ir.actions.act_window">
+        <field name="name">Karats</field>
+        <field name="res_model">custom.jewelry.karat</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_config_seal" model="ir.actions.act_window">
+        <field name="name">Seals</field>
+        <field name="res_model">custom.jewelry.seal</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- MENUS -->
+    <menuitem id="menu_custom_orders_root" name="Jewelry Orders" sequence="10"/>
+    
     <menuitem id="menu_custom_orders_list" name="Orders" parent="menu_custom_orders_root" action="action_custom_jewelry_order" sequence="1"/>
+    
+    <!-- Configuration Dropdown -->
+    <menuitem id="menu_custom_orders_config" name="Configuration" parent="menu_custom_orders_root" sequence="99"/>
+    
+    <menuitem id="menu_config_item_type" name="Item Types" parent="menu_custom_orders_config" action="action_config_item_type" sequence="1"/>
+    <menuitem id="menu_config_karat" name="Karats" parent="menu_custom_orders_config" action="action_config_karat" sequence="2"/>
+    <menuitem id="menu_config_seal" name="Seals" parent="menu_custom_orders_config" action="action_config_seal" sequence="3"/>
 </odoo>
