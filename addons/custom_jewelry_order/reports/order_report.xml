@@ -6,12 +6,12 @@
         <field name="name">A6 Jewelry Job Card</field>
         <field name="default" eval="True"/>
         <field name="format">A6</field>
-        <field name="orientation">Portrait</field>
+        <field name="orientation">Landscape</field>
         <!-- Very tight margins to maximize the small space -->
-        <field name="margin_top">5</field>
-        <field name="margin_bottom">5</field>
-        <field name="margin_left">5</field>
-        <field name="margin_right">5</field>
+        <field name="margin_top">1</field>
+        <field name="margin_bottom">1</field>
+        <field name="margin_left">1</field>
+        <field name="margin_right">1</field>
         <field name="header_line" eval="False"/>
         <field name="header_spacing">0</field>
     </record>
@@ -30,75 +30,97 @@
         <field name="paperformat_id" ref="paperformat_a6_jewelry"/> 
     </record>
 
-    <!-- 3. The A6 PDF Template -->
     <template id="report_jewelry_order_document">
         <t t-call="web.html_container">
+            <!-- Basic layout removes standard Odoo headers/footers -->
             <t t-call="web.basic_layout">
                 <t t-foreach="docs" t-as="doc">
-                    <div class="page" style="font-size: 11px;"> <!-- Shrunk base font for A6 -->
+                    
+                    <!-- Base Page with Studio's font and padding -->
+                    <div class="page" style="font-family: sans-serif;">
                         
-                        <!-- Header -->
-                        <div class="text-center mb-2" style="border-bottom: 2px solid #000; padding-bottom: 3px;">
-                            <h5 class="mb-0 fw-bold">JOB CARD: <span t-field="doc.name"/></h5>
-                            <span class="text-muted"><span t-field="doc.date_order"/></span>
-                        </div>
-
-                        <!-- Customer Info -->
-                        <div class="mb-2">
-                            <strong>Customer:</strong> <span t-field="doc.partner_id.name"/> 
-                            <t t-if="doc.partner_id.phone">
-                                | <strong>Ph:</strong> <span t-field="doc.partner_id.phone"/>
-                            </t>
-                        </div>
-
-                        <!-- Specs Table -->
-                        <table class="table table-sm table-bordered mb-2" style="font-size: 10px;">
-                            <tbody>
-                                <tr>
-                                    <th class="bg-light w-25 text-nowrap">Item</th>
-                                    <td class="w-25"><span t-field="doc.item_type"/></td>
-                                    <th class="bg-light w-25 text-nowrap">Purity</th>
-                                    <td class="w-25"><span t-field="doc.karat_purity"/></td>
-                                </tr>
-                                <tr>
-                                    <th class="bg-light text-nowrap">Pieces</th>
-                                    <td><span t-field="doc.pieces"/></td>
-                                    <th class="bg-light text-nowrap">Seal</th>
-                                    <td><span t-field="doc.seal"/></td>
-                                </tr>
-                                <tr>
-                                    <th class="bg-light text-nowrap">Wt/Pc</th>
-                                    <td><span t-field="doc.weight" t-options='{"widget": "float", "precision": 3}'/>g</td>
-                                    <th class="bg-light text-nowrap">Total Wt</th>
-                                    <td><strong><span t-field="doc.total_wt" t-options='{"widget": "float", "precision": 3}'/>g</strong></td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <!-- Notes Section -->
-                        <t t-if="doc.description">
-                            <div class="mb-2 p-1" style="border: 1px solid #ddd; background-color: #fcfcfc; border-radius: 3px; font-size: 10px;">
-                                <strong>Notes:</strong> <span t-field="doc.description" style="white-space: pre-wrap;"/>
-                            </div>
-                        </t>
-
-                        <!-- Compact Image Gallery -->
-                        <t t-if="doc.reference_image_ids">
-                            <div class="text-center" style="border-top: 1px dashed #ccc; padding-top: 5px;">
-                                <strong>References</strong>
-                                <div class="d-flex flex-wrap justify-content-center mt-1" style="gap: 4px;">
+                        <!-- Main Container Table (Replaces Studio's complex xpath) -->
+                        <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                            <tr>
+                                
+                                <!-- ==========================================
+                                     LEFT COLUMN: 40% Text Details
+                                     ========================================== -->
+                                <td style="width: 40%; border-right: 1px solid #dee2e6; background-color: #fcfcfc; padding: 15px; vertical-align: top;">
                                     
-                                    <t t-foreach="doc.reference_image_ids[:4]" t-as="img">
-                                        
-                                        <div style="border: 1px solid #ccc; padding: 2px; border-radius: 3px; width: 48%;">
-                                            <span t-field="img.datas" t-options="{'widget': 'image', 'style': 'max-width: 100%; height: 80px; object-fit: contain;'}"/>
+                                    <!-- Studio Maroon Header -->
+                                    <h4 style="color: #714B67; border-bottom: 2px solid #714B67; padding-bottom: 5px; margin-bottom: 15px; font-size: 16px;">
+                                        Order Details: <span t-field="doc.name"/>
+                                    </h4>
+                                    
+                                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                                        <tr>
+                                            <td style="padding: 6px 0; font-weight: bold; color: #555; width: 40%;">Date:</td>
+                                            <td style="padding: 6px 0;"><span t-field="doc.date_order" t-options='{"widget": "date"}'/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 6px 0; font-weight: bold; color: #555;">Item Type:</td>
+                                            <td style="padding: 6px 0;"><span t-field="doc.item_type.name"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 6px 0; font-weight: bold; color: #555;">Weight:</td>
+                                            <td style="padding: 6px 0;"><span t-field="doc.weight"/> x <span t-field="doc.pieces"/> = <span t-field="doc.total_wt"/>g</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 6px 0; font-weight: bold; color: #555;">Karat/Purity:</td>
+                                            <td style="padding: 6px 0;"><span t-field="doc.karat_purity.name"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 6px 0; font-weight: bold; color: #555;">Seal:</td>
+                                            <td style="padding: 6px 0;"><span t-field="doc.seal.name"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="padding: 0 0 10px 0;">
+                                                <span t-field="doc.description" style="white-space: pre-wrap; color: #333;"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+
+                                <!-- ==========================================
+                                     RIGHT COLUMN: 60% Image Gallery
+                                     ========================================== -->
+                                <td style="width: 60%; background-color: #ffffff; padding: 10px; vertical-align: top;">
+                                    
+                                    <!-- Max 4 Photos -->
+                                    <t t-set="photo_list" t-value="doc.reference_image_ids[:4]"/>
+                                    <t t-set="total_photos" t-value="len(photo_list)"/>
+                                    
+                                    <div style="width: 100%;">
+                                        <t t-foreach="photo_list" t-as="img">
+                                            
+                                            <!-- Dynamic Width: 100% if single photo, 50% if multiple -->
+                                            <div t-att-style="'float: left; padding: 4px; box-sizing: border-box; ' + ('width: 100%;' if total_photos == 1 else 'width: 50%;')">
+                                                
+                                                <!-- Dynamic Height: 350px if single photo, 160px if multiple -->
+                                                <div t-att-style="'border: 1px solid #f0f0f0; background-color: #fafafa; display: block; overflow: hidden; text-align: center; ' + ('height: 350px; line-height: 350px;' if total_photos == 1 else 'height: 160px; line-height: 160px;')">
+                                                    
+                                                    <img t-if="img.datas" t-att-src="image_data_uri(img.datas)" style="max-width: 98%; max-height: 98%; vertical-align: middle; display: inline-block;"/>
+                                                
+                                                </div>
+                                            </div>
+                                        </t>
+                                        <div style="clear: both;"/>
+                                    </div>
+
+                                    <!-- Fallback if no photos exist -->
+                                    <t t-if="total_photos == 0">
+                                        <div style="text-align: center; padding: 40px; color: #999;">
+                                            <p><em>No images attached.</em></p>
                                         </div>
                                     </t>
-                                </div>
-                            </div>
-                        </t>
+                                </td>
 
-                    </div> <!-- End Page -->
+                            </tr>
+                        </table>
+                    </div> 
+                    <!-- End Page -->
+                    
                 </t>
             </t>
         </t>
