@@ -10,6 +10,7 @@ class CustomBill(models.Model):
     # This tells Odoo to use our 'name' char field as the record label
     _rec_name = 'name' 
     _order = 'id desc'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     
     # This is the "Display Name" (e.g., "Bill #5")
     name = fields.Char(string='Bill Reference', required=True, copy=False)
@@ -19,7 +20,7 @@ class CustomBill(models.Model):
     date = fields.Date(string='Date', default=fields.Date.context_today)
 
     # --- The Relational Table ---
-    item_ids = fields.One2many('custom.bill2.line', 'bill_id', string='Bill Items')
+    item_ids = fields.One2many('custom.bill2.line', 'bill_id', string='Bill Items', tracking=True)
 
     # --- The Totals ---
     total_weight = fields.Float(string='Total Weight', compute='_compute_totals', store=True, digits=(16, 4))
@@ -29,17 +30,17 @@ class CustomBill(models.Model):
     total_charges = fields.Float(string='Total Charges', compute='_compute_totals', store=True)
     total_less = fields.Float(string='Total Less', compute='_compute_totals', store=True, digits=(16, 4))
 
-    show_transaction = fields.Boolean(string="Show Transaction")
+    show_transaction = fields.Boolean(string="Show Transaction", tracking=True)
 
-    remarks = fields.Text(string='Remarks')
+    remarks = fields.Text(string='Remarks', tracking=True)
 
-    karat_24 = fields.Float(string='24K', digits=(16, 2), store=True, default=24.0)
-    karat_22 = fields.Float(string='22K', digits=(16, 2), store=True, compute="_compute_karat_22", readonly=False)
-    karat_18 = fields.Float(string='18K', digits=(16, 2), store=True, compute="_compute_karat_18", readonly=False)
+    karat_24 = fields.Float(string='24K', digits=(16, 2), store=True, default=24.0, tracking=True)
+    karat_22 = fields.Float(string='22K', digits=(16, 2), store=True, compute="_compute_karat_22", readonly=False, tracking=True)
+    karat_18 = fields.Float(string='18K', digits=(16, 2), store=True, compute="_compute_karat_18", readonly=False, tracking=True)
 
     total_cash = fields.Float(string='Total Cash', compute='_compute_total_cash', store=False, digits=(16, 2))
 
-    transaction_ids = fields.One2many('custom.bill2.transaction', 'bill_id', string='Transactions')
+    transaction_ids = fields.One2many('custom.bill2.transaction', 'bill_id', string='Transactions', tracking=True)
 
     # Add the live balance fields
     balance_pure = fields.Float(string='Remaining Pure', compute='_compute_balances', store=True, digits=(16, 4))

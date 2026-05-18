@@ -11,7 +11,7 @@
     'author': 'White Vulpes',
     
     # We only depend on the 'base' Odoo engine. No Enterprise traps here.
-    'depends': ['base'],
+    'depends': ['base', 'mail'],  # 'mail' is for chatter support
     
     # The order here is strictly important: Security MUST load before Views.
     'data': [

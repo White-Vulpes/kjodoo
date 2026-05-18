@@ -143,6 +143,7 @@
                         <field name="balance_charges" options="{'digits': [16, 2]}" class="fw-bold" style="font-size: 1.2em;"/>
                     </group>
                 </sheet>
+                 <chatter/>
             </form>
         </field>
     </record>

@@ -35,6 +35,14 @@ class CustomBillLine(models.Model):
 
     cash = fields.Float(string='Cash', compute="_compute_cash", store=True, digits=(16, 2))
 
+    @api.onchange('type')
+    def _onchange_melting(self):
+        for line in self:
+            if line.type == '22K':
+                line.melting = 92.0
+            elif line.type == '18K':
+                line.melting = 76.0
+
     @api.onchange('VAT', 'bill_id.karat_22', 'bill_id.karat_18', 'bill_id.karat_24', 'type')
     def _onchange_VAT(self):
         for line in self:
