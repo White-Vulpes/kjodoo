@@ -114,10 +114,10 @@
                                         <tr>
                                             <td><span t-field="txn.date" t-options='{"widget": "date", "format": "dd/MM"}'/></td>
                                             <td>
-                                                <span t-if="txn.ttype == 'metal_recv'">Metal Received</span>
-                                                <span t-if="txn.ttype == 'metal_pay'">Metal Payment</span>
-                                                <span t-if="txn.ttype == 'cash_recv'">Cash Received</span>
-                                                <span t-if="txn.ttype == 'cash_pay'">Cash Payment</span>
+                                                <span t-if="txn.ttype == 'metal_recv'">Metal</span>
+                                                <span t-if="txn.ttype == 'metal_pay'">- Metal</span>
+                                                <span t-if="txn.ttype == 'cash_recv'">Cash</span>
+                                                <span t-if="txn.ttype == 'cash_pay'">- Cash</span>
                                                 <span t-if="txn.ttype == 'rate_cut'">Rate Cut</span>
                                                 <span t-if="txn.ttype == 'old_item'">Old Item</span>
                                                 <span t-if="txn.ttype == 'return_item'">Return Item</span>
