@@ -11,6 +11,10 @@
                             type="object"
                             string="Generate PDF"
                             class="btn-primary"/>
+                    <button name="action_send_whatsapp"
+                            type="object"
+                            string="Send WhatsApp"
+                            class="btn-primary"/>
                     <field 
                        name="state" 
                        widget="statusbar" 

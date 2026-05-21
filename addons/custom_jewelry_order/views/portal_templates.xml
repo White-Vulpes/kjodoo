@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="portal_my_home_jewelry" name="Show Jewelry Orders" inherit_id="portal.portal_my_home" priority="20">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Jewelry Orders</t>
+                <t t-set="url" t-value="'/my/jewelry_orders'"/>
+                <t t-set="placeholder_count" t-value="'jewelry_count'"/>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="portal_my_jewelry_orders" name="My Jewelry Orders">
+        <t t-call="portal.portal_layout">
+            <h3>Your Custom Jewelry Orders</h3>
+            <t t-if="not orders">
+                <p>You currently have no jewelry orders.</p>
+            </t>
+            <t t-if="orders" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Order Reference</th>
+                        <th>Date</th>
+                        <th>Item Type</th>
+                        <th class="text-end">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="orders" t-as="order">
+                        <tr>
+                            <td><a t-attf-href="/my/jewelry_order/#{order.id}"><t t-esc="order.name"/></a></td>
+                            <td><span t-field="order.date_order"/></td>
+                            <td><span t-field="order.item_type.name"/></td>
+                            <td class="text-end">
+                                <span class="badge rounded-pill text-bg-info" t-field="order.state"/>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </t>
+        </t>
+    </template>
+
+    <template id="portal_jewelry_order_detail" name="Jewelry Order Details">
+        <t t-call="portal.portal_layout">
+            <div class="row mt16">
+                <div class="col-12 col-lg-8">
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0">Order: <span t-field="order.name"/></h4>
+                            <span class="badge text-bg-primary fs-6" t-field="order.state"/>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <strong>Expected Delivery:</strong><br/>
+                                    <span t-field="order.expected_date"/>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <strong>Item Type:</strong><br/>
+                                    <span t-field="order.item_type.name"/>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <strong>Purity:</strong><br/>
+                                    <span t-field="order.karat_purity.name"/>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <strong>Total Weight:</strong><br/>
+                                    <span t-field="order.total_wt"/> g
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- THE CHATTER SYSTEM -->
+                    <div id="jewelry_order_communication" class="mt-4">
+                        <h3>Messages &amp; Updates</h3>
+                        <t t-call="portal.message_thread">
+                            <t t-set="object" t-value="order"/>
+                            <!-- ADDED: Pass the token to the chatter so public users can post messages -->
+                            <t t-set="token" t-value="token"/>
+                            <t t-set="pid" t-value="pid"/>
+                            <t t-set="hash" t-value="hash"/>
+                        </t>
+                    </div>
+                </div>
+                
+                <div class="col-12 col-lg-4">
+                    <div class="card">
+                        <div class="card-header"><h5 class="mb-0">Design References</h5></div>
+                        <div class="card-body text-center">
+                            <t t-if="order.reference_image_ids">
+                                <t t-foreach="order.reference_image_ids" t-as="img">
+                                    <div class="mb-3 border rounded p-1">
+                                        <img t-attf-src="/web/image/#{img.id}" style="max-width: 100%; max-height: 250px;"/>
+                                    </div>
+                                </t>
+                            </t>
+                            <t t-else="">
+                                <p class="text-muted mb-0">No reference images attached.</p>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

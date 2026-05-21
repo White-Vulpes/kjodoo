@@ -3,3 +3,4 @@ access_custom_jewelry_order,custom.jewelry.order,model_custom_jewelry_order,koth
 access_custom_jewelry_item_type,custom.jewelry.item.type,model_custom_jewelry_item_type,kothari_jewels.kjnx,1,1,1,1
 access_custom_jewelry_karat,custom.jewelry.karat,model_custom_jewelry_karat,kothari_jewels.kjnx,1,1,1,1
 access_custom_jewelry_seal,custom.jewelry.seal,model_custom_jewelry_seal,kothari_jewels.kjnx,1,1,1,1
+access_custom_jewelry_order_portal,custom.jewelry.order.portal,model_custom_jewelry_order,base.group_portal,1,0,0,0

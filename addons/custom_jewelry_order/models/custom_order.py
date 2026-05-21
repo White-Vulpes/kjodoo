@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+from urllib.parse import quote
 
 class CustomJewelryOrderItemType(models.Model):
     _name = 'custom.jewelry.item.type'
@@ -24,7 +25,7 @@ class CustomJewelryOrderSeal(models.Model):
 class CustomJewelryOrder(models.Model):
     _name = 'custom.jewelry.order'
     _description = 'Custom Jewelry Order'
-    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _inherit = ['mail.thread', 'mail.activity.mixin', 'portal.mixin']
     _order = 'id desc'
 
     name = fields.Char(string='Order Reference', required=True, copy=False, readonly=True, default='New')
@@ -95,3 +96,41 @@ class CustomJewelryOrder(models.Model):
             'delivered', 
             'cancelled'
         ]
+    
+    def action_send_whatsapp(self):
+        # 1. ensure_one() prevents crashes if someone tries to run this on multiple records at once
+        self.ensure_one()
+
+        # 2. Get the full clickable portal link
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        portal_link = f"{base_url}{self.get_portal_url()}"
+
+        # 3. Get the human-readable state label (e.g., 'In Manufacturing' instead of 'manufacturing')
+        state_label = dict(self._fields['state'].selection).get(self.state, self.state)
+
+        # 4. Draft the message cleanly using standard Python strings
+        message = (
+            f"Hello {self.partner_id.name},\n\n"
+            f"Your custom jewelry order {self.name} is currently in the '{state_label}' stage.\n\n"
+            f"You can view your design specs, reference photos, and chat with us directly here:\n{portal_link}\n\n"
+            f"Thank you for choosing us!"
+        )
+
+        # 5. Safely encode the message so WhatsApp can read the spaces and special characters
+        encoded_message = quote(message)
+
+        # 6. Generate the WhatsApp link
+        # BONUS: If you have the customer's mobile number, you can put it right after wa.me/ to open their exact chat!
+        # Example: whatsapp_url = f"https://wa.me/{self.partner_id.mobile}?text={encoded_message}"
+        whatsapp_url = f"https://wa.me/?text={encoded_message}"
+        
+        return {
+            'type': 'ir.actions.act_url',
+            'url': whatsapp_url,
+            'target': 'new',
+        }
+    
+    def _compute_access_url(self):
+        super()._compute_access_url()
+        for order in self:
+            order.access_url = f'/my/jewelry_order/{order.id}'
