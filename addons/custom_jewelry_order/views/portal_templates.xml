@@ -75,32 +75,15 @@
 
                     <!-- THE CHATTER SYSTEM -->
                     <div id="jewelry_order_communication" class="mt-4">
-                        <h3>Messages &amp; Updates</h3>
+                        <h4>Updates</h4>
                         <t t-call="portal.message_thread">
                             <t t-set="object" t-value="order"/>
                             <!-- ADDED: Pass the token to the chatter so public users can post messages -->
                             <t t-set="token" t-value="token"/>
                             <t t-set="pid" t-value="pid"/>
                             <t t-set="hash" t-value="hash"/>
+                            <t t-set="disable_composer" t-value="True"/>
                         </t>
-                    </div>
-                </div>
-                
-                <div class="col-12 col-lg-4">
-                    <div class="card">
-                        <div class="card-header"><h5 class="mb-0">Design References</h5></div>
-                        <div class="card-body text-center">
-                            <t t-if="order.reference_image_ids">
-                                <t t-foreach="order.reference_image_ids" t-as="img">
-                                    <div class="mb-3 border rounded p-1">
-                                        <img t-attf-src="/web/image/#{img.id}" style="max-width: 100%; max-height: 250px;"/>
-                                    </div>
-                                </t>
-                            </t>
-                            <t t-else="">
-                                <p class="text-muted mb-0">No reference images attached.</p>
-                            </t>
-                        </div>
                     </div>
                 </div>
             </div>
