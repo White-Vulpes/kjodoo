@@ -1,5 +1,6 @@
 from odoo import models, fields, api
 from urllib.parse import quote
+from datetime import timedelta
 
 class CustomJewelryOrderItemType(models.Model):
     _name = 'custom.jewelry.item.type'
@@ -30,6 +31,7 @@ class CustomJewelryOrder(models.Model):
 
     name = fields.Char(string='Order Reference', required=True, copy=False, readonly=True, default='New')
     partner_id = fields.Many2one('res.partner', string='Customer', required=True, tracking=True)
+    manufacturer_id = fields.Many2one('res.partner', string='Manufacturer / Karigar', tracking=True)
     date_order = fields.Date(string='Order Date', default=fields.Date.context_today)
     expected_date = fields.Date(string='Expected Delivery', tracking=True)
     
@@ -55,6 +57,30 @@ class CustomJewelryOrder(models.Model):
         ('ready', 'Ready for Pickup'),
         ('delivered', 'Delivered')
     ], string='Status', default='draft', readonly=False, tracking=True, group_expand='_read_group_state')
+
+    # 1. The invisible field that holds the True/False calculation
+    is_delivery_urgent = fields.Boolean(
+        string='Is Delivery Urgent', 
+        compute='_compute_delivery_urgent'
+    )
+
+    # 2. The brain that calculates the urgency
+    @api.depends('expected_date', 'state')
+    def _compute_delivery_urgent(self):
+        # We define "urgent" as being 3 days or less from today
+        today = fields.Date.context_today(self)
+        urgent_date_threshold = today + timedelta(days=3)
+        
+        for order in self:
+            # If there's no date, or the item is already ready/delivered/cancelled, it's NOT urgent
+            if not order.expected_date or order.state in ('ready', 'delivered', 'cancelled'):
+                order.is_delivery_urgent = False
+            else:
+                # If the expected date is less than or equal to our 3-day threshold (or in the past)
+                if order.expected_date <= urgent_date_threshold:
+                    order.is_delivery_urgent = True
+                else:
+                    order.is_delivery_urgent = False
 
     @api.depends('weight', 'pieces')
     def _compute_total_weight(self):
