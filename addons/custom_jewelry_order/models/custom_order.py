@@ -2,6 +2,21 @@ from odoo import models, fields, api
 from urllib.parse import quote
 from datetime import timedelta
 
+class JewelrySize(models.Model):
+    _name = 'jewelry.size'
+    _description = 'Jewelry Size'
+    name = fields.Char(string='Size', required=True)
+
+class JewelryBroadness(models.Model):
+    _name = 'jewelry.broadness'
+    _description = 'Jewelry Broadness'
+    name = fields.Char(string='Broadness', required=True)
+
+class JewelryMelting(models.Model):
+    _name = 'jewelry.melting'
+    _description = 'Melting Standard'
+    name = fields.Char(string='Melting', required=True)
+
 class CustomJewelryOrderItemType(models.Model):
     _name = 'custom.jewelry.item.type'
     _description = 'Custom Jewelry Item Type'
@@ -9,19 +24,19 @@ class CustomJewelryOrderItemType(models.Model):
 
     name = fields.Char(string='Item Type', required=True)
 
-class CustomJewelryOrderKarat(models.Model):
-    _name = 'custom.jewelry.karat'
-    _description = 'Custom Jewelry Karat'
-    _order = 'name'
-
-    name = fields.Char(string='Karat', required=True)
-
 class CustomJewelryOrderSeal(models.Model):
     _name = 'custom.jewelry.seal'
     _description = 'Custom Jewelry Seal'
     _order = 'name'
 
     name = fields.Char(string='Seal', required=True)
+
+class CustomJewelryOrderManufacturer(models.Model):
+    _name = 'custom.jewelry.manufacturer'
+    _description = 'Custom Jewelry Manufacturer'
+    _order = 'name'
+
+    name = fields.Char(string='Manufacturer', required=True)
 
 class CustomJewelryOrder(models.Model):
     _name = 'custom.jewelry.order'
@@ -31,12 +46,15 @@ class CustomJewelryOrder(models.Model):
 
     name = fields.Char(string='Order Reference', required=True, copy=False, readonly=True, default='New')
     partner_id = fields.Many2one('res.partner', string='Customer', required=True, tracking=True)
-    manufacturer_id = fields.Many2one('res.partner', string='Manufacturer / Karigar', tracking=True)
+    manufacturer_id = fields.Many2one('custom.jewelry.manufacturer', string='Manufacturer / Karigar', tracking=True)
     date_order = fields.Date(string='Order Date', default=fields.Date.context_today)
     expected_date = fields.Date(string='Expected Delivery', tracking=True)
+
+    size_id = fields.Many2one('jewelry.size', string='Size / Length')
+    broadness_id = fields.Many2one('jewelry.broadness', string='Broadness')
+    melting_id = fields.Many2one('jewelry.melting', string='Melting')
     
     item_type = fields.Many2one('custom.jewelry.item.type', string='Item Type', required=True)
-    karat_purity = fields.Many2one('custom.jewelry.karat', string='Karat/Purity', required=True)
     seal = fields.Many2one('custom.jewelry.seal', string='Seal', required=True)
     
     weight = fields.Float(string='Weight per Piece (g)', required=True, tracking=True)

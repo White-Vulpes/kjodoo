@@ -67,16 +67,24 @@
                                             <td style="padding: 6px 0;"><span t-field="doc.weight"/> x <span t-field="doc.pieces"/> = <span t-field="doc.total_wt"/>g</td>
                                         </tr>
                                         <tr>
-                                            <td style="padding: 6px 0; font-weight: bold; color: #555;">Karat/Purity:</td>
-                                            <td style="padding: 6px 0;"><span t-field="doc.karat_purity.name"/></td>
+                                            <td style="padding: 6px 0; font-weight: bold; color: #555;">Melting:</td>
+                                            <td style="padding: 6px 0;"><span t-field="doc.melting_id.name"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 6px 0; font-weight: bold; color: #555;">Size:</td>
+                                            <td style="padding: 6px 0;"><span t-field="doc.size_id.name"/></td>
                                         </tr>
                                         <tr>
                                             <td style="padding: 6px 0; font-weight: bold; color: #555;">Seal:</td>
                                             <td style="padding: 6px 0;"><span t-field="doc.seal.name"/></td>
                                         </tr>
                                         <tr>
+                                            <td style="padding: 6px 0; font-weight: bold; color: #555;">Broadness:</td>
+                                            <td style="padding: 6px 0;"><span t-field="doc.broadness_id.name"/></td>
+                                        </tr>
+                                        <tr>
                                             <td colspan="2" style="padding: 0 0 10px 0;">
-                                                <span t-field="doc.description" style="white-space: pre-wrap; color: #333;"/>
+                                                <span t-field="doc.description" style="white-space: pre-wrap; color: #db0404;"/>
                                             </td>
                                         </tr>
                                     </table>

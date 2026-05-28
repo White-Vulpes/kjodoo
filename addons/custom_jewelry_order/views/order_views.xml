@@ -44,8 +44,10 @@
                             <field name="total_wt" class="oe_subtotal_footer_separator"/>
                             <hr colspan="2"/>
                             <field name="item_type" options="{'no_quick_create': True}"/>
-                            <field name="karat_purity" options="{'no_quick_create': True}"/>
                             <field name="seal" options="{'no_quick_create': True}"/>
+                            <field name="size_id" options="{'no_quick_create': True}"/>
+                            <field name="melting_id" options="{'no_quick_create': True}"/>
+                            <field name="broadness_id" options="{'no_quick_create': True}"/>
                         </group>
                     </group>
                     
@@ -185,11 +187,6 @@
         <field name="res_model">custom.jewelry.item.type</field>
         <field name="view_mode">list,form</field>
     </record>
-    <record id="action_config_karat" model="ir.actions.act_window">
-        <field name="name">Karats</field>
-        <field name="res_model">custom.jewelry.karat</field>
-        <field name="view_mode">list,form</field>
-    </record>
     <record id="action_config_seal" model="ir.actions.act_window">
         <field name="name">Seals</field>
         <field name="res_model">custom.jewelry.seal</field>
@@ -197,14 +194,35 @@
     </record>
 
     <!-- MENUS -->
-    <menuitem id="menu_custom_orders_root" name="Jewelry Orders" sequence="10"/>
+    <record id="action_jewelry_size" model="ir.actions.act_window">
+        <field name="name">Sizes</field>
+        <field name="res_model">jewelry.size</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_jewelry_broadness" model="ir.actions.act_window">
+        <field name="name">Broadness</field>
+        <field name="res_model">jewelry.broadness</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_jewelry_melting" model="ir.actions.act_window">
+        <field name="name">Melting Standards</field>
+        <field name="res_model">jewelry.melting</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_jewelry_manufacturer" model="ir.actions.act_window">
+        <field name="name">Manufacturers</field>
+        <field name="res_model">custom.jewelry.manufacturer</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_custom_jewelry_root" name="Jewelry Orders"/>
     
-    <menuitem id="menu_custom_orders_list" name="Orders" parent="menu_custom_orders_root" action="action_custom_jewelry_order" sequence="1"/>
+    <menuitem id="menu_custom_jewelry_orders" name="Orders" parent="menu_custom_jewelry_root" action="action_custom_jewelry_order" sequence="10"/>
+
+    <menuitem id="menu_jewelry_config" name="Configuration" parent="menu_custom_jewelry_root" sequence="100"/>
     
-    <!-- Configuration Dropdown -->
-    <menuitem id="menu_custom_orders_config" name="Configuration" parent="menu_custom_orders_root" sequence="99"/>
-    
-    <menuitem id="menu_config_item_type" name="Item Types" parent="menu_custom_orders_config" action="action_config_item_type" sequence="1"/>
-    <menuitem id="menu_config_karat" name="Karats" parent="menu_custom_orders_config" action="action_config_karat" sequence="2"/>
-    <menuitem id="menu_config_seal" name="Seals" parent="menu_custom_orders_config" action="action_config_seal" sequence="3"/>
+    <menuitem id="menu_config_size" name="Sizes" parent="menu_jewelry_config" action="action_jewelry_size" sequence="10"/>
+    <menuitem id="menu_config_broadness" name="Broadness" parent="menu_jewelry_config" action="action_jewelry_broadness" sequence="20"/>
+    <menuitem id="menu_config_melting" name="Melting Standards" parent="menu_jewelry_config" action="action_jewelry_melting" sequence="30"/>
+    <menuitem id="menu_config_manufacturer" name="Manufacturers" parent="menu_jewelry_config" action="action_jewelry_manufacturer" sequence="40"/>
 </odoo>
