@@ -44,6 +44,31 @@
 
     <template id="portal_jewelry_order_detail" name="Jewelry Order Details">
         <t t-call="portal.portal_layout">
+            
+            <!-- MOVED HERE: EXCLUSIVE DESIGNS SLIDESHOW -->
+            <t t-if="showcase_designs">
+                <div id="jewelryShowcaseCarousel" class="carousel slide mb-4" data-bs-ride="carousel" data-bs-interval="8000">
+                    <div class="carousel-inner rounded shadow-sm">
+                        <t t-foreach="showcase_designs" t-as="design">
+                            <div t-attf-class="carousel-item #{'active' if design_index == 0 else ''}">
+                                <img t-att-src="image_data_uri(design.image)" class="d-block w-100" style="object-fit: cover; max-height: 400px; border-radius: 8px;"/>
+                            </div>
+                        </t>
+                    </div>
+                    <!-- Navigation Arrows -->
+                    <t t-if="len(showcase_designs) > 1">
+                        <button class="carousel-control-prev" type="button" data-bs-target="#jewelryShowcaseCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#jewelryShowcaseCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </t>
+                </div>
+            </t>
+            
             <div class="row mt16">
                 <div class="col-12 col-lg-8">
                     <div class="card mb-4">
@@ -84,7 +109,6 @@
                         <h4>Updates</h4>
                         <t t-call="portal.message_thread">
                             <t t-set="object" t-value="order"/>
-                            <!-- ADDED: Pass the token to the chatter so public users can post messages -->
                             <t t-set="token" t-value="token"/>
                             <t t-set="pid" t-value="pid"/>
                             <t t-set="hash" t-value="hash"/>
@@ -103,7 +127,6 @@
                                         
                                         <!-- SCENARIO 1: It is a Video -->
                                         <t t-if="img.mimetype and 'video' in img.mimetype">
-                                            <!-- We use /web/content instead of /web/image because it supports video streaming -->
                                             <video controls="1" style="max-width: 100%; max-height: 250px; border-radius: 4px;">
                                                 <source t-attf-src="/web/content/#{img.id}?access_token=#{img.access_token}" t-att-type="img.mimetype"/>
                                                 Your browser does not support the video tag.

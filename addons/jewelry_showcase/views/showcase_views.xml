@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Collection Form View -->
+    <record id="view_jewelry_collection_form" model="ir.ui.view">
+        <field name="name">jewelry.collection.form</field>
+        <field name="model">jewelry.collection</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="display_location"/>
+                        </group>
+                        <group>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Exclusive Designs">
+                            <field name="design_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="image" widget="image" options="{'size': [50, 50]}"/>
+                                    <field name="name"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Actions and Menus -->
+    <record id="action_jewelry_collection" model="ir.actions.act_window">
+        <field name="name">Collections</field>
+        <field name="res_model">jewelry.collection</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- The Main App Menu Icon -->
+    <menuitem id="menu_jewelry_showcase_root" name="Showcase" web_icon="jewelry_showcase,static/description/icon.png" sequence="50"/>
+    <menuitem id="menu_jewelry_collection" name="Collections" parent="menu_jewelry_showcase_root" action="action_jewelry_collection" sequence="10"/>
+</odoo>

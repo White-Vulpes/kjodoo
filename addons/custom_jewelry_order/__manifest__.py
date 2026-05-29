@@ -3,7 +3,7 @@
     'version': '1.0',
     'category': 'Sales',
     'summary': 'Manage custom jewelry manufacturing and repair orders',
-    'depends': ['base', 'contacts', 'portal'], # Add 'sale' here if you want it linked to standard quotations
+    'depends': ['base', 'contacts', 'portal', 'jewelry_showcase'], # Add 'sale' here if you want it linked to standard quotations
     'data': [
         'security/ir.model.access.csv',
         'security/security.xml',

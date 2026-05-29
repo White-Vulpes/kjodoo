@@ -25,19 +25,32 @@ class JewelryPortal(CustomerPortal):
     # CHANGED: The route now only asks for a string (the token), no ID!
     @http.route(['/my/secure_order/<string:access_token>'], type='http', auth="public", website=True)
     def portal_my_jewelry_order_secure(self, access_token, **kw):
-        
-        # Search the database for the order using ONLY the secure 32-character token
         order_sudo = request.env['custom.jewelry.order'].sudo().search([('access_token', '=', access_token)], limit=1)
         
-        # If no order is found with that exact token (or if it was deleted), show the 404 page
         if not order_sudo:
             return request.not_found()
+
+        # FETCH THE COLLECTION ASSIGNED TO THE PORTAL
+        # We ask Odoo: "Find the 1 active collection where display_location is 'portal'"
+        portal_collection = request.env['jewelry.collection'].sudo().search([
+            ('display_location', '=', 'portal'), 
+            ('active', '=', True)
+        ], limit=1)
+        
+        # Extract the designs from that collection (if it exists)
+        showcase_designs = portal_collection.design_ids if portal_collection else []
 
         values = {
             'order': order_sudo,
             'page_name': 'jewelry_order',
             'token': access_token, 
+            'showcase_designs': showcase_designs, # Pass the designs to the website
         }
+        # --- DIAGNOSTIC TRAP ---
+        print(f"\n========== SHOWCASE DEBUG ==========")
+        print(f"Found Collection: {portal_collection.name if portal_collection else 'NONE FOUND!'}")
+        print(f"Number of Designs: {len(showcase_designs) if showcase_designs else 0}")
+        print(f"====================================\n")
         return request.render("custom_jewelry_order.portal_jewelry_order_detail", values)
 
     @http.route('/jewelry/whatsapp_redirect', type='http', auth='user')
