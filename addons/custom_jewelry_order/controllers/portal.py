@@ -38,3 +38,14 @@ class JewelryPortal(CustomerPortal):
             'token': access_token, 
         }
         return request.render("custom_jewelry_order.portal_jewelry_order_detail", values)
+
+    @http.route('/jewelry/whatsapp_redirect', type='http', auth='user')
+    def jewelry_whatsapp_redirect(self, phone=None, text='', **kw):
+        # Build the native iOS app URL
+        if phone:
+            whatsapp_url = f"whatsapp://send?phone={phone}&text={text}"
+        else:
+            whatsapp_url = f"whatsapp://send?text={text}"
+        
+        # Send a 302 Redirect header directly to the browser
+        return request.redirect(whatsapp_url, local=False)

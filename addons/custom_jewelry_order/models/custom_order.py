@@ -1,6 +1,7 @@
 from odoo import models, fields, api
 from urllib.parse import quote
 from datetime import timedelta
+from urllib.parse import urlencode
 
 class JewelrySize(models.Model):
     _name = 'jewelry.size'
@@ -140,35 +141,35 @@ class CustomJewelryOrder(models.Model):
     def action_send_whatsapp(self):
         self.ensure_one()
 
-        # 1. Generate the portal link and message
+        # 1. Guarantee token exists and generate link
+        if not self.access_token:
+            self._portal_ensure_token()
+            
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
-        portal_link = f"{base_url}{self.get_portal_url()}"
+        portal_link = f"{base_url}/my/secure_order/{self.access_token}"
+        
         state_label = dict(self._fields['state'].selection).get(self.state, self.state)
 
         message = (
             f"Hello {self.partner_id.name},\n\n"
             f"Your custom jewelry order {self.name} is currently in the '{state_label}' stage.\n\n"
-            f"You can view your design specs, reference photos, and chat with us directly here:\n{portal_link}\n\n"
+            f"You can view your design specs, reference photos, and check the updates directly here:\n{portal_link}\n\n"
             f"Thank you for choosing us!"
         )
-        encoded_message = quote(message)
 
-        # 2. Smart Routing for iOS and Android
-        # Check if the customer has a mobile number saved
-        if self.partner_id.phone:
-            # Strip out any spaces or special characters from the phone number
-            clean_phone = ''.join(filter(str.isdigit, self.partner_id.phone))
+        # 2. Package the parameters securely
+        params = {'text': message}
+        if self.partner_id.mobile:
+            params['phone'] = ''.join(filter(str.isdigit, self.partner_id.mobile))
             
-            # Using the native scheme with the phone number opens the exact chat
-            whatsapp_url = f"whatsapp://send?phone={clean_phone}&text={encoded_message}"
-        else:
-            # Using the native scheme without a phone number forces the contact picker to open reliably on iOS
-            whatsapp_url = f"whatsapp://send?text={encoded_message}"
-        
+        # 3. Point to our custom redirect route
+        redirect_url = f"/jewelry/whatsapp_redirect?{urlencode(params)}"
+
+        # 4. Target 'self' prevents iOS from opening a dead blank tab
         return {
             'type': 'ir.actions.act_url',
-            'url': whatsapp_url,
-            'target': 'new',
+            'url': redirect_url,
+            'target': 'self', 
         }
     
     # Overrides the default Odoo portal URL generator

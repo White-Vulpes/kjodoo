@@ -215,8 +215,8 @@
         <field name="view_mode">list,form</field>
     </record>
 
-    <menuitem id="menu_custom_jewelry_root" name="Jewelry Orders"/>
-    
+    <menuitem id="menu_custom_jewelry_root" name="Jewelry Orders" web_icon="custom_jewelry_order/static/description/icon.png"/>
+
     <menuitem id="menu_custom_jewelry_orders" name="Orders" parent="menu_custom_jewelry_root" action="action_custom_jewelry_order" sequence="10"/>
 
     <menuitem id="menu_jewelry_config" name="Configuration" parent="menu_custom_jewelry_root" sequence="100"/>

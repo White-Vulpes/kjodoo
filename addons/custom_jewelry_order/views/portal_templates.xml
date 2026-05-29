@@ -99,8 +99,22 @@
                         <div class="card-body text-center">
                             <t t-if="order.reference_image_ids">
                                 <t t-foreach="order.reference_image_ids" t-as="img">
-                                    <div class="mb-3 border rounded p-1">
-                                        <img t-if="img.datas" t-att-src="image_data_uri(img.datas)" style="max-width: 100%; max-height: 250px;"/>
+                                    <div class="mb-3 border rounded p-1 text-center">
+                                        
+                                        <!-- SCENARIO 1: It is a Video -->
+                                        <t t-if="img.mimetype and 'video' in img.mimetype">
+                                            <!-- We use /web/content instead of /web/image because it supports video streaming -->
+                                            <video controls="1" style="max-width: 100%; max-height: 250px; border-radius: 4px;">
+                                                <source t-attf-src="/web/content/#{img.id}?access_token=#{img.access_token}" t-att-type="img.mimetype"/>
+                                                Your browser does not support the video tag.
+                                            </video>
+                                        </t>
+                                        
+                                        <!-- SCENARIO 2: It is a Standard Image -->
+                                        <t t-else="">
+                                            <img t-if="img.datas" t-att-src="image_data_uri(img.datas)" style="max-width: 100%; max-height: 250px; border-radius: 4px;"/>
+                                        </t>
+                                        
                                     </div>
                                 </t>
                             </t>
