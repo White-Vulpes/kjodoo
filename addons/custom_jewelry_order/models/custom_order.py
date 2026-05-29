@@ -155,9 +155,9 @@ class CustomJewelryOrder(models.Model):
 
         # 2. Smart Routing for iOS and Android
         # Check if the customer has a mobile number saved
-        if self.partner_id.mobile:
+        if self.partner_id.phone:
             # Strip out any spaces or special characters from the phone number
-            clean_phone = ''.join(filter(str.isdigit, self.partner_id.mobile))
+            clean_phone = ''.join(filter(str.isdigit, self.partner_id.phone))
             
             # Using the native scheme with the phone number opens the exact chat
             whatsapp_url = f"whatsapp://send?phone={clean_phone}&text={encoded_message}"
