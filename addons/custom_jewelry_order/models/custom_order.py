@@ -117,18 +117,14 @@ class CustomJewelryOrder(models.Model):
         return super().create(vals_list)
     
     def action_print_order(self):
-        # 1. Get the report reference
-        report = self.env.ref('custom_jewelry_order.action_report_custom_jewelry_order')
-
-        # 2. Construct the direct URL to the PDF
-        report_url = f'/report/pdf/{report.report_name}/{self.id}?time={fields.Datetime.now().timestamp()}'
+        self.ensure_one()
         
-        # 3. Return a URL action to force a new tab
-        return {
-            'type': 'ir.actions.act_url',
-            'url': report_url,
-            'target': 'new',  # 'new' tells Odoo to open a new browser tab
-        }
+        # 1. Fetch the report action record directly
+        report_action = self.env.ref('custom_jewelry_order.action_report_custom_jewelry_order')
+        
+        # 2. Return Odoo's native report engine action
+        # This automatically handles the PDF generation and honors 'print_report_name'
+        return report_action.report_action(self)
     
     @api.model
     def _read_group_state(self, *args, **kwargs):
@@ -142,31 +138,32 @@ class CustomJewelryOrder(models.Model):
         ]
     
     def action_send_whatsapp(self):
-        # 1. ensure_one() prevents crashes if someone tries to run this on multiple records at once
         self.ensure_one()
 
-        # 2. Get the full clickable portal link
+        # 1. Generate the portal link and message
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
         portal_link = f"{base_url}{self.get_portal_url()}"
-
-        # 3. Get the human-readable state label (e.g., 'In Manufacturing' instead of 'manufacturing')
         state_label = dict(self._fields['state'].selection).get(self.state, self.state)
 
-        # 4. Draft the message cleanly using standard Python strings
         message = (
             f"Hello {self.partner_id.name},\n\n"
             f"Your custom jewelry order {self.name} is currently in the '{state_label}' stage.\n\n"
             f"You can view your design specs, reference photos, and chat with us directly here:\n{portal_link}\n\n"
             f"Thank you for choosing us!"
         )
-
-        # 5. Safely encode the message so WhatsApp can read the spaces and special characters
         encoded_message = quote(message)
 
-        # 6. Generate the WhatsApp link
-        # BONUS: If you have the customer's mobile number, you can put it right after wa.me/ to open their exact chat!
-        # Example: whatsapp_url = f"https://wa.me/{self.partner_id.mobile}?text={encoded_message}"
-        whatsapp_url = f"https://wa.me/?text={encoded_message}"
+        # 2. Smart Routing for iOS and Android
+        # Check if the customer has a mobile number saved
+        if self.partner_id.mobile:
+            # Strip out any spaces or special characters from the phone number
+            clean_phone = ''.join(filter(str.isdigit, self.partner_id.mobile))
+            
+            # Using the native scheme with the phone number opens the exact chat
+            whatsapp_url = f"whatsapp://send?phone={clean_phone}&text={encoded_message}"
+        else:
+            # Using the native scheme without a phone number forces the contact picker to open reliably on iOS
+            whatsapp_url = f"whatsapp://send?text={encoded_message}"
         
         return {
             'type': 'ir.actions.act_url',
@@ -174,7 +171,13 @@ class CustomJewelryOrder(models.Model):
             'target': 'new',
         }
     
+    # Overrides the default Odoo portal URL generator
     def _compute_access_url(self):
-        super()._compute_access_url()
+        super(CustomJewelryOrder, self)._compute_access_url()
         for order in self:
-            order.access_url = f'/my/jewelry_order/{order.id}'
+            # 1. Force Odoo to generate a token if it doesn't have one yet
+            if not order.access_token:
+                order._portal_ensure_token()
+            
+            # 2. Build the new completely ID-less URL
+            order.access_url = f'/my/secure_order/{order.access_token}'

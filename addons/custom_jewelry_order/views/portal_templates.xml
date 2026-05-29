@@ -29,7 +29,7 @@
                 <tbody>
                     <t t-foreach="orders" t-as="order">
                         <tr>
-                            <td><a t-attf-href="/my/jewelry_order/#{order.id}"><t t-esc="order.name"/></a></td>
+                            <td><a t-att-href="order.access_url"><t t-esc="order.name"/></a></td>
                             <td><span t-field="order.date_order"/></td>
                             <td><span t-field="order.item_type.name"/></td>
                             <td class="text-end">

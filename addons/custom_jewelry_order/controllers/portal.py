@@ -21,13 +21,15 @@ class JewelryPortal(CustomerPortal):
         }
         return request.render("custom_jewelry_order.portal_my_jewelry_orders", values)
 
-    @http.route(['/my/jewelry_order/<int:order_id>'], type='http', auth="public", website=True)
-    def portal_my_jewelry_order_detail(self, order_id, access_token=None, **kw):
-        try:
-            order_sudo = self._document_check_access('custom.jewelry.order', order_id, access_token)
-        except (AccessError, MissingError):
-            return request.not_found()
-        except Exception as e:
+    # CHANGED: The route now only asks for a string (the token), no ID!
+    @http.route(['/my/secure_order/<string:access_token>'], type='http', auth="public", website=True)
+    def portal_my_jewelry_order_secure(self, access_token, **kw):
+        
+        # Search the database for the order using ONLY the secure 32-character token
+        order_sudo = request.env['custom.jewelry.order'].sudo().search([('access_token', '=', access_token)], limit=1)
+        
+        # If no order is found with that exact token (or if it was deleted), show the 404 page
+        if not order_sudo:
             return request.not_found()
 
         values = {
