@@ -2,6 +2,7 @@ from odoo import http
 from odoo.http import request
 from odoo.addons.portal.controllers.portal import CustomerPortal
 from odoo.exceptions import AccessError, MissingError
+from urllib.parse import quote
 
 class JewelryPortal(CustomerPortal):
     def _prepare_home_portal_values(self, counters):
@@ -41,11 +42,14 @@ class JewelryPortal(CustomerPortal):
 
     @http.route('/jewelry/whatsapp_redirect', type='http', auth='user')
     def jewelry_whatsapp_redirect(self, phone=None, text='', **kw):
-        # Build the native iOS app URL
+        # FIX: Re-encode the decoded text so it is safe to put inside an HTTP redirect header
+        safe_text = quote(text)
+        
+        # Build the native iOS app URL using the safe text
         if phone:
-            whatsapp_url = f"whatsapp://send?phone={phone}&text={text}"
+            whatsapp_url = f"whatsapp://send?phone={phone}&text={safe_text}"
         else:
-            whatsapp_url = f"whatsapp://send?text={text}"
+            whatsapp_url = f"whatsapp://send?text={safe_text}"
         
         # Send a 302 Redirect header directly to the browser
         return request.redirect(whatsapp_url, local=False)
