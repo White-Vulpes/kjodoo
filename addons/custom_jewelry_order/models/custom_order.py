@@ -159,8 +159,8 @@ class CustomJewelryOrder(models.Model):
 
         # 2. Package the parameters securely
         params = {'text': message}
-        if self.partner_id.mobile:
-            params['phone'] = ''.join(filter(str.isdigit, self.partner_id.mobile))
+        if self.partner_id.phone:
+            params['phone'] = ''.join(filter(str.isdigit, self.partner_id.phone))
             
         # 3. Point to our custom redirect route
         redirect_url = f"/jewelry/whatsapp_redirect?{urlencode(params)}"
