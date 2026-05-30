@@ -17,14 +17,8 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Exclusive Designs">
-                            <field name="design_ids">
-                                <list editable="bottom">
-                                    <field name="sequence" widget="handle"/>
-                                    <field name="image" widget="image" options="{'size': [50, 50]}"/>
-                                    <field name="name"/>
-                                </list>
-                            </field>
+                        <page string="Collection Images">
+                            <field name="image_ids" widget="many2many_binary" options="{'accepted_file_extensions': 'image/*'}"/>
                         </page>
                     </notebook>
                 </sheet>

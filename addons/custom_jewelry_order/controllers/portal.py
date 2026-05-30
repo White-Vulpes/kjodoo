@@ -30,27 +30,17 @@ class JewelryPortal(CustomerPortal):
         if not order_sudo:
             return request.not_found()
 
-        # FETCH THE COLLECTION ASSIGNED TO THE PORTAL
-        # We ask Odoo: "Find the 1 active collection where display_location is 'portal'"
-        portal_collection = request.env['jewelry.collection'].sudo().search([
+        showcase_collections = request.env['jewelry.collection'].sudo().search([
             ('display_location', '=', 'portal'), 
             ('active', '=', True)
-        ], limit=1)
-        
-        # Extract the designs from that collection (if it exists)
-        showcase_designs = portal_collection.design_ids if portal_collection else []
+        ])
 
         values = {
             'order': order_sudo,
             'page_name': 'jewelry_order',
             'token': access_token, 
-            'showcase_designs': showcase_designs, # Pass the designs to the website
+            'showcase_collections': showcase_collections, 
         }
-        # --- DIAGNOSTIC TRAP ---
-        print(f"\n========== SHOWCASE DEBUG ==========")
-        print(f"Found Collection: {portal_collection.name if portal_collection else 'NONE FOUND!'}")
-        print(f"Number of Designs: {len(showcase_designs) if showcase_designs else 0}")
-        print(f"====================================\n")
         return request.render("custom_jewelry_order.portal_jewelry_order_detail", values)
 
     @http.route('/jewelry/whatsapp_redirect', type='http', auth='user')

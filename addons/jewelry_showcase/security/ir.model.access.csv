@@ -1,5 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_jewelry_collection,jewelry.collection,model_jewelry_collection,base.group_user,1,1,1,1
-access_jewelry_design,jewelry.design,model_jewelry_design,base.group_user,1,1,1,1
 access_jewelry_collection_public,jewelry.collection,model_jewelry_collection,,1,0,0,0
-access_jewelry_design_public,jewelry.design,model_jewelry_design,,1,0,0,0
