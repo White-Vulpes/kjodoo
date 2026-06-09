@@ -11,7 +11,7 @@ class RoughBill(models.Model):
     _order = 'id desc'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    name = fields.Char(string='Rough Bill Reference', required=True, copy=False)
+    name = fields.Char(string='Rough Bill Reference', copy=False)
     bill_number = fields.Integer(string='Bill Number', copy=False, readonly=True)
     date = fields.Date(string='Date', default=fields.Date.context_today)
 
