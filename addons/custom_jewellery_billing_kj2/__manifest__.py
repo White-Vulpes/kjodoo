@@ -13,6 +13,8 @@
         'security/ir.model.access.csv',
         'views/bill_view.xml',
         'views/bill_report.xml',
+        'views/rough_bill_view.xml',
+        'views/rough_bill_report.xml',
     ],
     
     'installable': True,

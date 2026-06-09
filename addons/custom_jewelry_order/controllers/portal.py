@@ -21,8 +21,7 @@ class JewelryPortal(CustomerPortal):
             'page_name': 'jewelry_order',
         }
         return request.render("custom_jewelry_order.portal_my_jewelry_orders", values)
-
-    # CHANGED: The route now only asks for a string (the token), no ID!
+    
     @http.route(['/my/secure_order/<string:access_token>'], type='http', auth="public", website=True)
     def portal_my_jewelry_order_secure(self, access_token, **kw):
         order_sudo = request.env['custom.jewelry.order'].sudo().search([('access_token', '=', access_token)], limit=1)
@@ -45,14 +44,9 @@ class JewelryPortal(CustomerPortal):
 
     @http.route('/jewelry/whatsapp_redirect', type='http', auth='user')
     def jewelry_whatsapp_redirect(self, phone=None, text='', **kw):
-        # FIX: Re-encode the decoded text so it is safe to put inside an HTTP redirect header
         safe_text = quote(text)
-        
-        # Build the native iOS app URL using the safe text
         if phone:
             whatsapp_url = f"whatsapp://send?phone={phone}&text={safe_text}"
         else:
             whatsapp_url = f"whatsapp://send?text={safe_text}"
-        
-        # Send a 302 Redirect header directly to the browser
         return request.redirect(whatsapp_url, local=False)

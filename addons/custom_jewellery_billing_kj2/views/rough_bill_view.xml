@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ===================== Rough Bill Line Views ===================== -->
+
+    <record id="view_rough_bill_line_form" model="ir.ui.view">
+        <field name="name">custom.rough.bill2.line.form</field>
+        <field name="model">custom.rough.bill2.line</field>
+        <field name="arch" type="xml">
+            <form string="Rough Bill Line">
+                <sheet>
+                    <group>
+                        <group string="Item Details">
+                            <field name="name"/>
+                            <field name="type" class="sm"/>
+                        </group>
+                        <group string="Quantity">
+                            <field name="weight" options="{'digits': [16, 3]}"/>
+                            <field name="less" options="{'digits': [16, 3]}"/>
+                            <field name="net_weight" options="{'digits': [16, 3]}"/>
+                        </group>
+                    </group>
+                    <group string="Calculations">
+                        <group>
+                            <field name="melting"/>
+                            <field name="touch"/>
+                            <field name="VAT"/>
+                            <field name="charges" options="{'digits': [16, 2]}"/>
+                        </group>
+                        <group>
+                            <field name="total_wt" options="{'digits': [16, 3]}"/>
+                            <field name="pure" options="{'digits': [16, 3]}"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_rough_bill_line_list" model="ir.ui.view">
+        <field name="name">custom.rough.bill2.line.list</field>
+        <field name="model">custom.rough.bill2.line</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="type" class="sm"/>
+                <field name="name"/>
+                <field name="weight" options="{'digits': [16, 3]}"/>
+                <field name="less" options="{'digits': [16, 3]}"/>
+                <field name="net_weight" options="{'digits': [16, 3]}"/>
+                <field name="melting"/>
+                <field name="touch"/>
+                <field string="V.A." name="VAT"/>
+                <field string="Wt. + VA" name="total_wt" options="{'digits': [16, 3]}"/>
+                <field name="pure" options="{'digits': [16, 3]}"/>
+                <field name="charges" options="{'digits': [16, 2]}"/>
+                <field name="cash" options="{'digits': [16, 2]}"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ===================== Rough Bill Form & List ===================== -->
+
+    <record id="view_rough_bill_form" model="ir.ui.view">
+        <field name="name">custom.rough.bill2.form</field>
+        <field name="model">custom.rough.bill2</field>
+        <field name="arch" type="xml">
+            <form string="Rough Bill">
+                <header>
+                    <button name="action_print_rough_bill"
+                            type="object"
+                            string="Print Bill"
+                            class="btn-primary"/>
+                    <button name="action_print_rough_bill_retail"
+                            type="object"
+                            string="Print Retail Bill"
+                            class="btn-primary"/>
+                    <button name="action_open_import_to_bill_wizard"
+                            type="object"
+                            string="Import to Bill"
+                            class="btn-success"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="bill_number"/>
+                            <field name="karat_22"/>
+                            <field name="karat_18"/>
+                            <field name="karat_24"/>
+                        </group>
+                        <group>
+                            <field name="show_transaction"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Bill Items">
+                            <field name="item_ids" context="{'list_view_ref': 'custom_jewellery_billing_kj2.view_rough_bill_line_list'}"/>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="total_pure" options="{'digits': [16, 3]}"/>
+                                <field name="total_charges" options="{'digits': [16, 2]}"/>
+                                <field name="total_cash" options="{'digits': [16, 2]}"/>
+                            </group>
+                        </page>
+                    </notebook>
+                    <notebook>
+                        <page string="Ledger / Transactions">
+                            <field name="transaction_ids">
+                                <list>
+                                    <field name="date"/>
+                                    <field name="ttype"/>
+                                    <field name="gross_weight" options="{'digits': [16, 3]}" invisible="ttype not in ('metal_recv', 'metal_pay', 'old_item', 'return_item')"/>
+                                    <field name="less" options="{'digits': [16, 3]}" invisible="ttype not in ('metal_recv', 'metal_pay', 'old_item', 'return_item')"/>
+                                    <field name="net_weight" options="{'digits': [16, 3]}" invisible="ttype not in ('metal_recv', 'metal_pay', 'old_item', 'return_item')"/>
+                                    <field name="purity" options="{'digits': [16, 2]}" invisible="ttype not in ('metal_recv', 'metal_pay', 'old_item', 'return_item')"/>
+                                    <field name="pure_weight" options="{'digits': [16, 3]}" invisible="ttype not in ('metal_recv', 'metal_pay', 'rate_cut', 'old_item', 'return_item')"/>
+                                    <field name="rate" options="{'digits': [16, 2]}" invisible="ttype not in ('rate_cut', 'old_item')"/>
+                                    <field name="amount" options="{'digits': [16, 2]}" invisible="ttype not in ('cash_recv', 'cash_pay', 'rate_cut', 'old_item')"/>
+                                </list>
+                                <form string="Transaction Details">
+                                    <sheet>
+                                        <group>
+                                            <group string="Basic Info">
+                                                <field name="date"/>
+                                                <field name="ttype"/>
+                                            </group>
+                                            <group string="Values">
+                                                <field name="gross_weight" options="{'digits': [16, 3]}" invisible="ttype not in ('metal_recv', 'metal_pay', 'old_item', 'return_item')"/>
+                                                <field name="less" options="{'digits': [16, 3]}" invisible="ttype not in ('metal_recv', 'metal_pay', 'old_item', 'return_item')"/>
+                                                <field name="net_weight" options="{'digits': [16, 3]}" invisible="ttype not in ('metal_recv', 'metal_pay', 'old_item', 'return_item')"/>
+                                                <field name="purity" options="{'digits': [16, 2]}" invisible="ttype not in ('metal_recv', 'metal_pay', 'old_item', 'return_item')"/>
+                                                <field name="pure_weight" options="{'digits': [16, 3]}" invisible="ttype not in ('metal_recv', 'metal_pay', 'rate_cut', 'old_item', 'return_item')"/>
+                                                <field name="rate" options="{'digits': [16, 2]}" invisible="ttype not in ('rate_cut', 'old_item')" required="ttype == 'rate_cut'"/>
+                                                <field name="amount" options="{'digits': [16, 2]}" invisible="ttype not in ('cash_recv', 'cash_pay', 'rate_cut', 'old_item')"/>
+                                            </group>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+                    </notebook>
+                    <group string="Remarks">
+                        <field name="remarks" widget="text" placeholder="Add any remarks or notes about this bill here..."/>
+                    </group>
+                    <group class="oe_subtotal_footer oe_right" style="border-top: 2px solid #ccc; margin-top: 10px; padding-top: 10px;">
+                        <field name="balance_pure" options="{'digits': [16, 3]}" class="fw-bold" style="font-size: 1.2em;"/>
+                        <field name="balance_charges" options="{'digits': [16, 2]}" class="fw-bold" style="font-size: 1.2em;"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_rough_bill_list" model="ir.ui.view">
+        <field name="name">custom.rough.bill2.list</field>
+        <field name="model">custom.rough.bill2</field>
+        <field name="arch" type="xml">
+            <list string="Rough Bills">
+                <field name="bill_number"/>
+                <field name="name"/>
+                <field name="date"/>
+                <field name="total_weight" options="{'digits': [16, 3]}"/>
+                <field name="total_pure" options="{'digits': [16, 3]}"/>
+                <field name="total_charges" options="{'digits': [16, 2]}"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ===================== Import Wizard View ===================== -->
+
+    <record id="view_rough_bill_import_wizard_form" model="ir.ui.view">
+        <field name="name">custom.rough.bill.import.wizard.form</field>
+        <field name="model">custom.rough.bill.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Import Rough Bill">
+                <group>
+                    <field name="rough_bill_id"/>
+                    <field name="partner_id"/>
+                </group>
+                <footer>
+                    <button name="action_import" type="object" string="Import" class="btn-primary"/>
+                    <button special="cancel" string="Cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ===================== Actions ===================== -->
+
+    <record id="action_rough_bill" model="ir.actions.act_window">
+        <field name="name">Rough Bills</field>
+        <field name="res_model">custom.rough.bill2</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_import_rough_bill_wizard" model="ir.actions.act_window">
+        <field name="name">Import Rough Bill</field>
+        <field name="res_model">custom.rough.bill.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Server action bound to Bills list/form so it appears in the Action menu -->
+    <record id="action_server_import_rough_bill" model="ir.actions.server">
+        <field name="name">Import from Rough Bill</field>
+        <field name="model_id" ref="model_custom_bill2"/>
+        <field name="binding_model_id" ref="model_custom_bill2"/>
+        <field name="binding_type">action</field>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">
+action = {
+    'type': 'ir.actions.act_window',
+    'name': 'Import Rough Bill',
+    'res_model': 'custom.rough.bill.import.wizard',
+    'view_mode': 'form',
+    'target': 'new',
+}
+        </field>
+    </record>
+
+    <!-- ===================== Menus ===================== -->
+
+    <menuitem id="menu_rough_bills"
+              name="Rough Bills"
+              parent="menu_custom_bill_root"
+              action="action_rough_bill"
+              sequence="20"/>
+
+    <menuitem id="menu_import_rough_bill"
+              name="Import Rough Bill"
+              parent="menu_custom_bill_root"
+              action="action_import_rough_bill_wizard"
+              sequence="30"/>
+
+</odoo>
