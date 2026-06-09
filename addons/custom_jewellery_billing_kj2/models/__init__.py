@@ -4,4 +4,3 @@ from . import transaction_line
 from . import rough_bill_line
 from . import rough_bill_model
 from . import rough_bill_transaction
-from . import rough_bill_import_wizard

@@ -130,12 +130,44 @@ class RoughBill(models.Model):
             'target': 'new',
         }
 
-    def action_open_import_to_bill_wizard(self):
+    def action_import_to_bill(self):
+        new_bill = self.env['custom.bill2'].create({
+            'date': self.date,
+            'remarks': self.remarks,
+            'show_transaction': self.show_transaction,
+            'karat_24': self.karat_24,
+            'karat_22': self.karat_22,
+            'karat_18': self.karat_18,
+        })
+        for line in self.item_ids:
+            self.env['custom.bill2.line'].create({
+                'bill_id': new_bill.id,
+                'name': line.name,
+                'weight': line.weight,
+                'less': line.less,
+                'melting': line.melting,
+                'touch': line.touch,
+                'VAT': line.VAT,
+                'type': line.type,
+                'charges': line.charges,
+            })
+        for txn in self.transaction_ids:
+            self.env['custom.bill2.transaction'].create({
+                'bill_id': new_bill.id,
+                'date': txn.date,
+                'ttype': txn.ttype,
+                'gross_weight': txn.gross_weight,
+                'less': txn.less,
+                'purity': txn.purity,
+                'pure_weight': txn.pure_weight,
+                'rate': txn.rate,
+                'amount': txn.amount,
+            })
         return {
             'type': 'ir.actions.act_window',
-            'name': 'Import to Bill',
-            'res_model': 'custom.rough.bill.import.wizard',
+            'name': 'Jewelry Bill',
+            'res_model': 'custom.bill2',
+            'res_id': new_bill.id,
             'view_mode': 'form',
-            'target': 'new',
-            'context': {'default_rough_bill_id': self.id},
+            'target': 'current',
         }

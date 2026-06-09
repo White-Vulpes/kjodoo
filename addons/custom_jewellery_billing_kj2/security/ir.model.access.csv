@@ -5,4 +5,3 @@ access_custom_bill2_transaction,custom.bill2.transaction.access,model_custom_bil
 access_custom_rough_bill2,custom.rough.bill2,model_custom_rough_bill2,kothari_jewels.kjnx,1,1,1,1
 access_custom_rough_bill2_line,custom.rough.bill2.line,model_custom_rough_bill2_line,kothari_jewels.kjnx,1,1,1,1
 access_custom_rough_bill2_transaction,custom.rough.bill2.transaction,model_custom_rough_bill2_transaction,kothari_jewels.kjnx,1,1,1,1
-access_custom_rough_bill_import_wizard,custom.rough.bill.import.wizard,model_custom_rough_bill_import_wizard,kothari_jewels.kjnx,1,1,1,1
