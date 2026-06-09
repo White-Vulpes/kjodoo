@@ -4,259 +4,443 @@
         <t t-call="website.layout">
             <t t-set="no_header" t-value="True"/>
             <t t-set="no_footer" t-value="True"/>
-            <div id="wrap" class="container mt-4 mb-5">
-                <h2 class="text-center mb-5" style="color: #333;">Our Exclusive Collection</h2>
 
-                <style>
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&amp;display=swap');
 
-                    .select2-container{
-                        caret-color: transparent !important;
-                    }
-                    .select2-container .select2-search--inline .select2-search__field {
-                        margin-top: 0px !important;
-                        height: none !important;
-                        font-family: inherit !important;
-                        display: none !important;
-                    }
-                    .select2-container--default .select2-selection--multiple.select2-selection--clearable {
-                        padding-right: 0px !important;
-                    }
+                /* ── Full-width breakout (same trick as order detail page) ── */
+                #catalog-breakout {
+                    width: 100vw;
+                    position: relative;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background-color: #fafbfc;
+                    min-height: 100vh;
+                    font-family: 'Quicksand', sans-serif;
+                    padding-bottom: 5rem;
+                }
+                #catalog-breakout * { font-family: 'Quicksand', sans-serif !important; }
 
-                    .select2-container--default .select2-selection--multiple {
-                        padding-right: 0px !important;
-                        min-height: 38px !important;
-                    }
-                    .select2-container--default .select2-selection--multiple .select2-selection__clear{
-                        display: none !important;
-                    }
-                    .select2-container--default.select2-container .select2-selection--multiple {
-                        border: var(--border-width) solid var(--o-border-color) !important;
-                    }
-                    .select2-container--default .select2-selection--multiple {
-                        padding-bottom: 0px !important;
-                    }
-                    
-                    .select2-container .select2-selection--multiple .select2-selection__rendered {
-                        display: block !important;
-                        margin-bottom: 0px !important;
-                    }
-                    .select2-container--default .select2-selection--multiple .select2-selection__choice {
-                        background-color: #F0CDA8 !important;
-                        color: #000000 !important;
-                        border-radius: 15px !important; 
-                        font-size: 0.75em !important;
-                        font-weight: 200 !important;
-                        margin: 2px 2px 2px 2px !important;
-                        text-align: center !important;
-                        padding-left: 0px !important;
-                        border: none !important;
-                        padding: 1px !important;
-                    }
-                    
-                    /* The 'x' button on the tag */
-                    
-                    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-                        color: #000000 !important;
-                        border-right: 0px !important;
-                        padding: 0px 0px 0px 8px !important;
-                        position: relative !important;
-                    }
+                /* ── Sticky header ── */
+                #catalog-header {
+                    background: #ffffff;
+                    border-bottom: 1px solid #f1f3f5;
+                    padding: 1.5rem 2.5rem 1.25rem;
+                    position: sticky;
+                    top: 0;
+                    z-index: 100;
+                    box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+                }
+                #catalog-header h1 {
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    letter-spacing: 1.5px;
+                    text-transform: uppercase;
+                    color: #94a3b8;
+                    margin: 0 0 1rem;
+                }
 
-                    /* Make the 'x' turn red when hovered */
-                    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
-                        color: #ff4d4d !important;
-                        background-color: transparent !important;
-                    }
-                </style>
+                /* ── Filter bar ── */
+                #filter-form {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                    align-items: center;
+                }
+                #filter-form input,
+                #filter-form select {
+                    border: 1px solid #f1f3f5;
+                    border-radius: 12px;
+                    padding: 8px 14px;
+                    font-size: 0.82rem;
+                    font-family: 'Quicksand', sans-serif !important;
+                    color: #1e293b;
+                    background: #f8f9fa;
+                    outline: none;
+                    transition: border-color 0.2s, box-shadow 0.2s;
+                }
+                #filter-form input:focus,
+                #filter-form select:focus {
+                    border-color: #adb5bd;
+                    box-shadow: 0 0 0 3px rgba(0,0,0,0.04);
+                }
+                #filter-form .search-input { flex: 1 1 220px; min-width: 160px; }
+                #filter-form .weight-group {
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    font-size: 0.78rem;
+                    color: #94a3b8;
+                    font-weight: 600;
+                    letter-spacing: 0.5px;
+                }
+                #filter-form .weight-group input { width: 80px; }
+                #filter-form button[type="submit"] {
+                    background: #212529;
+                    color: #fff;
+                    border: none;
+                    border-radius: 12px;
+                    padding: 9px 24px;
+                    font-size: 0.78rem;
+                    font-weight: 700;
+                    letter-spacing: 1px;
+                    text-transform: uppercase;
+                    cursor: pointer;
+                    font-family: 'Quicksand', sans-serif !important;
+                    transition: background 0.2s;
+                }
+                #filter-form button[type="submit"]:hover { background: #0f172a; }
 
-                <form action="/catalog" method="get" class="mb-5 p-4 rounded">
-                    <div class="row justify-content-center mb-3">
-                        <div class="col-md-9 mb-2">
-                            <input type="text" name="search" class="form-control" placeholder="Search by name or ID..." t-att-value="search"/>
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <button type="submit" class="btn btn-dark w-100">Apply Filters</button>
-                        </div>
-                    </div>
-                    
-                    <div class="row justify-content-center">
-                        <div class="col-md-3 mb-2">
-                            <select name="size_id" class="form-select">
-                                <option value="">All Sizes</option>
-                                <t t-foreach="sizes" t-as="s">
-                                    <option t-att-value="s.id" t-att-selected="s.id == selected_size">
-                                        <t t-esc="s.name"/>
-                                    </option>
-                                </t>
-                            </select>
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <select name="tag_ids" class="form-control o_select2_tags" style="caret-color: transparent;" multiple="multiple" data-placeholder="Choose Designs...">
-                                <t t-foreach="tags" t-as="t">
-                                    <option t-att-value="t.id" style="display: none;" t-att-selected="t.id in selected_tags">
-                                        <t t-esc="t.name"/>
-                                    </option>
-                                </t>
-                            </select>
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <div class="input-group">
-                                <span class="input-group-text" style="background-color: transparent;">Min Wt</span>
-                                <input type="number" step="0.01" name="min_weight" class="form-control" placeholder="0.00" t-att-value="min_weight"/>
-                            </div>
-                        </div>
+                /* ── Select2 overrides to match theme ── */
+                .select2-container { caret-color: transparent !important; }
+                .select2-container .select2-search--inline .select2-search__field {
+                    margin-top: 0 !important; display: none !important;
+                }
+                .select2-container--default .select2-selection--multiple {
+                    background: #f8f9fa !important;
+                    border: 1px solid #f1f3f5 !important;
+                    border-radius: 12px !important;
+                    min-height: 38px !important;
+                    padding: 3px 8px !important;
+                }
+                .select2-container--default .select2-selection--multiple .select2-selection__choice {
+                    background: #e9ecef !important;
+                    color: #1e293b !important;
+                    border: none !important;
+                    border-radius: 20px !important;
+                    font-size: 0.72rem !important;
+                    font-weight: 600 !important;
+                    padding: 2px 10px !important;
+                    margin: 2px !important;
+                }
+                .select2-container--default .select2-selection--multiple .select2-selection__clear { display: none !important; }
+                .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+                    color: #94a3b8 !important; border: none !important;
+                }
+                .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+                    color: #c0392b !important; background: transparent !important;
+                }
 
-                        <div class="col-md-3 mb-2">
-                            <div class="input-group">
-                                <span class="input-group-text" style="background-color: transparent;">Max Wt</span>
-                                <input type="number" step="0.01" name="max_weight" class="form-control" placeholder="100.00" t-att-value="max_weight"/>
-                            </div>
+                /* ── Item grid ── */
+                #catalog-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                    gap: 1.5rem;
+                    padding: 2rem 2.5rem;
+                }
+
+                /* ── Item card ── */
+                .item-card {
+                    background: #ffffff;
+                    border: none;
+                    border-radius: 24px;
+                    box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+                    overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
+                    cursor: pointer;
+                    transition: box-shadow 0.2s, transform 0.2s;
+                }
+                .item-card:hover {
+                    box-shadow: 0 16px 48px rgba(0,0,0,0.09);
+                    transform: translateY(-2px);
+                }
+                .item-card.selected {
+                    box-shadow: 0 0 0 2px #212529, 0 16px 48px rgba(0,0,0,0.09);
+                }
+
+                .item-card-img {
+                    width: 100%;
+                    aspect-ratio: 1 / 1;
+                    object-fit: cover;
+                    display: block;
+                }
+                /* Force Odoo image widget to fill correctly */
+                .item-card .o_field_image,
+                .item-card span[t-field] { display: block; }
+                .item-card .o_field_image img { width: 100%; aspect-ratio: 1/1; object-fit: cover; }
+
+                .item-card-body {
+                    padding: 1.25rem 1.25rem 0.75rem;
+                    flex: 1;
+                }
+                .item-card-body .spec-label {
+                    font-size: 0.7rem;
+                    letter-spacing: 1.5px;
+                    text-transform: uppercase;
+                    color: #94a3b8;
+                    font-weight: 700;
+                    display: block;
+                    margin-bottom: 0.15rem;
+                }
+                .item-name {
+                    font-size: 1rem;
+                    font-weight: 700;
+                    color: #0f172a;
+                    margin-bottom: 0.25rem;
+                    line-height: 1.3;
+                }
+                .item-id {
+                    font-size: 0.75rem;
+                    color: #94a3b8;
+                    font-weight: 600;
+                    letter-spacing: 0.5px;
+                    margin-bottom: 0.85rem;
+                }
+                .item-specs {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 0.75rem;
+                    margin-bottom: 0.75rem;
+                }
+                .item-specs .spec-block { min-width: 0; }
+                .item-specs .spec-value {
+                    font-size: 0.95rem;
+                    font-weight: 600;
+                    color: #1e293b;
+                }
+                .item-tags {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 4px;
+                    margin-top: 0.5rem;
+                }
+                .item-tag {
+                    background: #f1f3f5;
+                    color: #64748b;
+                    font-size: 0.68rem;
+                    font-weight: 700;
+                    letter-spacing: 0.8px;
+                    padding: 3px 10px;
+                    border-radius: 20px;
+                    text-transform: uppercase;
+                }
+
+                .item-card-footer {
+                    padding: 0.75rem 1.25rem 1.25rem;
+                }
+                .select-btn {
+                    width: 100%;
+                    background: transparent;
+                    border: 1.5px solid #e9ecef;
+                    border-radius: 12px;
+                    padding: 8px;
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    letter-spacing: 1px;
+                    text-transform: uppercase;
+                    font-family: 'Quicksand', sans-serif !important;
+                    color: #64748b;
+                    cursor: pointer;
+                    transition: all 0.15s;
+                }
+                .select-btn:hover { border-color: #212529; color: #212529; }
+                .select-btn.active {
+                    background: #212529;
+                    border-color: #212529;
+                    color: #fff;
+                }
+
+                /* ── Floating cart ── */
+                #floating-cart {
+                    position: fixed;
+                    bottom: 32px;
+                    right: 32px;
+                    z-index: 1050;
+                    display: none;
+                }
+                #submit-inquiry-btn {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    background: #212529;
+                    color: #fff;
+                    border: none;
+                    border-radius: 40px;
+                    padding: 14px 26px;
+                    font-size: 0.78rem;
+                    font-weight: 700;
+                    letter-spacing: 1px;
+                    text-transform: uppercase;
+                    font-family: 'Quicksand', sans-serif !important;
+                    text-decoration: none;
+                    box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+                    transition: background 0.2s;
+                }
+                #submit-inquiry-btn:hover { background: #0f172a; color: #fff; }
+                #cart-count-badge {
+                    background: #fff;
+                    color: #212529;
+                    border-radius: 50%;
+                    width: 22px;
+                    height: 22px;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 0.72rem;
+                    font-weight: 700;
+                }
+
+                /* ── Empty state ── */
+                #empty-state {
+                    text-align: center;
+                    padding: 80px 20px;
+                    color: #94a3b8;
+                    font-size: 1rem;
+                    font-weight: 500;
+                    letter-spacing: 0.5px;
+                }
+
+                @media (max-width: 768px) {
+                    #catalog-header { padding: 1rem 1rem 0.85rem; }
+                    #catalog-grid { gap: 1rem; padding: 1rem; }
+                    .item-card { border-radius: 16px; }
+                }
+            </style>
+
+            <div id="catalog-breakout">
+
+                <div id="catalog-header">
+                    <h1>Collection</h1>
+                    <form id="filter-form" action="/catalog" method="get">
+                        <input class="search-input" type="text" name="search" placeholder="Search by name or ID" t-att-value="search"/>
+                        <select name="size_id">
+                            <option value="">All Sizes</option>
+                            <t t-foreach="sizes" t-as="s">
+                                <option t-att-value="s.id" t-att-selected="s.id == selected_size">
+                                    <t t-esc="s.name"/>
+                                </option>
+                            </t>
+                        </select>
+                        <select name="tag_ids" class="o_select2_tags" style="min-width:180px; caret-color:transparent;" multiple="multiple" data-placeholder="Designs...">
+                            <t t-foreach="tags" t-as="t">
+                                <option t-att-value="t.id" style="display:none;" t-att-selected="t.id in selected_tags">
+                                    <t t-esc="t.name"/>
+                                </option>
+                            </t>
+                        </select>
+                        <div class="weight-group">
+                            Wt
+                            <input type="number" step="0.01" name="min_weight" placeholder="Min" t-att-value="min_weight"/>
+                            –
+                            <input type="number" step="0.01" name="max_weight" placeholder="Max" t-att-value="max_weight"/>
                         </div>
-                    </div>
-                    <div class="row justify-content-center">
-                    </div>
-                </form>
-                <div class="row">
-                    <t t-foreach="items" t-as="item">
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100 shadow-sm border-0">
-                                <span t-field="item.image_1920" t-options="{'widget': 'image', 'preview_image': 'image_1920'}" class="card-img-top"/>
-                                
-                                <div class="card-body text-center">
-                                    <h5 class="card-title mb-1"><span t-field="item.name"/></h5>
-                                    <p class="text-muted small mb-3">ID: <span t-field="item.barcode"/></p>
-                                    
-                                    <div class="d-flex justify-content-between px-2 rounded">
-                                        <span t-if="item.size"><strong>Size:</strong> <span t-field="item.size"/></span>
-                                        <span><strong>Wt:</strong> <span t-field="item.weight" t-options='{"widget": "float", "precision": 3}'/> g</span>
+                        <button type="submit">Filter</button>
+                    </form>
+                </div>
+
+                <t t-if="items">
+                    <div id="catalog-grid">
+                        <t t-foreach="items" t-as="item">
+                            <div class="item-card toggle-item-btn"
+                                 t-att-data-barcode="item.barcode"
+                                 t-att-data-name="item.name">
+                                <span t-field="item.image_1920" t-options="{'widget': 'image', 'preview_image': 'image_1920'}"/>
+                                <div class="item-card-body">
+                                    <div class="item-name"><t t-esc="item.name"/></div>
+                                    <div class="item-id"><t t-esc="item.barcode"/></div>
+                                    <div class="item-specs">
+                                        <div class="spec-block" t-if="item.size">
+                                            <span class="spec-label">Size</span>
+                                            <span class="spec-value"><t t-esc="item.size.name"/></span>
+                                        </div>
+                                        <div class="spec-block">
+                                            <span class="spec-label">Weight</span>
+                                            <span class="spec-value"><span t-field="item.weight" t-options='{"widget": "float", "precision": 3}'/> g</span>
+                                        </div>
+                                        <div class="spec-block" t-if="item.pieces">
+                                            <span class="spec-label">Pieces</span>
+                                            <span class="spec-value"><t t-esc="item.pieces"/></span>
+                                        </div>
                                     </div>
-                                    <div class="d-flex justify-content-between px-2 rounded">
-                                        <span t-if="item.pieces"><strong>Pieces:</strong> <span t-field="item.pieces"/></span>
-                                    </div>
-                                    
-                                    <div class="px-2 mb-2 mt-2">
+                                    <div class="item-tags">
                                         <t t-foreach="item.design_tag_ids" t-as="tag">
-                                            <span class="badge bg-secondary" style="font-size: 0.75em; font-weight: 200;">
-                                                <t t-esc="tag.name"/>
-                                            </span>
+                                            <span class="item-tag"><t t-esc="tag.name"/></span>
                                         </t>
                                     </div>
-                                    
-                                    <!-- <p class="mt-2 card-text text-start text-muted" style="font-size: 0.9em;">
-                                        <span t-field="item.narration"/>
-                                    </p> -->
                                 </div>
-                                
-                                <div class="card-footer bg-white border-0 text-center pb-4">
-                                    <div class="card-footer bg-white border-0 text-center pb-3 p-2">
-                                        <button type="button" 
-                                                class="btn btn-outline-dark rounded-pill w-100 toggle-item-btn" 
-                                                style="font-size: 0.9em;"
-                                                t-att-data-barcode="item.barcode"
-                                                t-att-data-name="item.name">
-                                            Select Item
-                                        </button>
-                                    </div>
+                                <div class="item-card-footer">
+                                    <button type="button" class="select-btn">Select</button>
                                 </div>
                             </div>
-                        </div>
-                    </t>
-                </div>
-                <div id="floating-cart" class="position-fixed bottom-0 end-0 m-4" style="z-index: 1050; display: none;">
-                    <a href="#" id="submit-inquiry-btn" class="btn btn-dark btn-lg rounded-pill shadow-lg px-4 py-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-cart-check" viewBox="0 0 16 16">
-                            <path d="M11.354 6.354a.5.5 0 0 0-.708-.708L8 8.293 6.854 7.146a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/>
-                            <path d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 0 4 2 2 0 0 0 0-4h7a2 2 0 1 0 0 4 2 2 0 0 0 0-4h1a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1zm3.915 10L3.102 4h10.796l-1.313 7zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0m7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
-                        </svg>
-                    </a>
-                </div>
-                <t t-if="not items">
-                    <div class="alert alert-info text-center mt-5">
-                        Our collection is currently being updated. Please check back soon!
+                        </t>
                     </div>
                 </t>
-                <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-                
-                <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-                
-                <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-                <script type="text/javascript">
-                    $(document).ready(function() {
-                        // Initialize Select2 Badges
-                        $('.o_select2_tags').select2({
-                            width: '100%',
-                            allowClear: true
-                        });
 
-                        // --- CART LOGIC ---
-                        // Load existing cart from browser memory, or start empty
-                        let selectedItems = JSON.parse(localStorage.getItem('jewelry_cart')) || {};
+                <t t-if="not items">
+                    <div id="empty-state">Collection is currently being updated. Please check back soon.</div>
+                </t>
 
-                        function updateCartUI() {
-                            let count = Object.keys(selectedItems).length;
-                            $('#cart-count').text(count);
-                            
-                            // Show/hide the floating cart button
-                            if(count > 0) {
-                                $('#floating-cart').fadeIn();
-                            } else {
-                                $('#floating-cart').fadeOut();
-                            }
-
-                            // Loop through all buttons on the screen to update their colors
-                            $('.toggle-item-btn').each(function() {
-                                let barcode = $(this).data('barcode');
-                                if(selectedItems[barcode]) {
-                                    // Make it look 'Selected'
-                                    $(this).removeClass('btn-outline-dark').addClass('btn-success').text('Selected');
-                                } else {
-                                    // Revert to normal
-                                    $(this).removeClass('btn-success').addClass('btn-outline-dark').text('Select Item');
-                                }
-                            });
-                        }
-
-                        // Run once when page loads to highlight already-selected items
-                        updateCartUI();
-
-                        // When a user clicks a "Select Item" button
-                        $('.toggle-item-btn').on('click', function(e) {
-                            e.preventDefault();
-                            let barcode = $(this).data('barcode');
-                            let name = $(this).data('name');
-
-                            // Toggle logic: If it's already in the cart, remove it. If not, add it.
-                            if(selectedItems[barcode]) {
-                                delete selectedItems[barcode]; 
-                            } else {
-                                selectedItems[barcode] = name; 
-                            }
-                            
-                            // Save back to browser memory and update colors
-                            localStorage.setItem('jewelry_cart', JSON.stringify(selectedItems));
-                            updateCartUI();
-                        });
-
-                        // When a user clicks the floating "Inquire Selected" button
-                        $('#submit-inquiry-btn').on('click', function(e) {
-                            e.preventDefault();
-                            
-                            // Build the list of items for the email
-                            let itemList = "";
-                            for (const [barcode, name] of Object.entries(selectedItems)) {
-                                itemList += `- ${barcode}: ${name}%0D%0A`;
-                            }
-                            
-                            // Format the email subject and body
-                            let subject = "Bulk Inquiry - Jewelry Collection";
-                            let body = `Hello,%0D%0A%0D%0AI would like to inquire about the following items:%0D%0A%0D%0A${itemList}%0D%0A%0D%0APlease let me know the availability and pricing.%0D%0A%0D%0AThank you!`;
-                            
-                            // Trigger the email client
-                            window.location.href = ``;
-                        });
-                    });
-                </script>
             </div>
+
+            <div id="floating-cart">
+                <a href="#" id="submit-inquiry-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M11.354 6.354a.5.5 0 0 0-.708-.708L8 8.293 6.854 7.146a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/>
+                        <path d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 0 4 2 2 0 0 0 0-4h7a2 2 0 1 0 0 4 2 2 0 0 0 0-4h1a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1zm3.915 10L3.102 4h10.796l-1.313 7zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0m7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                    </svg>
+                    Inquire <span id="cart-count-badge">0</span>
+                </a>
+            </div>
+
+            <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+            <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+            <script type="text/javascript">
+                $(document).ready(function() {
+                    $('.o_select2_tags').select2({ width: '180px', allowClear: true });
+
+                    let selectedItems = JSON.parse(localStorage.getItem('jewelry_cart')) || {};
+
+                    function updateCartUI() {
+                        let count = Object.keys(selectedItems).length;
+                        $('#cart-count-badge').text(count);
+                        count > 0 ? $('#floating-cart').fadeIn() : $('#floating-cart').fadeOut();
+
+                        $('.item-card').each(function() {
+                            let barcode = $(this).data('barcode');
+                            let btn = $(this).find('.select-btn');
+                            if (selectedItems[barcode]) {
+                                $(this).addClass('selected');
+                                btn.addClass('active').text('Selected');
+                            } else {
+                                $(this).removeClass('selected');
+                                btn.removeClass('active').text('Select');
+                            }
+                        });
+                    }
+
+                    updateCartUI();
+
+                    $(document).on('click', '.item-card', function(e) {
+                        if ($(e.target).closest('button[type=submit], a').length) return;
+                        let barcode = $(this).data('barcode');
+                        let name = $(this).data('name');
+                        if (selectedItems[barcode]) {
+                            delete selectedItems[barcode];
+                        } else {
+                            selectedItems[barcode] = name;
+                        }
+                        localStorage.setItem('jewelry_cart', JSON.stringify(selectedItems));
+                        updateCartUI();
+                    });
+
+                    $(document).on('click', '.select-btn', function(e) {
+                        e.stopPropagation();
+                        $(this).closest('.item-card').trigger('click');
+                    });
+
+                    $('#submit-inquiry-btn').on('click', function(e) {
+                        e.preventDefault();
+                        let itemList = "";
+                        for (const [barcode, name] of Object.entries(selectedItems)) {
+                            itemList += `- ${barcode}: ${name}\n`;
+                        }
+                        let message = `Hello, I would like to inquire about the following items:\n\n${itemList}\nPlease let me know the availability.`;
+                        window.open(`https://wa.me/917010013430?text=${encodeURIComponent(message)}`, '_blank');
+                    });
+                });
+            </script>
         </t>
     </template>
 </odoo>
