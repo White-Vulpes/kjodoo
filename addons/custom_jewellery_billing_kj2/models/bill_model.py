@@ -14,7 +14,7 @@ class CustomBill(models.Model):
     
     # This is the "Display Name" (e.g., "Bill #5")
     name = fields.Char(string='Bill Reference', required=True, copy=False)
-    partner_id = fields.Many2one('res.partner', string='Customer', required=True)
+    partner_id = fields.Many2one('res.partner', string='Customer')
     
     bill_number = fields.Integer(string='Bill Number', copy=False, readonly=True)
     date = fields.Date(string='Date', default=fields.Date.context_today)

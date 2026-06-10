@@ -158,7 +158,13 @@
                 /* Force Odoo image widget to fill correctly */
                 .item-card .o_field_image,
                 .item-card span[t-field] { display: block; }
-                .item-card .o_field_image img { width: 100%; aspect-ratio: 1/1; object-fit: cover; }
+                .item-card .o_field_image img {
+                    width: 100% !important;
+                    height: auto !important;
+                    max-width: 100% !important;
+                    aspect-ratio: 1/1 !important;
+                    object-fit: cover !important;
+                }
 
                 .item-card-body {
                     padding: 1.25rem 1.25rem 0.75rem;
@@ -293,8 +299,19 @@
 
                 @media (max-width: 768px) {
                     #catalog-header { padding: 1rem 1rem 0.85rem; }
-                    #catalog-grid { gap: 1rem; padding: 1rem; }
+                    #catalog-grid {
+                        grid-template-columns: repeat(2, 1fr);
+                        gap: 0.75rem;
+                        padding: 1rem;
+                    }
                     .item-card { border-radius: 16px; }
+                }
+
+                @media (max-width: 400px) {
+                    .item-card-body { padding: 0.75rem 0.75rem 0.5rem; }
+                    .item-name { font-size: 0.85rem; }
+                    .item-id { font-size: 0.65rem; margin-bottom: 0.5rem; }
+                    .item-specs .spec-value { font-size: 0.8rem; }
                 }
             </style>
 
