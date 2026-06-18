@@ -46,18 +46,28 @@ class CustomBillLine(models.Model):
     @api.onchange('VAT', 'bill_id.karat_22', 'bill_id.karat_18', 'bill_id.karat_24', 'type')
     def _onchange_VAT(self):
         for line in self:
-            if line.type == '22K':
-                line.touch = (line.VAT + 100) * line.bill_id.karat_22 / line.bill_id.karat_24
-            elif line.type == '18K':
-                line.touch = (line.VAT + 100) * line.bill_id.karat_18 / line.bill_id.karat_24
+            karat_24 = line.bill_id.karat_24
+            if not karat_24:
+                continue
+            if line.type == '22K' and line.bill_id.karat_22:
+                computed = (line.VAT + 100) * line.bill_id.karat_22 / karat_24
+                if abs(computed - line.touch) > 0.005:
+                    line.touch = computed
+            elif line.type == '18K' and line.bill_id.karat_18:
+                computed = (line.VAT + 100) * line.bill_id.karat_18 / karat_24
+                if abs(computed - line.touch) > 0.005:
+                    line.touch = computed
 
     @api.onchange('touch', 'bill_id.karat_22', 'bill_id.karat_18', 'bill_id.karat_24', 'type')
     def _onchange_touch(self):
         for line in self:
-            if line.type == '22K':
-                line.VAT = (line.touch * line.bill_id.karat_24 / line.bill_id.karat_22) - 100
-            elif line.type == '18K':
-                line.VAT = (line.touch * line.bill_id.karat_24 / line.bill_id.karat_18) - 100
+            karat_24 = line.bill_id.karat_24
+            if not karat_24:
+                continue
+            if line.type == '22K' and line.bill_id.karat_22:
+                line.VAT = (line.touch * karat_24 / line.bill_id.karat_22) - 100
+            elif line.type == '18K' and line.bill_id.karat_18:
+                line.VAT = (line.touch * karat_24 / line.bill_id.karat_18) - 100
 
     @api.depends('weight', 'less')
     def _compute_net_weight(self):
