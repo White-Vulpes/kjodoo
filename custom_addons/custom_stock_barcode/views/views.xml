@@ -31,6 +31,18 @@
                         </group>
                     </group>
 
+                    <group string="Item Details">
+                        <group>
+                            <field name="item_code"/>
+                            <field name="purity"/>
+                            <field name="category"/>
+                        </group>
+                        <group>
+                            <field name="subcategory"/>
+                            <field name="make"/>
+                        </group>
+                    </group>
+
                     <notebook>
                         <page string="Less (Deductions)">
                             <field name="less_ids">
@@ -64,7 +76,10 @@
         <field name="arch" type="xml">
             <list string="Jewelry Items">
                 <field name="barcode"/>
+                <field name="item_code" optional="show"/>
                 <field name="name"/>
+                <field name="category" optional="show"/>
+                <field name="purity" optional="show"/>
                 <field name="m_code" optional="show"/>
                 <field name="design_tag_ids" widget="many2many_tags" optional="show"/>
                 <field name="weight" sum="Total Gross Weight"/>
@@ -79,12 +94,15 @@
         <field name="arch" type="xml">
             <search>
                 <field name="barcode"/>
+                <field name="item_code"/>
                 <field name="name"/>
                 <field name="m_code"/>
-                
+                <field name="category"/>
                 <field name="design_tag_ids" string="Design Tags" filter_domain="[('design_tag_ids.name', 'ilike', self)]"/>
-                
+                <filter string="Active" name="active" domain="[('active','=',True)]"/>
+                <filter string="Archived" name="archived" domain="[('active','=',False)]"/>
                 <group>
+                    <filter string="Category" name="group_category" domain="[]" context="{'group_by':'category'}"/>
                     <filter string="Manufacturer Code" name="group_m_code" domain="[]" context="{'group_by':'m_code'}"/>
                     <filter string="Size" name="group_size" domain="[]" context="{'group_by':'size'}"/>
                 </group>

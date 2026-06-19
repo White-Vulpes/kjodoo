@@ -2,6 +2,13 @@ import random
 from odoo import models, fields, api
 from odoo.tools.float_utils import float_round
 
+_BLACKSTONE_TABLE = str.maketrans('0123456789', 'EBLACKSTON')
+
+def _encode_digits(value):
+    """BLACKSTONE cipher: replace each digit with its letter (0→E, 1→B, 2→L, 3→A, 4→C, 5→K, 6→S, 7→T, 8→O, 9→N)."""
+    return str(value).translate(_BLACKSTONE_TABLE)
+
+
 class JewelryMCode(models.Model):
     _name = 'jewelry.mcode'
     _description = 'Manufacturer Code'
@@ -60,6 +67,14 @@ class JewelryBarcodeItem(models.Model):
         digits=(16, 3)
     )
 
+    # --- Item Details ---
+    item_code   = fields.Char(string='Item Code', index=True)
+    purity      = fields.Integer(string='Purity', help='e.g. 9999=24K, 9166=22K, 8333=20K, 7500=18K')
+    category    = fields.Char(string='Category')
+    subcategory = fields.Char(string='Sub-Category')
+    make        = fields.Char(string='Make')
+    active      = fields.Boolean(default=True, string='Active')
+
     # --- Financial & Categorization ---
     charge_ids = fields.One2many('jewelry.item.charge', 'item_id', string='Charges')
     design_tag_ids = fields.Many2many('jewelry.design.tag', string='Design Tags')
@@ -85,6 +100,37 @@ class JewelryBarcodeItem(models.Model):
                         break  # Exit the while loop and proceed with creation
                         
         return super(JewelryBarcodeItem, self).create(vals_list)
+
+    # ── Tag helpers ──────────────────────────────────────────────────────────
+
+    @staticmethod
+    def _encode_tag_pct(less_wt, gross_wt):
+        """Return BLACKSTONE-encoded less percentage string."""
+        if not gross_wt:
+            return ''
+        pct = round(less_wt / gross_wt * 100)
+        return _encode_digits(str(pct))
+
+    @staticmethod
+    def _encode_tag_wt(wt):
+        """Return BLACKSTONE-encoded weight string (decimal point preserved)."""
+        return _encode_digits(f'{wt:.3f}')
+
+    @staticmethod
+    def _purity_to_karat(purity):
+        """Convert purity integer (e.g. 9166) to karat label (e.g. 22)."""
+        mapping = {9999: 24, 9166: 22, 8750: 21, 8333: 20, 7500: 18, 5833: 14}
+        if purity in mapping:
+            return mapping[purity]
+        return purity // 100 if purity else ''
+
+    def _tag_date_str(self):
+        """Return date formatted as dd/mmyy (e.g. 16/626 for 16-Jun-2026)."""
+        from datetime import date
+        today = date.today()
+        return f'{today.day}/{today.month}{str(today.year)[2:]}'
+
+    # ── Weight computation ────────────────────────────────────────────────────
 
     @api.depends('weight', 'less_ids.weight')
     def _compute_net_weight(self):

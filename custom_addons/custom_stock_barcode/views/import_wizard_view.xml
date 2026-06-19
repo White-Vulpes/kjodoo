@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_jewelry_import_wizard_form" model="ir.ui.view">
+        <field name="name">jewelry.import.wizard.form</field>
+        <field name="model">jewelry.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Import Items from Excel">
+                <group>
+                    <field name="file_data" filename="file_name" widget="binary" string="Excel File (.xls / .xlsx)"/>
+                    <field name="file_name" invisible="1"/>
+                    <field name="less_type_id"/>
+                    <field name="rate_per_gram" string="Gold Rate per Gram (optional)"/>
+                </group>
+                <footer>
+                    <button name="action_import" type="object" string="Import" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_jewelry_import_wizard" model="ir.actions.act_window">
+        <field name="name">Import Items from Excel</field>
+        <field name="res_model">jewelry.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_jewelry_import" name="Import from Excel"
+              parent="custom_stock_barcode.menu_jewelry_inventory"
+              action="action_jewelry_import_wizard"
+              sequence="20"/>
+</odoo>

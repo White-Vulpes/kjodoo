@@ -26,7 +26,9 @@
     # Always load security rules FIRST, then views.
     'data': [
         'security/ir.model.access.csv',
-        'views/views.xml',  # Update this name if you saved your XML file as something else
+        'views/views.xml',
+        'views/import_wizard_view.xml',
+        'reports/tag_report.xml',
     ],
 
     # Images/Assets

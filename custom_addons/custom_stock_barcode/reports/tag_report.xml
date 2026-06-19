@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Custom paper format: 100mm wide × 20mm tall. Left margin 32mm reserves space for the loop. -->
+    <record id="paper_format_jewelry_tag" model="report.paperformat">
+        <field name="name">Jewelry Tag 10×2 cm</field>
+        <field name="default" eval="False"/>
+        <field name="format">custom</field>
+        <field name="page_width">100</field>
+        <field name="page_height">20</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">1</field>
+        <field name="margin_bottom">1</field>
+        <field name="margin_left">32</field>
+        <field name="margin_right">2</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">300</field>
+    </record>
+
+    <!-- Report action — prints one page (one tag) per selected item -->
+    <record id="action_report_jewelry_tag" model="ir.actions.report">
+        <field name="name">Jewelry Tag</field>
+        <field name="model">jewelry.barcode.item</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">custom_stock_barcode.report_jewelry_tag_template</field>
+        <field name="report_file">custom_stock_barcode.report_jewelry_tag_template</field>
+        <field name="paperformat_id" ref="paper_format_jewelry_tag"/>
+        <field name="binding_model_id" ref="model_jewelry_barcode_item"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- QWeb template -->
+    <template id="report_jewelry_tag_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-set="less_line" t-value="doc.less_ids and doc.less_ids[0] or False"/>
+                <t t-set="less_type_code" t-value="(less_line.less_type.name[:3].upper() if less_line and less_line.less_type else '')"/>
+                <t t-set="less_wt" t-value="(less_line.weight if less_line else 0.0)"/>
+                <t t-set="gross_wt" t-value="doc.weight"/>
+                <t t-set="enc_pct" t-value="(doc._encode_tag_pct(less_wt, gross_wt) if gross_wt else '')"/>
+                <t t-set="enc_less_wt" t-value="(doc._encode_tag_wt(less_wt) if less_wt else '')"/>
+                <t t-set="cat_abbrev" t-value="(doc.category[:3].upper() if doc.category else '')"/>
+                <t t-set="karat" t-value="doc._purity_to_karat(doc.purity)"/>
+                <t t-set="net_int" t-value="int(round(doc.net_weight * 100))"/>
+                <t t-set="mcode_name" t-value="(doc.m_code.name if doc.m_code else '')"/>
+                <div class="page" style="page-break-after: always;">
+                    <div style="font-family: 'Courier New', Courier, monospace; font-size: 6.5pt; line-height: 1.25; white-space: nowrap; overflow: hidden;">
+                        <!-- Row 1: KJ-{purity}  {category abbrev} -->
+                        <div>KJ-<t t-esc="doc.purity or ''"/>&#160;&#160;<t t-esc="cat_abbrev"/></div>
+                        <!-- Row 2: first 3 chars of item code -->
+                        <div><t t-esc="(doc.item_code or '')[:3]"/></div>
+                        <!-- Row 3: WT-{gross}/{pcs} -->
+                        <div>WT-<t t-esc="'%.3f' % gross_wt"/>/<t t-esc="doc.pieces"/></div>
+                        <!-- Row 4: SIZE-{size}  N{net*100}  K{karat} -->
+                        <div>SIZE-<t t-esc="(doc.size.name if doc.size else '')"/>N<t t-esc="net_int"/>&#160;&#160;K<t t-esc="karat"/></div>
+                        <!-- Row 5: {barcode} # {item_code} -->
+                        <div><t t-esc="doc.barcode"/>&#160;#&#160;<t t-esc="doc.item_code or ''"/></div>
+                        <!-- Row 6: {mcode}{date_dd}/{date_mmyy} -->
+                        <div>
+                            <t t-esc="mcode_name"/>
+                            <t t-esc="doc._tag_date_str()"/>
+                        </div>
+                        <!-- Row 7: {less_type_code}{encoded_pct}W{encoded_less_wt} — only if less exists -->
+                        <div t-if="less_line">
+                            <t t-esc="less_type_code"/><t t-esc="enc_pct"/>W<t t-esc="enc_less_wt"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
