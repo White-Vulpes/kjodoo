@@ -43,6 +43,8 @@
                 <t t-set="karat" t-value="doc._purity_to_karat(doc.purity)"/>
                 <t t-set="net_int" t-value="int(round(doc.net_weight * 100))"/>
                 <t t-set="mcode_name" t-value="(doc.m_code.name if doc.m_code else '')"/>
+                <t t-set="enc_min" t-value="(doc._encode_tag_wt(doc.min_price) if doc.min_price else '')"/>
+                <t t-set="enc_max" t-value="(doc._encode_tag_wt(doc.max_price) if doc.max_price else '')"/>
                 <div class="page" style="page-break-after: always;">
                     <div style="font-family: 'Courier New', Courier, monospace; font-size: 6.5pt; line-height: 1.25; white-space: nowrap; overflow: hidden;">
                         <!-- Row 1: KJ-{purity}  {category abbrev} -->
@@ -63,6 +65,10 @@
                         <!-- Row 7: {less_type_code}{encoded_pct}W{encoded_less_wt} — only if less exists -->
                         <div t-if="less_line">
                             <t t-esc="less_type_code"/><t t-esc="enc_pct"/>W<t t-esc="enc_less_wt"/>
+                        </div>
+                        <!-- Row 8: MN{encoded_min_price}-MX{encoded_max_price} — only if prices set -->
+                        <div t-if="enc_min or enc_max">
+                            <t t-if="enc_min">MN<t t-esc="enc_min"/></t><t t-if="enc_min and enc_max">-</t><t t-if="enc_max">MX<t t-esc="enc_max"/></t>
                         </div>
                     </div>
                 </div>

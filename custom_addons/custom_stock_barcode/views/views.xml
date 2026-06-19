@@ -36,10 +36,12 @@
                             <field name="item_code"/>
                             <field name="purity"/>
                             <field name="category"/>
-                        </group>
-                        <group>
                             <field name="subcategory"/>
                             <field name="make"/>
+                        </group>
+                        <group string="Selling Price">
+                            <field name="min_price"/>
+                            <field name="max_price"/>
                         </group>
                     </group>
 

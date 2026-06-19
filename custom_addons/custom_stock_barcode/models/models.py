@@ -74,6 +74,8 @@ class JewelryBarcodeItem(models.Model):
     subcategory = fields.Char(string='Sub-Category')
     make        = fields.Char(string='Make')
     active      = fields.Boolean(default=True, string='Active')
+    min_price   = fields.Float(string='Min Selling Price', digits=(16, 2))
+    max_price   = fields.Float(string='Max Selling Price', digits=(16, 2))
 
     # --- Financial & Categorization ---
     charge_ids = fields.One2many('jewelry.item.charge', 'item_id', string='Charges')
