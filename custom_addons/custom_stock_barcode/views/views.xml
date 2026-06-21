@@ -5,6 +5,9 @@
         <field name="model">jewelry.barcode.item</field>
         <field name="arch" type="xml">
             <form string="Jewelry Item">
+                <header>
+                    <button name="action_print_tag" type="object" string="Print Tag" class="btn-primary"/>
+                </header>
                 <sheet>
                     <field name="image_1920" widget="image" class="oe_avatar"/>
                     <div class="oe_title">
@@ -142,13 +145,48 @@
         <field name="view_mode">list,form</field>
     </record>
 
+    <record id="action_jewelry_item_code" model="ir.actions.act_window">
+        <field name="name">Item Codes</field>
+        <field name="res_model">jewelry.item.code</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_jewelry_purity" model="ir.actions.act_window">
+        <field name="name">Purities</field>
+        <field name="res_model">jewelry.purity</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_jewelry_category" model="ir.actions.act_window">
+        <field name="name">Categories</field>
+        <field name="res_model">jewelry.category</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_jewelry_subcategory" model="ir.actions.act_window">
+        <field name="name">Sub-Categories</field>
+        <field name="res_model">jewelry.subcategory</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_jewelry_make" model="ir.actions.act_window">
+        <field name="name">Makes</field>
+        <field name="res_model">jewelry.make</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
     <menuitem id="menu_jewelry_inventory" name="Inventory" sequence="20" web_icon="custom_stock_barcode,static/description/icon.png"/>
     <menuitem id="menu_jewelry_barcode_items" name="Barcode Items" parent="menu_jewelry_inventory" action="action_jewelry_barcode_item" sequence="10"/>
 
     <menuitem id="menu_jewelry_config" name="Configuration" parent="menu_jewelry_inventory" sequence="100"/>
-    
+
     <menuitem id="menu_config_mcode" name="Manufacturer Codes" parent="menu_jewelry_config" action="action_jewelry_mcode" sequence="10"/>
     <menuitem id="menu_config_size" name="Sizes" parent="menu_jewelry_config" action="action_jewelry_size" sequence="20"/>
     <menuitem id="menu_config_less_type" name="Less Types" parent="menu_jewelry_config" action="action_jewelry_less_type" sequence="30"/>
     <menuitem id="menu_config_design_tag" name="Design Tags" parent="menu_jewelry_config" action="action_jewelry_design_tag" sequence="40"/>
+    <menuitem id="menu_config_item_code" name="Item Codes" parent="menu_jewelry_config" action="action_jewelry_item_code" sequence="50"/>
+    <menuitem id="menu_config_purity" name="Purities" parent="menu_jewelry_config" action="action_jewelry_purity" sequence="60"/>
+    <menuitem id="menu_config_category" name="Categories" parent="menu_jewelry_config" action="action_jewelry_category" sequence="70"/>
+    <menuitem id="menu_config_subcategory" name="Sub-Categories" parent="menu_jewelry_config" action="action_jewelry_subcategory" sequence="80"/>
+    <menuitem id="menu_config_make" name="Makes" parent="menu_jewelry_config" action="action_jewelry_make" sequence="90"/>
 </odoo>

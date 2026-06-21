@@ -46,27 +46,27 @@ class JewelryImportWizard(models.TransientModel):
         for r in range(1, sh.nrows):
             row = [sh.cell_value(r, c) for c in range(sh.ncols)]
 
-            item_code   = str(col(row, 'Item Code') or '').strip()
-            brand_name  = str(col(row, 'Brand Name') or '').strip()
-            brand_code  = str(col(row, 'Brand Code') or '').strip()
-            subcategory = str(col(row, 'Subcategory') or '').strip()
-            category    = str(col(row, 'Category') or '').strip()
-            make        = str(col(row, 'Make') or '').strip()
-            status      = str(col(row, 'Status') or 'Active').strip()
-            size_name   = str(col(row, 'Size') or '').strip()
-            pcs_raw     = col(row, 'Piece Name')
-            gross_raw   = col(row, 'Gross Weight')
-            less_raw    = col(row, 'Less Weight')
-            purity_raw  = col(row, 'Purity')
+            item_code_str = str(col(row, 'Item Code') or '').strip()
+            brand_name    = str(col(row, 'Brand Name') or '').strip()
+            brand_code    = str(col(row, 'Brand Code') or '').strip()
+            subcategory_str = str(col(row, 'Subcategory') or '').strip()
+            category_str    = str(col(row, 'Category') or '').strip()
+            make_str        = str(col(row, 'Make') or '').strip()
+            status        = str(col(row, 'Status') or 'Active').strip()
+            size_name     = str(col(row, 'Size') or '').strip()
+            pcs_raw       = col(row, 'Piece Name')
+            gross_raw     = col(row, 'Gross Weight')
+            less_raw      = col(row, 'Less Weight')
+            purity_raw    = col(row, 'Purity')
 
             gross_weight = float(gross_raw) if gross_raw not in (None, '') else 0.0
             less_weight  = float(less_raw)  if less_raw  not in (None, '') else 0.0
             pieces       = int(float(pcs_raw)) if pcs_raw not in (None, '') else 1
-            purity       = int(float(purity_raw)) if purity_raw not in (None, '') else 0
+            purity_int   = int(float(purity_raw)) if purity_raw not in (None, '') else 0
 
             # Item name: Brand Name – Sub-Category
-            name_parts = [p for p in [brand_name, subcategory] if p]
-            item_name = ' - '.join(name_parts) if name_parts else (item_code or 'Unnamed')
+            name_parts = [p for p in [brand_name, subcategory_str] if p]
+            item_name = ' - '.join(name_parts) if name_parts else (item_code_str or 'Unnamed')
 
             # get-or-create size
             size_id = False
@@ -84,22 +84,68 @@ class JewelryImportWizard(models.TransientModel):
                     mcode_rec = self.env['jewelry.mcode'].create({'name': brand_code})
                 mcode_id = mcode_rec.id
 
+            # get-or-create item code
+            item_code_id = False
+            if item_code_str:
+                ic_rec = self.env['jewelry.item.code'].search([('name', '=', item_code_str)], limit=1)
+                if not ic_rec:
+                    ic_rec = self.env['jewelry.item.code'].create({'name': item_code_str})
+                item_code_id = ic_rec.id
+
+            # get-or-create purity
+            purity_id = False
+            if purity_int:
+                purity_rec = self.env['jewelry.purity'].search([('value', '=', purity_int)], limit=1)
+                if not purity_rec:
+                    _karat_map = {9999: 24, 9166: 22, 8750: 21, 8333: 20, 7500: 18, 5833: 14}
+                    karat = _karat_map.get(purity_int, purity_int // 100)
+                    purity_rec = self.env['jewelry.purity'].create({
+                        'name': f'{karat}K',
+                        'value': purity_int,
+                        'karat': karat,
+                    })
+                purity_id = purity_rec.id
+
+            # get-or-create category
+            category_id = False
+            if category_str:
+                cat_rec = self.env['jewelry.category'].search([('name', '=', category_str)], limit=1)
+                if not cat_rec:
+                    cat_rec = self.env['jewelry.category'].create({'name': category_str})
+                category_id = cat_rec.id
+
+            # get-or-create subcategory
+            subcategory_id = False
+            if subcategory_str:
+                sub_rec = self.env['jewelry.subcategory'].search([('name', '=', subcategory_str)], limit=1)
+                if not sub_rec:
+                    sub_rec = self.env['jewelry.subcategory'].create({'name': subcategory_str})
+                subcategory_id = sub_rec.id
+
+            # get-or-create make
+            make_id = False
+            if make_str:
+                make_rec = self.env['jewelry.make'].search([('name', '=', make_str)], limit=1)
+                if not make_rec:
+                    make_rec = self.env['jewelry.make'].create({'name': make_str})
+                make_id = make_rec.id
+
             # Build encoded narration
             narration = self._build_narration(
                 less_weight, gross_weight, self.less_type_id, self.rate_per_gram
             )
 
             vals = {
-                'item_code':   item_code,
+                'item_code':   item_code_id,
                 'name':        item_name,
                 'm_code':      mcode_id,
                 'size':        size_id,
                 'pieces':      pieces,
                 'weight':      gross_weight,
-                'purity':      purity,
-                'category':    category,
-                'subcategory': subcategory,
-                'make':        make,
+                'purity':      purity_id,
+                'category':    category_id,
+                'subcategory': subcategory_id,
+                'make':        make_id,
                 'active':      status.lower() == 'active',
                 'narration':   narration,
                 'less_ids': [(0, 0, {

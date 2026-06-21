@@ -1,12 +1,19 @@
+import base64
+import io
 import random
 from odoo import models, fields, api
 from odoo.tools.float_utils import float_round
 
 _BLACKSTONE_TABLE = str.maketrans('0123456789', 'EBLACKSTON')
+_MYKOTHARIZ_TABLE = str.maketrans('0123456789', 'ZMYKOTHARI')
 
 def _encode_digits(value):
-    """BLACKSTONE cipher: replace each digit with its letter (0→E, 1→B, 2→L, 3→A, 4→C, 5→K, 6→S, 7→T, 8→O, 9→N)."""
+    """BLACKSTONE cipher: 0→E 1→B 2→L 3→A 4→C 5→K 6→S 7→T 8→O 9→N"""
     return str(value).translate(_BLACKSTONE_TABLE)
+
+def _encode_price(value):
+    """MYKOTHARIZ cipher: 0→Z 1→M 2→Y 3→K 4→O 5→T 6→H 7→A 8→R 9→I"""
+    return str(value).translate(_MYKOTHARIZ_TABLE)
 
 
 class JewelryMCode(models.Model):
@@ -68,14 +75,15 @@ class JewelryBarcodeItem(models.Model):
     )
 
     # --- Item Details ---
-    item_code   = fields.Char(string='Item Code', index=True)
-    purity      = fields.Integer(string='Purity', help='e.g. 9999=24K, 9166=22K, 8333=20K, 7500=18K')
-    category    = fields.Char(string='Category')
-    subcategory = fields.Char(string='Sub-Category')
-    make        = fields.Char(string='Make')
+    item_code   = fields.Many2one('jewelry.item.code', string='Item Code', index=True)
+    purity      = fields.Many2one('jewelry.purity', string='Purity')
+    category    = fields.Many2one('jewelry.category', string='Category')
+    subcategory = fields.Many2one('jewelry.subcategory', string='Sub-Category')
+    make        = fields.Many2one('jewelry.make', string='Make')
     active      = fields.Boolean(default=True, string='Active')
     min_price   = fields.Float(string='Min Selling Price', digits=(16, 2))
     max_price   = fields.Float(string='Max Selling Price', digits=(16, 2))
+    barcode_qr_data = fields.Char(string='QR Data URI', compute='_compute_barcode_qr')
 
     # --- Financial & Categorization ---
     charge_ids = fields.One2many('jewelry.item.charge', 'item_id', string='Charges')
@@ -115,22 +123,47 @@ class JewelryBarcodeItem(models.Model):
 
     @staticmethod
     def _encode_tag_wt(wt):
-        """Return BLACKSTONE-encoded weight string (decimal point preserved)."""
+        """Return BLACKSTONE-encoded weight string (3 decimal places)."""
         return _encode_digits(f'{wt:.3f}')
 
     @staticmethod
-    def _purity_to_karat(purity):
-        """Convert purity integer (e.g. 9166) to karat label (e.g. 22)."""
-        mapping = {9999: 24, 9166: 22, 8750: 21, 8333: 20, 7500: 18, 5833: 14}
-        if purity in mapping:
-            return mapping[purity]
-        return purity // 100 if purity else ''
+    def _encode_tag_price(price):
+        """Return MYKOTHARIZ-encoded price string (2 decimal places)."""
+        return _encode_price(f'{price:.2f}')
 
     def _tag_date_str(self):
         """Return date formatted as dd/mmyy (e.g. 16/626 for 16-Jun-2026)."""
         from datetime import date
         today = date.today()
         return f'{today.day}/{today.month}{str(today.year)[2:]}'
+
+    def action_print_tag(self):
+        return self.env.ref('custom_stock_barcode.action_report_jewelry_tag').report_action(self)
+
+    @api.depends('barcode')
+    def _compute_barcode_qr(self):
+        try:
+            import qrcode
+        except ImportError:
+            for rec in self:
+                rec.barcode_qr_data = ''
+            return
+        for rec in self:
+            if not rec.barcode or rec.barcode == 'New':
+                rec.barcode_qr_data = ''
+                continue
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_M,
+                box_size=10,
+                border=1,
+            )
+            qr.add_data(rec.barcode)
+            qr.make(fit=True)
+            img = qr.make_image(fill_color='black', back_color='white')
+            buf = io.BytesIO()
+            img.save(buf, format='PNG')
+            rec.barcode_qr_data = 'data:image/png;base64,' + base64.b64encode(buf.getvalue()).decode()
 
     # ── Weight computation ────────────────────────────────────────────────────
 
@@ -175,3 +208,57 @@ class JewelryDesignTag(models.Model):
     _sql_constraints = [
         ('name_uniq', 'unique(name)', 'Tag name must be unique!')
     ]
+
+
+# --- ITEM DETAIL CONFIGURATION MODELS ---
+
+class JewelryItemCode(models.Model):
+    _name = 'jewelry.item.code'
+    _description = 'Item Code'
+    _order = 'name'
+
+    name = fields.Char(string='Code', required=True)
+
+    _sql_constraints = [('name_uniq', 'unique(name)', 'Item code must be unique!')]
+
+
+class JewelryPurity(models.Model):
+    _name = 'jewelry.purity'
+    _description = 'Purity'
+    _order = 'value desc'
+
+    name  = fields.Char(string='Label', required=True)
+    value = fields.Integer(string='Purity Value', required=True, help='e.g. 9166 for 22K')
+    karat = fields.Integer(string='Karat', required=True, help='e.g. 22')
+
+    _sql_constraints = [('value_uniq', 'unique(value)', 'This purity value already exists!')]
+
+
+class JewelryCategory(models.Model):
+    _name = 'jewelry.category'
+    _description = 'Jewelry Category'
+    _order = 'name'
+
+    name = fields.Char(required=True)
+
+    _sql_constraints = [('name_uniq', 'unique(name)', 'Category already exists!')]
+
+
+class JewelrySubcategory(models.Model):
+    _name = 'jewelry.subcategory'
+    _description = 'Jewelry Sub-Category'
+    _order = 'name'
+
+    name = fields.Char(required=True)
+
+    _sql_constraints = [('name_uniq', 'unique(name)', 'Sub-category already exists!')]
+
+
+class JewelryMake(models.Model):
+    _name = 'jewelry.make'
+    _description = 'Jewelry Make'
+    _order = 'name'
+
+    name = fields.Char(required=True)
+
+    _sql_constraints = [('name_uniq', 'unique(name)', 'Make already exists!')]
