@@ -455,7 +455,7 @@
                             itemList += `- ${barcode}: ${name}\n`;
                         }
                         let message = `Hello, I would like to inquire about the following items:\n\n${itemList}\nPlease let me know the availability.`;
-                        window.open(`https://wa.me/917010013430?text=${encodeURIComponent(message)}`, '_blank');
+                        window.open(`https://wa.me/919884472797?text=${encodeURIComponent(message)}`, '_blank');
                     });
                 });
             </script>
