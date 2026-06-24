@@ -98,26 +98,24 @@
                 <t t-set="enc_min" t-value="(doc._encode_tag_price(doc.min_price) if doc.min_price else '')"/>
                 <t t-set="enc_max" t-value="(doc._encode_tag_price(doc.max_price) if doc.max_price else '')"/>
 
-                <div t-attf-style="page-break-after: {{'always' if not doc_last else 'auto'}}; width: 100vw; height: 20vw; padding: 1vw; box-sizing: border-box; overflow: hidden;">
+                <!-- padding-left: 30vw reserves handle area; vw on block padding works in wkhtmltopdf -->
+                <div t-attf-style="page-break-after: {{'always' if not doc_last else 'auto'}}; width: 100vw; height: 20vw; padding-left: 30vw; padding-top: 1vw; padding-bottom: 1vw; padding-right: 1vw; box-sizing: border-box; overflow: hidden;">
                     <div style="display: table; width: 100%; height: 100%; border-collapse: collapse;">
 
-                        <!-- Handle area: 30vw — min-width forces wkhtmltopdf to hold the space -->
-                        <div style="display: table-cell; width: 30vw; min-width: 30vw; overflow: hidden;">&#160;</div>
-
-                        <!-- QR: 35vw, centred vertically and horizontally -->
-                        <div style="display: table-cell; width: 35vw; vertical-align: middle; text-align: center;">
+                        <!-- QR: 50% of remaining 70vw = 35vw -->
+                        <div style="display: table-cell; width: 50%; vertical-align: middle; text-align: center;">
                             <img t-if="doc.barcode_qr_data"
                                  t-att-src="doc.barcode_qr_data"
                                  style="width: 18vw; height: 18vw; display: inline-block;"/>
                         </div>
 
-                        <!-- Text: 35vw, all data rows, centred vertically -->
-                        <div style="display: table-cell; width: 35vw; vertical-align: middle; font-family: 'Courier New', Courier, monospace; overflow: hidden;">
-                            <div style="white-space: nowrap; overflow: hidden;">KJ-<t t-esc="(doc.purity.value if doc.purity else '')"/>&#160;<t t-esc="cat_abbrev"/></div>
+                        <!-- Text: 50% of remaining 70vw = 35vw -->
+                        <div style="display: table-cell; width: 50%; vertical-align: middle; font-family: 'Courier New', Courier, monospace; overflow: hidden;">
+                            <div style="white-space: nowrap; overflow: hidden;">KJ-<t t-esc="(doc.purity.value if doc.purity else '')"/> <t t-esc="cat_abbrev"/></div>
                             <div style="white-space: nowrap; overflow: hidden;">WT-<t t-esc="'%.3f' % gross_wt"/>/<t t-esc="doc.pieces"/></div>
-                            <div style="white-space: nowrap; overflow: hidden;">S-<t t-esc="(doc.size.name if doc.size else '')"/>&#160;K<t t-esc="karat"/>&#160;N<t t-esc="net_int"/></div>
+                            <div style="white-space: nowrap; overflow: hidden;">S-<t t-esc="(doc.size.name if doc.size else '')"/> K<t t-esc="karat"/> N<t t-esc="net_int"/></div>
                             <div style="white-space: nowrap; overflow: hidden;"><t t-esc="doc.barcode"/></div>
-                            <div style="white-space: nowrap; overflow: hidden;">#<t t-esc="(doc.item_code.name if doc.item_code else '')"/>&#160;<t t-esc="mcode_name"/></div>
+                            <div style="white-space: nowrap; overflow: hidden;">#<t t-esc="(doc.item_code.name if doc.item_code else '')"/> <t t-esc="mcode_name"/></div>
                             <div style="white-space: nowrap; overflow: hidden;"><t t-esc="doc._tag_date_str()"/></div>
                             <div t-if="less_line" style="white-space: nowrap; overflow: hidden;"><t t-esc="less_type_code"/><t t-esc="enc_pct"/>W<t t-esc="enc_less_wt"/></div>
                             <div t-if="enc_min or enc_max" style="white-space: nowrap; overflow: hidden;"><t t-if="enc_min">MN<t t-esc="enc_min"/></t><t t-if="enc_min and enc_max">-</t><t t-if="enc_max">MX<t t-esc="enc_max"/></t></div>
