@@ -1,6 +1,13 @@
 # sphinx build directories
 _build/
 
+# Claude Files
+.claude/
+custom_addons/.claude/
+
+# graphify files
+custom_addons/graphify-out/
+
 # dotfiles
 .*
 !.gitignore

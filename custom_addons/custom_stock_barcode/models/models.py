@@ -138,7 +138,16 @@ class JewelryBarcodeItem(models.Model):
         return f'{today.day}/{today.month}{str(today.year)[2:]}'
 
     def action_print_tag(self):
-        return self.env.ref('custom_stock_barcode.action_report_jewelry_tag').report_action(self)
+        report = self.env.ref('custom_stock_barcode.action_report_jewelry_tag')
+
+        report_url = f'/report/pdf/{report.report_name}/{self.id}?time={fields.Datetime.now().timestamp()}'
+
+        # 3. Return a URL action to force a new tab
+        return {
+            'type': 'ir.actions.act_url',
+            'url': report_url,
+            'target': 'new',  # 'new' tells Odoo to open a new browser tab
+        }
 
     @api.depends('barcode')
     def _compute_barcode_qr(self):

@@ -99,18 +99,19 @@
                 <t t-set="enc_max" t-value="(doc._encode_tag_price(doc.max_price) if doc.max_price else '')"/>
 
                 <!-- padding-left: 30vw reserves handle area; vw on block padding works in wkhtmltopdf -->
-                <div t-attf-style="page-break-after: {{'always' if not doc_last else 'auto'}}; width: 100vw; height: 20vw; padding-left: 30vw; padding-top: 1vw; padding-bottom: 1vw; padding-right: 1vw; box-sizing: border-box; overflow: hidden;">
+                <div t-attf-style="page-break-after: {{'always' if not doc_last else 'auto'}}; width: 100vw; height: 20vw; box-sizing: border-box; overflow: hidden;">
                     <div style="display: table; width: 100%; height: 100%; border-collapse: collapse;">
 
+                        <div style="display: table-cell; width: 30%;"/>
                         <!-- QR: 50% of remaining 70vw = 35vw -->
-                        <div style="display: table-cell; width: 50%; vertical-align: middle; text-align: center;">
+                        <div style="display: table-cell; width: 35%; vertical-align: middle; text-align: center;">
                             <img t-if="doc.barcode_qr_data"
                                  t-att-src="doc.barcode_qr_data"
                                  style="width: 18vw; height: 18vw; display: inline-block;"/>
                         </div>
 
                         <!-- Text: 50% of remaining 70vw = 35vw -->
-                        <div style="display: table-cell; width: 50%; vertical-align: middle; font-family: 'Courier New', Courier, monospace; overflow: hidden;">
+                        <div style="display: table-cell; width: 35%; vertical-align: middle; font-family: 'Courier New', Courier, monospace; overflow: hidden;">
                             <div style="white-space: nowrap; overflow: hidden;">KJ-<t t-esc="(doc.purity.value if doc.purity else '')"/> <t t-esc="cat_abbrev"/></div>
                             <div style="white-space: nowrap; overflow: hidden;">WT-<t t-esc="'%.3f' % gross_wt"/>/<t t-esc="doc.pieces"/></div>
                             <div style="white-space: nowrap; overflow: hidden;">S-<t t-esc="(doc.size.name if doc.size else '')"/> K<t t-esc="karat"/> N<t t-esc="net_int"/></div>
