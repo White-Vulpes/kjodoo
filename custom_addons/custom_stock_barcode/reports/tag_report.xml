@@ -3,30 +3,26 @@
     <!--
         Physical tag: 100mm wide × 20mm tall, landscape sticker/label.
 
-        wkhtmltopdf quirks documented here:
+        wkhtmltopdf quirks:
           1. orientation=Landscape on a custom format rotates content off-page.
-             Fix: declare Portrait, swap page_width/page_height.
+             Fix: declare Portrait, swap page_width/page_height so the coordinate
+             system is 100mm wide × 20mm tall.
+          2. Default HTML viewport is wider than the physical page, so fixed px/mm
+             sizes render tiny. vw units (1vw = 1mm on a 100mm page) solve this.
+          3. vw on CSS font-size is ignored by wkhtmltopdf's old WebKit.
+             Fix: set font-size in px on html via <style> block — this works and
+             overrides Bootstrap. 46px ≈ 4.5mm at the 1024px default viewport.
+          4. Inline SVG <text> does not render — use HTML divs.
 
-          2. Default HTML viewport is much wider than the physical page, so
-             fixed px/mm sizes render tiny in a corner.
-             Fix: vw units for all element sizes (1vw = 1mm on a 100mm page).
+        Columns  (total = 100vw):
+          Handle : 30vw  — string/loop hole, no content
+          QR     : 16vw  — barcode_qr_data embedded as base64 PNG
+          Left   : 27vw  — 4 lines: purity/cat, weight/pcs, size/karat, net
+          Right  : 27vw  — 4 lines: barcode, item code, mcode/date, less or price
 
-          3. wkhtmltopdf ignores vw on CSS font-size (inline and inline stylesheet),
-             falling back to Bootstrap's 16px which scales to ~4mm at 378px viewport.
-             Fix: set font-size in vw on html via <style> block — this DOES work and
-             overrides Bootstrap. Use 4.5vw = 4.5mm = ~12.7pt physical.
-
-          4. Inline SVG <text> elements do not render in wkhtmltopdf — use HTML divs.
-
-        Layout:
-          Page:     100vw × 20vw  (= 100mm × 20mm)
-          Padding:  1vw each side → content: 98vw × 18vw
-          QR:       16vw × 16vw
-          Gap:      2vw
-          Col 1:    40vw  — KJ/cat, WT/pcs, size/karat, net
-          Col 2:    40vw  — barcode, item code, mfr/date, optional rows
-          Font:     4.5vw = 4.5mm = ~12.7pt
-          Row ht:   4.5vw × 1.0 line-height → 4 rows = 18vw = content height ✓
+        Font: 46px (html) × line-height 1.0 → 4 rows = 184px ≈ 18mm → fits 20mm ✓
+        Char width (Courier New monospace): 46px × 0.6 = 27.6px ≈ 2.7mm
+        Chars per column at 27vw (≈27mm): 27/2.7 ≈ 10 chars — fits all label content
     -->
     <record id="paper_format_jewelry_tag" model="report.paperformat">
         <field name="name">Jewelry Tag 10×2 cm Landscape</field>
@@ -44,7 +40,7 @@
         <field name="dpi">300</field>
     </record>
 
-    <!-- Report action — prints one page (one tag) per selected item -->
+    <!-- Report action — one page per selected item -->
     <record id="action_report_jewelry_tag" model="ir.actions.report">
         <field name="name">Jewelry Tag</field>
         <field name="model">jewelry.barcode.item</field>
@@ -74,55 +70,70 @@
                     padding: 0 !important;
                     margin: 0 !important;
                 }
-                /*
-                 * 46px = 4.5mm at wkhtmltopdf default 1024px viewport scaled to 100mm.
-                 * vw ignored by old WebKit for font-size; px is reliable on Linux.
-                 * 4 rows x 46px x line-height 1.0 fits the 18vw content height.
-                 */
                 html {
-                    font-size: 30px !important;
-                    line-height: 1.1 !important;
+                    font-size: 46px !important;
+                    line-height: 1.0 !important;
                 }
             </style>
             <t t-foreach="docs" t-as="doc">
+                <!-- Base values -->
                 <t t-set="less_line" t-value="doc.less_ids and doc.less_ids[0] or False"/>
                 <t t-set="less_type_code" t-value="(less_line.less_type.name[:3].upper() if less_line and less_line.less_type else '')"/>
                 <t t-set="less_wt" t-value="(less_line.weight if less_line else 0.0)"/>
                 <t t-set="gross_wt" t-value="doc.weight"/>
-                <t t-set="enc_pct" t-value="(doc._encode_tag_pct(less_wt, gross_wt) if gross_wt else '')"/>
-                <t t-set="enc_less_wt" t-value="(doc._encode_tag_wt(less_wt) if less_wt else '')"/>
                 <t t-set="cat_abbrev" t-value="(doc.category.name[:3].upper() if doc.category else '')"/>
                 <t t-set="karat" t-value="(doc.purity.karat if doc.purity else '')"/>
-                <t t-set="net_int" t-value="int(round(doc.net_weight * 100))"/>
                 <t t-set="mcode_name" t-value="(doc.m_code.name if doc.m_code else '')"/>
                 <t t-set="enc_min" t-value="(doc._encode_tag_price(doc.min_price) if doc.min_price else '')"/>
                 <t t-set="enc_max" t-value="(doc._encode_tag_price(doc.max_price) if doc.max_price else '')"/>
 
-                <!-- padding-left: 30vw reserves handle area; vw on block padding works in wkhtmltopdf -->
-                <div t-attf-style="page-break-after: {{'always' if not doc_last else 'auto'}}; width: 100vw; height: 20vw; box-sizing: border-box; overflow: hidden;">
-                    <div style="display: table; width: 100%; height: 100%; border-collapse: collapse;">
+                <!-- Deduction-adjusted values -->
+                <t t-set="less_pct" t-value="doc.less_deduction_pct"/>
+                <t t-set="charge_pct" t-value="doc.charge_deduction_pct"/>
+                <t t-set="adj_less_wt" t-value="less_wt * (1.0 - less_pct / 100.0) if (less_pct and less_wt) else less_wt"/>
+                <t t-set="adj_net_wt" t-value="gross_wt - adj_less_wt"/>
+                <t t-set="adj_net_int" t-value="int(round(adj_net_wt * 100))"/>
+                <t t-set="total_charges" t-value="sum(c.amount for c in doc.charge_ids)"/>
+                <t t-set="adj_charges" t-value="round(total_charges * (1.0 - charge_pct / 100.0), 2)"/>
+                <t t-set="enc_adj_pct" t-value="(doc._encode_tag_pct(adj_less_wt, gross_wt) if gross_wt and adj_less_wt else '')"/>
+                <t t-set="enc_adj_less_wt" t-value="(doc._encode_tag_wt(adj_less_wt) if adj_less_wt else '')"/>
+                <t t-set="enc_adj_charges" t-value="(doc._encode_tag_price(adj_charges) if adj_charges else '')"/>
 
-                        <div style="display: table-cell; width: 30%;"/>
-                        <!-- QR: 50% of remaining 70vw = 35vw -->
-                        <div style="display: table-cell; width: 35%; vertical-align: middle; text-align: center;">
-                            <img t-if="doc.barcode_qr_data"
-                                 t-att-src="doc.barcode_qr_data"
-                                 style="width: 18vw; height: 18vw; display: inline-block;"/>
+                <div t-attf-style="page-break-after: {{'always' if not doc_last else 'auto'}}; width: 100%; height: 100%; display: table; table-layout: fixed; border-collapse: collapse; overflow: hidden;">
+
+                    <!-- Col 1 (30%): handle/loop hole, intentionally blank -->
+                    <div style="display: table-cell; width: 30%;"/>
+
+                    <!-- Col 2 (28%): QR image + primary specs in nested table -->
+                    <div style="display: table-cell; width: 28%; vertical-align: middle; font-family: 'Courier New', Courier, monospace; overflow: hidden;">
+                        <div style="display: table; width: 100%; height: 100%; border-collapse: collapse;">
+                            <div t-if="doc.barcode_qr_data" style="display: table-cell; vertical-align: middle; padding-right: 2px;">
+                                <img t-att-src="doc.barcode_qr_data" style="width: 100%; height: auto; display: block;"/>
+                            </div>
+                            <div style="display: table-cell; vertical-align: middle;">
+                                <div style="white-space: nowrap; overflow: hidden;">KJ-<t t-esc="(doc.purity.value if doc.purity else '')"/> <t t-esc="cat_abbrev"/></div>
+                                <div style="white-space: nowrap; overflow: hidden;">WT-<t t-esc="'%.3f' % gross_wt"/>/<t t-esc="doc.pieces"/></div>
+                                <div style="white-space: nowrap; overflow: hidden;">S-<t t-esc="(doc.size.name if doc.size else '')"/> K<t t-esc="karat"/></div>
+                                <div style="white-space: nowrap; overflow: hidden;">N<t t-esc="adj_net_int"/></div>
+                            </div>
                         </div>
-
-                        <!-- Text: 50% of remaining 70vw = 35vw -->
-                        <div style="display: table-cell; width: 35%; vertical-align: middle; font-family: 'Courier New', Courier, monospace; overflow: hidden;">
-                            <div style="white-space: nowrap; overflow: hidden;">KJ-<t t-esc="(doc.purity.value if doc.purity else '')"/> <t t-esc="cat_abbrev"/></div>
-                            <div style="white-space: nowrap; overflow: hidden;">WT-<t t-esc="'%.3f' % gross_wt"/>/<t t-esc="doc.pieces"/></div>
-                            <div style="white-space: nowrap; overflow: hidden;">S-<t t-esc="(doc.size.name if doc.size else '')"/> K<t t-esc="karat"/> N<t t-esc="net_int"/></div>
-                            <div style="white-space: nowrap; overflow: hidden;"><t t-esc="doc.barcode"/></div>
-                            <div style="white-space: nowrap; overflow: hidden;">#<t t-esc="(doc.item_code.name if doc.item_code else '')"/> <t t-esc="mcode_name"/></div>
-                            <div style="white-space: nowrap; overflow: hidden;"><t t-esc="doc._tag_date_str()"/></div>
-                            <div t-if="less_line" style="white-space: nowrap; overflow: hidden;"><t t-esc="less_type_code"/><t t-esc="enc_pct"/>W<t t-esc="enc_less_wt"/></div>
-                            <div t-if="enc_min or enc_max" style="white-space: nowrap; overflow: hidden;"><t t-if="enc_min">MN<t t-esc="enc_min"/></t><t t-if="enc_min and enc_max">-</t><t t-if="enc_max">MX<t t-esc="enc_max"/></t></div>
-                        </div>
-
                     </div>
+
+                    <!-- Col 3 (27%): barcode identifiers + deduction info -->
+                    <div style="display: table-cell; width: 27%; vertical-align: middle; font-family: 'Courier New', Courier, monospace; overflow: hidden;">
+                        <div style="white-space: nowrap; overflow: hidden;"><t t-esc="doc.barcode"/></div>
+                        <div style="white-space: nowrap; overflow: hidden;">#<t t-esc="(doc.item_code.name if doc.item_code else '')"/></div>
+                        <div style="white-space: nowrap; overflow: hidden;"><t t-esc="mcode_name"/> <t t-esc="doc._tag_date_str()"/></div>
+                        <div t-if="less_line" style="white-space: nowrap; overflow: hidden;"><t t-esc="less_type_code"/><t t-esc="enc_adj_pct"/>W<t t-esc="enc_adj_less_wt"/></div>
+                        <div t-if="adj_charges" style="white-space: nowrap; overflow: hidden;">CHG<t t-esc="enc_adj_charges"/></div>
+                        <div t-if="enc_min or enc_max" style="white-space: nowrap; overflow: hidden;"><t t-if="enc_min">MN<t t-esc="enc_min"/></t><t t-if="enc_min and enc_max">-</t><t t-if="enc_max">MX<t t-esc="enc_max"/></t></div>
+                    </div>
+
+                    <!-- Col 4 (15%): narration text -->
+                    <div style="display: table-cell; width: 15%; vertical-align: middle; font-family: 'Courier New', Courier, monospace; font-size: 22px; line-height: 1.1; overflow: hidden; word-wrap: break-word; white-space: normal;">
+                        <t t-esc="doc.narration or ''"/>
+                    </div>
+
                 </div>
             </t>
         </t>

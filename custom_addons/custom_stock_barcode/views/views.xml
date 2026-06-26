@@ -31,6 +31,8 @@
                         <group string="Weight Details">
                             <field name="weight"/>
                             <field name="net_weight" class="fw-bold text-success"/>
+                            <field name="less_deduction_pct"/>
+                            <field name="charge_deduction_pct"/>
                         </group>
                     </group>
 

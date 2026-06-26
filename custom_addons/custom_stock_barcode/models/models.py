@@ -63,16 +63,33 @@ class JewelryBarcodeItem(models.Model):
 
     # --- Weights & Calculations ---
     weight = fields.Float(string='Gross Weight', digits=(16, 3), required=True, default=0.0)
-    
+
     less_ids = fields.One2many('jewelry.item.less', 'item_id', string='Less (Deductions)')
-    
+
     net_weight = fields.Float(
-        string='Net Weight', 
-        compute='_compute_net_weight', 
-        store=True, 
-        readonly=True, 
+        string='Net Weight',
+        compute='_compute_net_weight',
+        store=True,
+        readonly=True,
         digits=(16, 3)
     )
+
+    less_deduction_pct = fields.Float(
+        string='Less Deduction %',
+        digits=(5, 2),
+        default=0.0,
+        help='Percentage to deduct from less weight when printing the tag (0 = no deduction).'
+    )
+    charge_deduction_pct = fields.Float(
+        string='Charge Deduction %',
+        digits=(5, 2),
+        default=0.0,
+        help='Percentage to deduct from charges when printing the tag. Auto-fills from Less Deduction % but can be changed independently.'
+    )
+
+    @api.onchange('less_deduction_pct')
+    def _onchange_less_deduction_pct(self):
+        self.charge_deduction_pct = self.less_deduction_pct
 
     # --- Item Details ---
     item_code   = fields.Many2one('jewelry.item.code', string='Item Code', index=True)
