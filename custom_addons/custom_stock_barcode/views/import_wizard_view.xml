@@ -8,9 +8,24 @@
                 <group>
                     <field name="file_data" filename="file_name" widget="binary" string="Excel File (.xls / .xlsx)"/>
                     <field name="file_name" invisible="1"/>
-                    <field name="less_type_id"/>
-                    <field name="rate_per_gram" string="Gold Rate per Gram (optional)"/>
                 </group>
+
+                <separator string="Expected column format"/>
+                <p style="color:#555; font-size:12px; margin:0 0 4px 0;">
+                    <b>Required:</b> Gross Weight
+                </p>
+                <p style="color:#555; font-size:12px; margin:0 0 4px 0;">
+                    <b>Optional scalars:</b> Item Code · Brand Name · Brand Code · Category · Subcategory · Make · Size · Piece Name · Purity · Status · Min Price · Max Price · Narration · Less Deduction % · Charge Deduction %
+                </p>
+                <p style="color:#555; font-size:12px; margin:0 0 4px 0;">
+                    <b>Multiple less deductions</b> (repeat for each):
+                    Less Type 1 · Less Weight 1 · Less Type 2 · Less Weight 2 · …
+                </p>
+                <p style="color:#555; font-size:12px; margin:0;">
+                    <b>Multiple charges</b> (repeat for each):
+                    Charge Name 1 · Charge Amount 1 · Charge Name 2 · Charge Amount 2 · …
+                </p>
+
                 <footer>
                     <button name="action_import" type="object" string="Import" class="btn-primary"/>
                     <button string="Cancel" class="btn-secondary" special="cancel"/>

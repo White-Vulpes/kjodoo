@@ -1,103 +1,152 @@
 import base64
-from odoo import models, fields, api
+import io
+from odoo import models, fields
 from odoo.exceptions import UserError
-from ..models.models import _encode_digits
 
 
 class JewelryImportWizard(models.TransientModel):
     _name = 'jewelry.import.wizard'
     _description = 'Import Jewelry Items from Excel'
 
-    file_data = fields.Binary(string='Excel File (.xls)', required=True)
+    file_data = fields.Binary(string='Excel File (.xls / .xlsx)', required=True)
     file_name = fields.Char(string='File Name')
-    less_type_id = fields.Many2one('jewelry.less.type', string='Default Less Type', required=True)
-    rate_per_gram = fields.Float(string='Gold Rate (per gram)', digits=(16, 2),
-                                 help='Optional: used to display monetary amount in encoded narration.')
 
     def action_import(self):
-        try:
-            import xlrd
-        except ImportError:
-            raise UserError("The 'xlrd' Python library is required for XLS import. Run: pip install xlrd")
-
         raw = base64.b64decode(self.file_data)
-        try:
-            wb = xlrd.open_workbook(file_contents=raw)
-        except Exception as e:
-            raise UserError(f"Could not open Excel file: {e}")
+        fname = (self.file_name or '').lower()
 
-        sh = wb.sheets()[0]
-        if sh.nrows < 2:
-            raise UserError("The Excel file has no data rows.")
-
-        headers = [str(sh.cell_value(0, c)).strip() for c in range(sh.ncols)]
-
-        def col(row_data, name):
+        # ── Load workbook ────────────────────────────────────────────────────
+        if fname.endswith('.xls') and not fname.endswith('.xlsx'):
             try:
-                idx = headers.index(name)
-                val = row_data[idx]
-                return val if val != '' else None
-            except ValueError:
-                return None
+                import xlrd
+            except ImportError:
+                raise UserError("Install 'xlrd' to read .xls files:  pip install 'xlrd==1.2.0'")
+            try:
+                wb = xlrd.open_workbook(file_contents=raw)
+            except Exception as e:
+                raise UserError(f"Cannot open Excel file: {e}")
+            sh = wb.sheets()[0]
+            if sh.nrows < 2:
+                raise UserError("The Excel file has no data rows.")
+            headers = [str(sh.cell_value(0, c)).strip() for c in range(sh.ncols)]
+            data_rows = [
+                [sh.cell_value(r, c) for c in range(sh.ncols)]
+                for r in range(1, sh.nrows)
+            ]
+        else:
+            try:
+                import openpyxl
+            except ImportError:
+                raise UserError("Install 'openpyxl' to read .xlsx files:  pip install openpyxl")
+            try:
+                wb = openpyxl.load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
+            except Exception as e:
+                raise UserError(f"Cannot open Excel file: {e}")
+            ws = wb.active
+            all_rows = list(ws.iter_rows(values_only=True))
+            if len(all_rows) < 2:
+                raise UserError("The Excel file has no data rows.")
+            headers = [str(c).strip() if c is not None else '' for c in all_rows[0]]
+            data_rows = [
+                ['' if c is None else c for c in r]
+                for r in all_rows[1:]
+            ]
 
-        created_ids = []
+        # ── Column helpers ───────────────────────────────────────────────────
+        hmap = {h: i for i, h in enumerate(headers) if h}
+
+        def col(row, name, default=None):
+            idx = hmap.get(name)
+            if idx is None or idx >= len(row):
+                return default
+            v = row[idx]
+            return v if v not in (None, '') else default
+
+        def col_str(row, name):
+            v = col(row, name, '')
+            return str(v).strip() if v not in (None, '') else ''
+
+        def col_float(row, name, default=0.0):
+            v = col(row, name)
+            try:
+                return float(v) if v not in (None, '') else default
+            except (ValueError, TypeError):
+                return default
+
+        def col_int(row, name, default=0):
+            v = col(row, name)
+            try:
+                return int(float(v)) if v not in (None, '') else default
+            except (ValueError, TypeError):
+                return default
+
+        # ── Discover numbered less / charge columns ──────────────────────────
+        less_nums = sorted({
+            int(h.rsplit(None, 1)[-1])
+            for h in headers
+            if h.startswith('Less Type ') and h.rsplit(None, 1)[-1].isdigit()
+        })
+        charge_nums = sorted({
+            int(h.rsplit(None, 1)[-1])
+            for h in headers
+            if h.startswith('Charge Name ') and h.rsplit(None, 1)[-1].isdigit()
+        })
+
+        # ── get-or-create helper ─────────────────────────────────────────────
+        def get_or_create(model_name, name_val, extra=None):
+            if not name_val:
+                return False
+            rec = self.env[model_name].search([('name', '=', name_val)], limit=1)
+            if not rec:
+                vals = {'name': name_val}
+                if extra:
+                    vals.update(extra)
+                rec = self.env[model_name].create(vals)
+            return rec.id
+
+        _karat_map = {9999: 24, 9166: 22, 8750: 21, 8333: 20, 7500: 18, 5833: 14, 5000: 12}
         ItemModel = self.env['jewelry.barcode.item']
+        created_ids = []
+        errors = []
 
-        for r in range(1, sh.nrows):
-            row = [sh.cell_value(r, c) for c in range(sh.ncols)]
+        for r_idx, row in enumerate(data_rows, start=2):
+            if all(v in (None, '', 0) for v in row):
+                continue
 
-            item_code_str = str(col(row, 'Item Code') or '').strip()
-            brand_name    = str(col(row, 'Brand Name') or '').strip()
-            brand_code    = str(col(row, 'Brand Code') or '').strip()
-            subcategory_str = str(col(row, 'Subcategory') or '').strip()
-            category_str    = str(col(row, 'Category') or '').strip()
-            make_str        = str(col(row, 'Make') or '').strip()
-            status        = str(col(row, 'Status') or 'Active').strip()
-            size_name     = str(col(row, 'Size') or '').strip()
-            pcs_raw       = col(row, 'Piece Name')
-            gross_raw     = col(row, 'Gross Weight')
-            less_raw      = col(row, 'Less Weight')
-            purity_raw    = col(row, 'Purity')
+            gross_weight = col_float(row, 'Gross Weight')
+            if not gross_weight:
+                errors.append(f"Row {r_idx}: missing Gross Weight — skipped.")
+                continue
 
-            gross_weight = float(gross_raw) if gross_raw not in (None, '') else 0.0
-            less_weight  = float(less_raw)  if less_raw  not in (None, '') else 0.0
-            pieces       = int(float(pcs_raw)) if pcs_raw not in (None, '') else 1
-            purity_int   = int(float(purity_raw)) if purity_raw not in (None, '') else 0
+            # ── Scalar fields ────────────────────────────────────────────────
+            item_code_str   = col_str(row, 'Item Code')
+            brand_name      = col_str(row, 'Brand Name')
+            brand_code      = col_str(row, 'Brand Code')
+            subcategory_str = col_str(row, 'Subcategory')
+            category_str    = col_str(row, 'Category')
+            make_str        = col_str(row, 'Make')
+            size_name       = col_str(row, 'Size')
+            status          = col_str(row, 'Status') or 'Active'
+            pieces          = col_int(row, 'Piece Name', 1) or col_int(row, 'Pieces', 1) or 1
+            purity_int      = col_int(row, 'Purity')
+            min_price       = col_float(row, 'Min Price')
+            max_price       = col_float(row, 'Max Price')
+            narration       = col_str(row, 'Narration')
+            less_ded_pct    = col_float(row, 'Less Deduction %')
+            charge_ded_pct  = col_float(row, 'Charge Deduction %', default=less_ded_pct)
 
-            # Item name: Brand Name – Sub-Category
-            name_parts = [p for p in [brand_name, subcategory_str] if p]
-            item_name = ' - '.join(name_parts) if name_parts else (item_code_str or 'Unnamed')
+            # ── get-or-create lookups ────────────────────────────────────────
+            item_code_id   = get_or_create('jewelry.item.code', item_code_str)
+            size_id        = get_or_create('jewelry.size', size_name)
+            mcode_id       = get_or_create('jewelry.mcode', brand_code)
+            category_id    = get_or_create('jewelry.category', category_str)
+            subcategory_id = get_or_create('jewelry.subcategory', subcategory_str)
+            make_id        = get_or_create('jewelry.make', make_str)
 
-            # get-or-create size
-            size_id = False
-            if size_name:
-                size_rec = self.env['jewelry.size'].search([('name', '=', size_name)], limit=1)
-                if not size_rec:
-                    size_rec = self.env['jewelry.size'].create({'name': size_name})
-                size_id = size_rec.id
-
-            # get-or-create mcode
-            mcode_id = False
-            if brand_code:
-                mcode_rec = self.env['jewelry.mcode'].search([('name', '=', brand_code)], limit=1)
-                if not mcode_rec:
-                    mcode_rec = self.env['jewelry.mcode'].create({'name': brand_code})
-                mcode_id = mcode_rec.id
-
-            # get-or-create item code
-            item_code_id = False
-            if item_code_str:
-                ic_rec = self.env['jewelry.item.code'].search([('name', '=', item_code_str)], limit=1)
-                if not ic_rec:
-                    ic_rec = self.env['jewelry.item.code'].create({'name': item_code_str})
-                item_code_id = ic_rec.id
-
-            # get-or-create purity
             purity_id = False
             if purity_int:
                 purity_rec = self.env['jewelry.purity'].search([('value', '=', purity_int)], limit=1)
                 if not purity_rec:
-                    _karat_map = {9999: 24, 9166: 22, 8750: 21, 8333: 20, 7500: 18, 5833: 14}
                     karat = _karat_map.get(purity_int, purity_int // 100)
                     purity_rec = self.env['jewelry.purity'].create({
                         'name': f'{karat}K',
@@ -106,56 +155,73 @@ class JewelryImportWizard(models.TransientModel):
                     })
                 purity_id = purity_rec.id
 
-            # get-or-create category
-            category_id = False
-            if category_str:
-                cat_rec = self.env['jewelry.category'].search([('name', '=', category_str)], limit=1)
-                if not cat_rec:
-                    cat_rec = self.env['jewelry.category'].create({'name': category_str})
-                category_id = cat_rec.id
+            # ── Less records ─────────────────────────────────────────────────
+            less_lines = []
+            if less_nums:
+                for n in less_nums:
+                    lt_name = col_str(row, f'Less Type {n}')
+                    lt_wt   = col_float(row, f'Less Weight {n}')
+                    if not lt_name or not lt_wt:
+                        continue
+                    lt_id = get_or_create('jewelry.less.type', lt_name)
+                    less_lines.append((0, 0, {'less_type': lt_id, 'weight': lt_wt}))
+            else:
+                # Fallback: single-column format (Less Type + Less Weight)
+                lt_name = col_str(row, 'Less Type')
+                lt_wt   = col_float(row, 'Less Weight')
+                if lt_name and lt_wt:
+                    lt_id = get_or_create('jewelry.less.type', lt_name)
+                    less_lines.append((0, 0, {'less_type': lt_id, 'weight': lt_wt}))
 
-            # get-or-create subcategory
-            subcategory_id = False
-            if subcategory_str:
-                sub_rec = self.env['jewelry.subcategory'].search([('name', '=', subcategory_str)], limit=1)
-                if not sub_rec:
-                    sub_rec = self.env['jewelry.subcategory'].create({'name': subcategory_str})
-                subcategory_id = sub_rec.id
+            # ── Charge records ───────────────────────────────────────────────
+            charge_lines = []
+            for n in charge_nums:
+                ch_name   = col_str(row, f'Charge Name {n}')
+                ch_amount = col_float(row, f'Charge Amount {n}')
+                if not ch_name or not ch_amount:
+                    continue
+                charge_lines.append((0, 0, {'name': ch_name, 'amount': ch_amount}))
 
-            # get-or-create make
-            make_id = False
-            if make_str:
-                make_rec = self.env['jewelry.make'].search([('name', '=', make_str)], limit=1)
-                if not make_rec:
-                    make_rec = self.env['jewelry.make'].create({'name': make_str})
-                make_id = make_rec.id
+            # ── Item name ────────────────────────────────────────────────────
+            name_parts = [p for p in [brand_name, subcategory_str] if p]
+            item_name = ' - '.join(name_parts) if name_parts else (item_code_str or 'Unnamed')
 
-            # Build encoded narration
-            narration = self._build_narration(
-                less_weight, gross_weight, self.less_type_id, self.rate_per_gram
+            # ── Create ───────────────────────────────────────────────────────
+            try:
+                item = ItemModel.create({
+                    'item_code':           item_code_id,
+                    'name':                item_name,
+                    'm_code':              mcode_id,
+                    'size':                size_id,
+                    'pieces':              pieces,
+                    'weight':              gross_weight,
+                    'purity':              purity_id,
+                    'category':            category_id,
+                    'subcategory':         subcategory_id,
+                    'make':                make_id,
+                    'active':              status.lower() == 'active',
+                    'min_price':           min_price,
+                    'max_price':           max_price,
+                    'narration':           narration,
+                    'less_deduction_pct':  less_ded_pct,
+                    'charge_deduction_pct': charge_ded_pct,
+                    'less_ids':            less_lines,
+                    'charge_ids':          charge_lines,
+                })
+                created_ids.append(item.id)
+            except Exception as e:
+                errors.append(f"Row {r_idx}: {e}")
+
+        if errors and not created_ids:
+            raise UserError("Import failed — no items created.\n\n" + '\n'.join(errors))
+
+        if errors:
+            # Partial success — commit what we have and warn
+            self.env['bus.bus']._sendone(
+                self.env.user.partner_id,
+                'simple_notification',
+                {'title': 'Import warnings', 'message': '\n'.join(errors), 'sticky': True},
             )
-
-            vals = {
-                'item_code':   item_code_id,
-                'name':        item_name,
-                'm_code':      mcode_id,
-                'size':        size_id,
-                'pieces':      pieces,
-                'weight':      gross_weight,
-                'purity':      purity_id,
-                'category':    category_id,
-                'subcategory': subcategory_id,
-                'make':        make_id,
-                'active':      status.lower() == 'active',
-                'narration':   narration,
-                'less_ids': [(0, 0, {
-                    'less_type': self.less_type_id.id,
-                    'weight': less_weight,
-                })] if less_weight else [],
-            }
-
-            item = ItemModel.create(vals)
-            created_ids.append(item.id)
 
         return {
             'type': 'ir.actions.act_window',
@@ -165,18 +231,3 @@ class JewelryImportWizard(models.TransientModel):
             'domain': [('id', 'in', created_ids)],
             'target': 'current',
         }
-
-    @staticmethod
-    def _build_narration(less_weight, gross_weight, less_type, rate_per_gram=0.0):
-        """Return encoded narration string using BLACKSTONE cipher."""
-        if not gross_weight:
-            return ''
-        pct = round(less_weight / gross_weight * 100)
-        type_code = (less_type.name[:3].upper() if less_type else 'UNK')
-        enc_pct = _encode_digits(str(pct))
-        enc_wt  = _encode_digits(f'{less_weight:.3f}')
-        narration = f'{type_code}-{enc_pct}%WT{enc_wt}'
-        if rate_per_gram:
-            enc_rate = _encode_digits(str(int(rate_per_gram)))
-            narration += f'R{enc_rate}'
-        return narration
