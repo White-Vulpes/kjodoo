@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- FORM VIEW -->
+    <record id="view_jewelry_stock_verification_form" model="ir.ui.view">
+        <field name="name">jewelry.stock.verification.form</field>
+        <field name="model">jewelry.stock.verification</field>
+        <field name="arch" type="xml">
+            <form string="Stock Verification">
+                <header>
+                    <button name="action_start" type="object" string="Start Verification"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_complete" type="object" string="Complete"
+                            class="btn-primary" invisible="state != 'in_progress'"/>
+                    <button name="action_reset" type="object" string="Reset &amp; Regenerate"
+                            invisible="state != 'in_progress'"/>
+                    <button name="action_print_report" type="object" string="Print Report"
+                            class="btn-secondary" invisible="state != 'done'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,in_progress,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" icon="fa-list-ol" type="button">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value"><field name="total_count"/></span>
+                                <span class="o_stat_text">Total</span>
+                            </div>
+                        </button>
+                        <button class="oe_stat_button" icon="fa-check-circle" type="button">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value"><field name="verified_count"/></span>
+                                <span class="o_stat_text">Verified</span>
+                            </div>
+                        </button>
+                        <button class="oe_stat_button" icon="fa-exclamation-triangle" type="button">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value"><field name="missing_count"/></span>
+                                <span class="o_stat_text">Missing</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group>
+                            <field name="progress_pct" string="Progress" widget="progressbar"/>
+                        </group>
+                    </group>
+
+                    <!-- Barcode scan input: only visible when in progress -->
+                    <group string="Scan Item" invisible="state != 'in_progress'">
+                        <field name="scan_barcode" placeholder="Scan or type barcode and press Enter…"
+                               string="Barcode"/>
+                        <field name="last_scan_result" readonly="1" string="Result"/>
+                    </group>
+
+                    <!-- Verification lines -->
+                    <field name="line_ids" readonly="state == 'done'" nolabel="1">
+                        <list decoration-success="is_verified == True"
+                              decoration-danger="is_verified == False and parent.state == 'done'"
+                              editable="bottom">
+                            <field name="barcode"/>
+                            <field name="item_name"/>
+                            <field name="category_id"/>
+                            <field name="purity_id"/>
+                            <field name="weight" sum="Total Weight"/>
+                            <field name="is_verified" widget="boolean_toggle" string="Found"/>
+                            <field name="verified_date"/>
+                            <field name="line_notes" string="Notes"/>
+                        </list>
+                    </field>
+
+                    <group string="Session Notes">
+                        <field name="notes" nolabel="1" placeholder="Add any remarks about this verification…"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- LIST VIEW -->
+    <record id="view_jewelry_stock_verification_list" model="ir.ui.view">
+        <field name="name">jewelry.stock.verification.list</field>
+        <field name="model">jewelry.stock.verification</field>
+        <field name="arch" type="xml">
+            <list string="Stock Verifications" default_order="date desc">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="user_id"/>
+                <field name="total_count" string="Total"/>
+                <field name="verified_count" string="Verified"/>
+                <field name="missing_count" string="Missing"/>
+                <field name="progress_pct" string="Progress %"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'in_progress'"
+                       decoration-success="state == 'done'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- SEARCH VIEW -->
+    <record id="view_jewelry_stock_verification_search" model="ir.ui.view">
+        <field name="name">jewelry.stock.verification.search</field>
+        <field name="model">jewelry.stock.verification</field>
+        <field name="arch" type="xml">
+            <search string="Search Verifications">
+                <field name="name" string="Reference"/>
+                <field name="user_id" string="Verified By"/>
+                <filter string="Draft" name="draft" domain="[('state','=','draft')]"/>
+                <filter string="In Progress" name="in_progress" domain="[('state','=','in_progress')]"/>
+                <filter string="Done" name="done" domain="[('state','=','done')]"/>
+                <separator/>
+                <filter string="Verification Date" name="filter_date" date="date"/>
+                <group>
+                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Verified By" name="group_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Month" name="group_month" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ACTION -->
+    <record id="action_jewelry_stock_verification" model="ir.actions.act_window">
+        <field name="name">Stock Verifications</field>
+        <field name="res_model">jewelry.stock.verification</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- MENU -->
+    <menuitem id="menu_jewelry_stock_verification"
+              name="Stock Verification"
+              parent="custom_stock_barcode.menu_jewelry_inventory"
+              action="action_jewelry_stock_verification"
+              sequence="20"/>
+</odoo>

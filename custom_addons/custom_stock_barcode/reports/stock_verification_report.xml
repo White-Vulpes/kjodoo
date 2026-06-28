@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_stock_verification" model="ir.actions.report">
+        <field name="name">Stock Verification Report</field>
+        <field name="model">jewelry.stock.verification</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">custom_stock_barcode.report_stock_verification_document</field>
+        <field name="report_file">custom_stock_barcode.report_stock_verification_document</field>
+        <field name="print_report_name">'Stock Verification - %s' % object.name</field>
+        <field name="binding_model_id" ref="model_jewelry_stock_verification"/>
+    </record>
+
+    <template id="report_stock_verification_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <!-- Header -->
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <h2>Stock Verification Report</h2>
+                                <table class="table table-sm table-borderless" style="width:auto;">
+                                    <tr>
+                                        <td><strong>Reference:</strong></td>
+                                        <td><t t-esc="doc.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Date:</strong></td>
+                                        <td><t t-esc="doc.date"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Verified By:</strong></td>
+                                        <td><t t-esc="doc.user_id.name"/></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-6 text-end">
+                                <table class="table table-sm table-bordered" style="width:auto; margin-left:auto;">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Total</th>
+                                            <th>Verified</th>
+                                            <th>Missing</th>
+                                            <th>Progress</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-center"><t t-esc="doc.total_count"/></td>
+                                            <td class="text-center text-success"><strong><t t-esc="doc.verified_count"/></strong></td>
+                                            <td class="text-center text-danger"><strong><t t-esc="doc.missing_count"/></strong></td>
+                                            <td class="text-center"><t t-esc="'%.1f%%' % doc.progress_pct"/></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Missing Items -->
+                        <t t-set="missing_lines" t-value="doc.line_ids.filtered(lambda l: not l.is_verified)"/>
+                        <t t-if="missing_lines">
+                            <h4 class="text-danger mt-4">Missing Items (<t t-esc="len(missing_lines)"/>)</h4>
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-danger">
+                                    <tr>
+                                        <th>Barcode</th>
+                                        <th>Item Name</th>
+                                        <th>Category</th>
+                                        <th>Purity</th>
+                                        <th class="text-end">Weight (g)</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="missing_lines" t-as="line">
+                                        <tr>
+                                            <td><t t-esc="line.barcode"/></td>
+                                            <td><t t-esc="line.item_name"/></td>
+                                            <td><t t-esc="line.category_id.name or ''"/></td>
+                                            <td><t t-esc="line.purity_id.name or ''"/></td>
+                                            <td class="text-end"><t t-esc="'%.3f' % line.weight"/></td>
+                                            <td><t t-esc="line.line_notes or ''"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+
+                        <!-- Verified Items -->
+                        <t t-set="verified_lines" t-value="doc.line_ids.filtered(lambda l: l.is_verified)"/>
+                        <t t-if="verified_lines">
+                            <h4 class="text-success mt-4">Verified Items (<t t-esc="len(verified_lines)"/>)</h4>
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-success">
+                                    <tr>
+                                        <th>Barcode</th>
+                                        <th>Item Name</th>
+                                        <th>Category</th>
+                                        <th>Purity</th>
+                                        <th class="text-end">Weight (g)</th>
+                                        <th>Verified At</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="verified_lines" t-as="line">
+                                        <tr>
+                                            <td><t t-esc="line.barcode"/></td>
+                                            <td><t t-esc="line.item_name"/></td>
+                                            <td><t t-esc="line.category_id.name or ''"/></td>
+                                            <td><t t-esc="line.purity_id.name or ''"/></td>
+                                            <td class="text-end"><t t-esc="'%.3f' % line.weight"/></td>
+                                            <td><t t-esc="line.verified_date"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+
+                        <t t-if="doc.notes">
+                            <div class="mt-4">
+                                <strong>Notes:</strong>
+                                <p><t t-esc="doc.notes"/></p>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

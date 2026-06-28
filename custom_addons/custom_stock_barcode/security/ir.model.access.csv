@@ -12,3 +12,5 @@ access_jewelry_purity,jewelry.purity.access,model_jewelry_purity,base.group_user
 access_jewelry_category,jewelry.category.access,model_jewelry_category,base.group_user,1,1,1,1
 access_jewelry_subcategory,jewelry.subcategory.access,model_jewelry_subcategory,base.group_user,1,1,1,1
 access_jewelry_make,jewelry.make.access,model_jewelry_make,base.group_user,1,1,1,1
+access_jewelry_stock_verification,jewelry.stock.verification.access,model_jewelry_stock_verification,base.group_user,1,1,1,1
+access_jewelry_stock_verification_line,jewelry.stock.verification.line.access,model_jewelry_stock_verification_line,base.group_user,1,1,1,1

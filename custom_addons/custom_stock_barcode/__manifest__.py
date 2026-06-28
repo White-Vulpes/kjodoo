@@ -26,9 +26,12 @@
     # Always load security rules FIRST, then views.
     'data': [
         'security/ir.model.access.csv',
+        'data/stock_verification_sequence.xml',
         'views/views.xml',
         'views/import_wizard_view.xml',
+        'views/stock_verification_views.xml',
         'reports/tag_report.xml',
+        'reports/stock_verification_report.xml',
     ],
 
     # Images/Assets
