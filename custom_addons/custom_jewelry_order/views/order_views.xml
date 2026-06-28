@@ -195,10 +195,12 @@
                 <separator/>
                 <filter string="Order Date" name="filter_date_order" date="date_order"/>
                 <group>
+                    <filter string="Customer" name="group_partner" context="{'group_by': 'partner_id'}"/>
                     <filter string="Manufacturer" name="group_manufacturer" context="{'group_by': 'manufacturer_id'}"/>
                     <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
                     <filter string="Order Date" name="group_date" context="{'group_by': 'date_order:month'}"/>
                     <filter string="Item Type" name="group_item_type" context="{'group_by': 'item_type'}"/>
+                    <filter string="Seal" name="group_seal" context="{'group_by': 'seal'}"/>
                 </group>
             </search>
         </field>
@@ -229,6 +231,130 @@
         </field>
     </record>
 
+    <!-- ============================================================ -->
+    <!-- B. CUSTOMER ANALYTICS                                        -->
+    <!-- ============================================================ -->
+    <record id="view_jewelry_order_graph_customer" model="ir.ui.view">
+        <field name="name">custom.jewelry.order.graph.customer</field>
+        <field name="model">custom.jewelry.order</field>
+        <field name="arch" type="xml">
+            <graph string="Orders by Customer" type="bar">
+                <field name="partner_id" type="row"/>
+                <field name="total_wt" type="measure"/>
+            </graph>
+        </field>
+    </record>
+    <record id="view_jewelry_order_pivot_customer" model="ir.ui.view">
+        <field name="name">custom.jewelry.order.pivot.customer</field>
+        <field name="model">custom.jewelry.order</field>
+        <field name="arch" type="xml">
+            <pivot string="Customer Analysis" disable_linking="0">
+                <field name="partner_id" type="row"/>
+                <field name="date_order" interval="month" type="col"/>
+                <field name="total_wt" type="measure"/>
+                <field name="pieces" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- C. ITEM TYPE ANALYTICS                                       -->
+    <!-- ============================================================ -->
+    <record id="view_jewelry_order_graph_item_type" model="ir.ui.view">
+        <field name="name">custom.jewelry.order.graph.item.type</field>
+        <field name="model">custom.jewelry.order</field>
+        <field name="arch" type="xml">
+            <graph string="Orders by Item Type" type="bar" stacked="1">
+                <field name="item_type" type="row"/>
+                <field name="state" type="col"/>
+            </graph>
+        </field>
+    </record>
+    <record id="view_jewelry_order_pivot_item_type" model="ir.ui.view">
+        <field name="name">custom.jewelry.order.pivot.item.type</field>
+        <field name="model">custom.jewelry.order</field>
+        <field name="arch" type="xml">
+            <pivot string="Item Type Analysis" disable_linking="0">
+                <field name="item_type" type="row"/>
+                <field name="date_order" interval="month" type="col"/>
+                <field name="total_wt" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- D. PIPELINE / STATUS ANALYTICS                               -->
+    <!-- ============================================================ -->
+    <record id="view_jewelry_order_graph_pipeline" model="ir.ui.view">
+        <field name="name">custom.jewelry.order.graph.pipeline</field>
+        <field name="model">custom.jewelry.order</field>
+        <field name="arch" type="xml">
+            <graph string="Order Pipeline" type="pie">
+                <field name="state" type="row"/>
+            </graph>
+        </field>
+    </record>
+    <record id="view_jewelry_order_pivot_pipeline" model="ir.ui.view">
+        <field name="name">custom.jewelry.order.pivot.pipeline</field>
+        <field name="model">custom.jewelry.order</field>
+        <field name="arch" type="xml">
+            <pivot string="Pipeline Analysis" disable_linking="0">
+                <field name="state" type="row"/>
+                <field name="date_order" interval="month" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- E. MONTHLY TREND ANALYTICS                                   -->
+    <!-- ============================================================ -->
+    <record id="view_jewelry_order_graph_trend" model="ir.ui.view">
+        <field name="name">custom.jewelry.order.graph.trend</field>
+        <field name="model">custom.jewelry.order</field>
+        <field name="arch" type="xml">
+            <graph string="Monthly Trend" type="line">
+                <field name="date_order" interval="month" type="row"/>
+                <field name="total_wt" type="measure"/>
+            </graph>
+        </field>
+    </record>
+    <record id="view_jewelry_order_pivot_trend" model="ir.ui.view">
+        <field name="name">custom.jewelry.order.pivot.trend</field>
+        <field name="model">custom.jewelry.order</field>
+        <field name="arch" type="xml">
+            <pivot string="Monthly Trend Analysis" disable_linking="0">
+                <field name="date_order" interval="month" type="row"/>
+                <field name="manufacturer_id" type="col"/>
+                <field name="total_wt" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- F. SEAL & MELTING MIX ANALYTICS                              -->
+    <!-- ============================================================ -->
+    <record id="view_jewelry_order_graph_seal" model="ir.ui.view">
+        <field name="name">custom.jewelry.order.graph.seal</field>
+        <field name="model">custom.jewelry.order</field>
+        <field name="arch" type="xml">
+            <graph string="Seal &amp; Melting Mix" type="bar" stacked="1">
+                <field name="seal" type="row"/>
+                <field name="melting_id" type="col"/>
+            </graph>
+        </field>
+    </record>
+    <record id="view_jewelry_order_pivot_seal" model="ir.ui.view">
+        <field name="name">custom.jewelry.order.pivot.seal</field>
+        <field name="model">custom.jewelry.order</field>
+        <field name="arch" type="xml">
+            <pivot string="Seal &amp; Melting Analysis" disable_linking="0">
+                <field name="seal" type="row"/>
+                <field name="melting_id" type="col"/>
+                <field name="total_wt" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
     <!-- MAIN ACTION -->
     <record id="action_custom_jewelry_order" model="ir.actions.act_window">
         <field name="name">Custom Orders</field>
@@ -242,6 +368,129 @@
         <field name="res_model">custom.jewelry.order</field>
         <field name="view_mode">graph,pivot,list</field>
         <field name="context">{'search_default_group_manufacturer': 1}</field>
+    </record>
+
+    <!-- ANALYTICS ACTION: Customer Report (B) -->
+    <record id="action_jewelry_customer_report" model="ir.actions.act_window">
+        <field name="name">Customer Report</field>
+        <field name="res_model">custom.jewelry.order</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="context">{'search_default_group_partner': 1}</field>
+    </record>
+    <record id="action_jewelry_customer_report_view_graph" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">graph</field>
+        <field name="view_id" ref="view_jewelry_order_graph_customer"/>
+        <field name="act_window_id" ref="action_jewelry_customer_report"/>
+    </record>
+    <record id="action_jewelry_customer_report_view_pivot" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">pivot</field>
+        <field name="view_id" ref="view_jewelry_order_pivot_customer"/>
+        <field name="act_window_id" ref="action_jewelry_customer_report"/>
+    </record>
+    <record id="action_jewelry_customer_report_view_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="3"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_custom_jewelry_order_list"/>
+        <field name="act_window_id" ref="action_jewelry_customer_report"/>
+    </record>
+
+    <!-- ANALYTICS ACTION: Item Type Report (C) -->
+    <record id="action_jewelry_item_type_report" model="ir.actions.act_window">
+        <field name="name">Item Type Report</field>
+        <field name="res_model">custom.jewelry.order</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="context">{'search_default_group_item_type': 1}</field>
+    </record>
+    <record id="action_jewelry_item_type_report_view_graph" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">graph</field>
+        <field name="view_id" ref="view_jewelry_order_graph_item_type"/>
+        <field name="act_window_id" ref="action_jewelry_item_type_report"/>
+    </record>
+    <record id="action_jewelry_item_type_report_view_pivot" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">pivot</field>
+        <field name="view_id" ref="view_jewelry_order_pivot_item_type"/>
+        <field name="act_window_id" ref="action_jewelry_item_type_report"/>
+    </record>
+    <record id="action_jewelry_item_type_report_view_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="3"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_custom_jewelry_order_list"/>
+        <field name="act_window_id" ref="action_jewelry_item_type_report"/>
+    </record>
+
+    <!-- ANALYTICS ACTION: Pipeline / Status Report (D) -->
+    <record id="action_jewelry_pipeline_report" model="ir.actions.act_window">
+        <field name="name">Pipeline &amp; Status</field>
+        <field name="res_model">custom.jewelry.order</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="context">{'search_default_group_state': 1}</field>
+    </record>
+    <record id="action_jewelry_pipeline_report_view_graph" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">graph</field>
+        <field name="view_id" ref="view_jewelry_order_graph_pipeline"/>
+        <field name="act_window_id" ref="action_jewelry_pipeline_report"/>
+    </record>
+    <record id="action_jewelry_pipeline_report_view_pivot" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">pivot</field>
+        <field name="view_id" ref="view_jewelry_order_pivot_pipeline"/>
+        <field name="act_window_id" ref="action_jewelry_pipeline_report"/>
+    </record>
+    <record id="action_jewelry_pipeline_report_view_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="3"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_custom_jewelry_order_list"/>
+        <field name="act_window_id" ref="action_jewelry_pipeline_report"/>
+    </record>
+
+    <!-- ANALYTICS ACTION: Monthly Trend Report (E) -->
+    <record id="action_jewelry_trend_report" model="ir.actions.act_window">
+        <field name="name">Monthly Trends</field>
+        <field name="res_model">custom.jewelry.order</field>
+        <field name="view_mode">graph,pivot</field>
+        <field name="context">{'search_default_group_date': 1}</field>
+    </record>
+    <record id="action_jewelry_trend_report_view_graph" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">graph</field>
+        <field name="view_id" ref="view_jewelry_order_graph_trend"/>
+        <field name="act_window_id" ref="action_jewelry_trend_report"/>
+    </record>
+    <record id="action_jewelry_trend_report_view_pivot" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">pivot</field>
+        <field name="view_id" ref="view_jewelry_order_pivot_trend"/>
+        <field name="act_window_id" ref="action_jewelry_trend_report"/>
+    </record>
+
+    <!-- ANALYTICS ACTION: Seal & Melting Mix Report (F) -->
+    <record id="action_jewelry_seal_report" model="ir.actions.act_window">
+        <field name="name">Seal &amp; Melting Mix</field>
+        <field name="res_model">custom.jewelry.order</field>
+        <field name="view_mode">graph,pivot,list</field>
+    </record>
+    <record id="action_jewelry_seal_report_view_graph" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">graph</field>
+        <field name="view_id" ref="view_jewelry_order_graph_seal"/>
+        <field name="act_window_id" ref="action_jewelry_seal_report"/>
+    </record>
+    <record id="action_jewelry_seal_report_view_pivot" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">pivot</field>
+        <field name="view_id" ref="view_jewelry_order_pivot_seal"/>
+        <field name="act_window_id" ref="action_jewelry_seal_report"/>
+    </record>
+    <record id="action_jewelry_seal_report_view_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="3"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_custom_jewelry_order_list"/>
+        <field name="act_window_id" ref="action_jewelry_seal_report"/>
     </record>
 
     <!-- ACTIONS FOR CONFIGURATION MENUS -->
@@ -282,8 +531,7 @@
 
     <menuitem id="menu_custom_jewelry_orders" name="Orders" parent="menu_custom_jewelry_root" action="action_custom_jewelry_order" sequence="10"/>
 
-    <menuitem id="menu_jewelry_analytics" name="Analytics" parent="menu_custom_jewelry_root" sequence="50"/>
-    <menuitem id="menu_analytics_manufacturer" name="Manufacturer Report" parent="menu_jewelry_analytics" action="action_jewelry_manufacturer_report" sequence="10"/>
+    <!-- Analytics is a single dashboard menu, defined in analytics_dashboard.xml -->
 
     <menuitem id="menu_jewelry_config" name="Configuration" parent="menu_custom_jewelry_root" sequence="100"/>
     

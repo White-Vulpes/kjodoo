@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="custom_jewelry_order.AnalyticsDashboard">
+        <div class="o_jewelry_dashboard o_action h-100 overflow-auto p-3">
+            <h2 class="mb-3">Jewelry Analytics</h2>
+            <div class="row g-3">
+                <t t-foreach="state.charts" t-as="chart" t-key="chart.key">
+                    <div class="col-12 col-xl-6">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-header fw-bold py-2">
+                                <t t-esc="chart.title"/>
+                            </div>
+                            <div class="card-body o_jewelry_dashboard_chart p-0">
+                                <View t-props="getViewProps(chart)"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

@@ -47,6 +47,23 @@ class JewelryPortal(CustomerPortal):
         }
         return request.render("custom_jewelry_order.portal_jewelry_order_detail", values)
 
+    @http.route('/jewelry/track_carousel', type='jsonrpc', auth='public', methods=['POST'])
+    def jewelry_track_carousel(self, collection_id=None, slide_index=0, order_token=None, **kw):
+        if not order_token or not collection_id:
+            return {'ok': False}
+        order = request.env['custom.jewelry.order'].sudo().search(
+            [('access_token', '=', order_token)], limit=1
+        )
+        if not order:
+            return {'ok': False}
+        request.env['jewelry.carousel.interaction'].sudo().create({
+            'order_id': order.id,
+            'collection_id': int(collection_id),
+            'slide_index': int(slide_index),
+            'ip_address': request.httprequest.remote_addr,
+        })
+        return {'ok': True}
+
     @http.route('/jewelry/whatsapp_redirect', type='http', auth='user')
     def jewelry_whatsapp_redirect(self, phone=None, text='', **kw):
         safe_text = quote(text)

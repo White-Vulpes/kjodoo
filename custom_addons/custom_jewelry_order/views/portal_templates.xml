@@ -130,7 +130,7 @@
                         <t t-if="collection.image_ids">
                             <div class="mb-4">
                                 
-                                <div t-attf-id="carousel_#{collection.id}" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="8000">
+                                <div t-attf-id="carousel_#{collection.id}" class="carousel slide carousel-fade js_jewelry_carousel" data-bs-ride="carousel" data-bs-interval="8000" t-att-data-collection-id="collection.id" t-att-data-order-token="token">
                                     <div class="carousel-inner">
                                         <t t-foreach="collection.image_ids" t-as="img">
                                             <div t-attf-class="carousel-item #{'active' if img_index == 0 else ''}">

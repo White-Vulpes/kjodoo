@@ -1,0 +1,21 @@
+.o_jewelry_dashboard {
+    background-color: var(--gray-100, #f8f9fa);
+
+    .o_jewelry_dashboard_chart {
+        position: relative;
+        height: 360px;
+        display: flex;
+
+        // Force the embedded graph View (and its renderer) to fill the card body.
+        > * {
+            width: 100%;
+            height: 100%;
+        }
+
+        .o_view_controller,
+        .o_graph_view,
+        .o_action_manager {
+            height: 100%;
+        }
+    }
+}
