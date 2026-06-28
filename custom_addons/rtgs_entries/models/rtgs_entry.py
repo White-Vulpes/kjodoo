@@ -101,3 +101,6 @@ class GramRecord(models.Model):
         for record in self:
             if record.touch > 0 and record.pure > 0:
                 record.grams = record.pure / (record.touch / 100)
+
+    def _notify_thread_by_email(self, message, recipients_data, **kwargs):
+        return

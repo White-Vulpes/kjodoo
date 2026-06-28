@@ -158,3 +158,6 @@ class CustomBill(models.Model):
             'url': report_url,
             'target': 'new',  # 'new' tells Odoo to open a new browser tab
         }
+
+    def _notify_thread_by_email(self, message, recipients_data, **kwargs):
+        return

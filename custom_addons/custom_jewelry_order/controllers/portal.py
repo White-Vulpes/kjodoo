@@ -29,6 +29,11 @@ class JewelryPortal(CustomerPortal):
         if not order_sudo:
             return request.not_found()
 
+        request.env['jewelry.order.visit'].sudo().create({
+            'order_id': order_sudo.id,
+            'ip_address': request.httprequest.remote_addr,
+        })
+
         showcase_collections = request.env['jewelry.collection'].sudo().search([
             ('display_location', '=', 'portal'), 
             ('active', '=', True)

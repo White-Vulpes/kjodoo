@@ -22,6 +22,11 @@
                        statusbar_visible="cancelled,draft,confirmed,manufacturing,ready,delivered"/>
                 </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object" name="action_view_visits" icon="fa-eye">
+                            <field name="visit_count" widget="statinfo" string="Portal Views"/>
+                        </button>
+                    </div>
                     <div class="oe_title">
                         <h1>
                             <field name="name" readonly="1"/>
@@ -174,11 +179,69 @@
             </kanban>
         </field>
     </record>
+    <!-- SEARCH VIEW -->
+    <record id="view_custom_jewelry_order_search" model="ir.ui.view">
+        <field name="name">custom.jewelry.order.search</field>
+        <field name="model">custom.jewelry.order</field>
+        <field name="arch" type="xml">
+            <search string="Search Orders">
+                <field name="name" string="Order Ref"/>
+                <field name="partner_id" string="Customer"/>
+                <field name="manufacturer_id" string="Manufacturer"/>
+                <filter string="Draft" name="draft" domain="[('state','=','draft')]"/>
+                <filter string="In Manufacturing" name="manufacturing" domain="[('state','=','manufacturing')]"/>
+                <filter string="Ready" name="ready" domain="[('state','=','ready')]"/>
+                <filter string="Delivered" name="delivered" domain="[('state','=','delivered')]"/>
+                <separator/>
+                <filter string="Order Date" name="filter_date_order" date="date_order"/>
+                <group>
+                    <filter string="Manufacturer" name="group_manufacturer" context="{'group_by': 'manufacturer_id'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Order Date" name="group_date" context="{'group_by': 'date_order:month'}"/>
+                    <filter string="Item Type" name="group_item_type" context="{'group_by': 'item_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- GRAPH VIEW: Orders by Manufacturer -->
+    <record id="view_custom_jewelry_order_graph" model="ir.ui.view">
+        <field name="name">custom.jewelry.order.graph</field>
+        <field name="model">custom.jewelry.order</field>
+        <field name="arch" type="xml">
+            <graph string="Orders by Manufacturer" type="bar" stacked="1">
+                <field name="manufacturer_id" type="row"/>
+                <field name="state" type="col"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- PIVOT VIEW: Manufacturer Performance -->
+    <record id="view_custom_jewelry_order_pivot" model="ir.ui.view">
+        <field name="name">custom.jewelry.order.pivot</field>
+        <field name="model">custom.jewelry.order</field>
+        <field name="arch" type="xml">
+            <pivot string="Manufacturer Performance" disable_linking="0">
+                <field name="manufacturer_id" type="row"/>
+                <field name="date_order" interval="month" type="col"/>
+                <field name="total_wt" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
     <!-- MAIN ACTION -->
     <record id="action_custom_jewelry_order" model="ir.actions.act_window">
         <field name="name">Custom Orders</field>
         <field name="res_model">custom.jewelry.order</field>
-        <field name="view_mode">kanban,list,form</field>
+        <field name="view_mode">kanban,list,form,graph,pivot</field>
+    </record>
+
+    <!-- ANALYTICS ACTION: Manufacturer Report -->
+    <record id="action_jewelry_manufacturer_report" model="ir.actions.act_window">
+        <field name="name">Manufacturer Report</field>
+        <field name="res_model">custom.jewelry.order</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="context">{'search_default_group_manufacturer': 1}</field>
     </record>
 
     <!-- ACTIONS FOR CONFIGURATION MENUS -->
@@ -218,6 +281,9 @@
     <menuitem id="menu_custom_jewelry_root" name="Jewelry Orders" web_icon="custom_jewelry_order,static/description/icon.png"/>
 
     <menuitem id="menu_custom_jewelry_orders" name="Orders" parent="menu_custom_jewelry_root" action="action_custom_jewelry_order" sequence="10"/>
+
+    <menuitem id="menu_jewelry_analytics" name="Analytics" parent="menu_custom_jewelry_root" sequence="50"/>
+    <menuitem id="menu_analytics_manufacturer" name="Manufacturer Report" parent="menu_jewelry_analytics" action="action_jewelry_manufacturer_report" sequence="10"/>
 
     <menuitem id="menu_jewelry_config" name="Configuration" parent="menu_custom_jewelry_root" sequence="100"/>
     

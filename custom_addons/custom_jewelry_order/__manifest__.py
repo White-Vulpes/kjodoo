@@ -8,6 +8,7 @@
         'security/ir.model.access.csv',
         'security/security.xml',
         'views/order_views.xml',
+        'views/dashboard_views.xml',
         'views/portal_templates.xml',
         'reports/order_report.xml',
     ],

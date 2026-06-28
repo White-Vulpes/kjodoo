@@ -130,6 +130,9 @@ class RoughBill(models.Model):
             'target': 'new',
         }
 
+    def _notify_thread_by_email(self, message, recipients_data, **kwargs):
+        return
+
     def action_import_to_bill(self):
         new_bill = self.env['custom.bill2'].create({
             'date': self.date,
