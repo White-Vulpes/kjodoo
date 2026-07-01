@@ -37,7 +37,7 @@ class CustomBill(models.Model):
 
     # Add the live balance fields
     balance_pure = fields.Float(string='Remaining Pure', compute='_compute_balances', store=True, digits=(16, 4))
-    balance_charges = fields.Float(string='Remaining Balance', compute='_compute_balances', store=True, digits=(16, 2))
+    balance_charges = fields.Float(string='Remaining Balance', compute='_compute_balances', store=True, digits=(16, 0))
 
     remarks = fields.Text(string='Remarks')
 
@@ -72,7 +72,9 @@ class CustomBill(models.Model):
                     running_charges += txn.amount  # Adds the cash value of the cut metal
 
             bill.balance_pure = float_round(running_pure, precision_digits=4)
-            bill.balance_charges = float_round(running_charges, precision_digits=2)
+            # Round the final cash/charges balance to the nearest whole rupee
+            # once every transaction has been applied.
+            bill.balance_charges = float_round(running_charges, precision_digits=0)
 
     @api.depends('item_ids.weight', 'item_ids.pure', 'item_ids.charges', 'item_ids.less', 'item_ids.net_weight')
     def _compute_totals(self):

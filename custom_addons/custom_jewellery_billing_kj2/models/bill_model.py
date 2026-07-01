@@ -38,13 +38,13 @@ class CustomBill(models.Model):
     karat_22 = fields.Float(string='22K', digits=(16, 2), store=True, compute="_compute_karat_22", readonly=False, tracking=True)
     karat_18 = fields.Float(string='18K', digits=(16, 2), store=True, compute="_compute_karat_18", readonly=False, tracking=True)
 
-    total_cash = fields.Float(string='Total Cash', compute='_compute_total_cash', store=False, digits=(16, 2))
+    total_cash = fields.Float(string='Total Cash', compute='_compute_total_cash', store=False, digits=(16, 0))
 
     transaction_ids = fields.One2many('custom.bill2.transaction', 'bill_id', string='Transactions', tracking=True)
 
     # Add the live balance fields
     balance_pure = fields.Float(string='Remaining Pure', compute='_compute_balances', store=True, digits=(16, 4))
-    balance_charges = fields.Float(string='Remaining Balance', compute='_compute_balances', store=True, digits=(16, 2))
+    balance_charges = fields.Float(string='Remaining Balance', compute='_compute_balances', store=True, digits=(16, 0))
 
     @api.depends(
         'total_pure', 'total_charges', 
@@ -77,7 +77,9 @@ class CustomBill(models.Model):
                     running_charges += txn.amount  # Adds the cash value of the cut metal
 
             bill.balance_pure = float_round(running_pure, precision_digits=4)
-            bill.balance_charges = float_round(running_charges, precision_digits=2)
+            # Round the final cash/charges balance to the nearest whole rupee
+            # once every transaction has been applied.
+            bill.balance_charges = float_round(running_charges, precision_digits=0)
 
     def _compute_karat_22(self):
         for bill in self:
@@ -105,13 +107,15 @@ class CustomBill(models.Model):
     @api.depends('total_wt', 'karat_22', 'karat_18', 'item_ids')
     def _compute_total_cash(self):
         for bill in self:
-            bill.total_cash = 0.0
+            running_cash = 0.0
             for line in bill.item_ids:
                 if line.type == '22K':
-                    bill.total_cash += float_round(line.total_wt * bill.karat_22 + line.charges, precision_digits=2)
+                    running_cash += line.total_wt * bill.karat_22 + line.charges
                 elif line.type == '18K':
-                    bill.total_cash += float_round(line.total_wt * bill.karat_18 + line.charges, precision_digits=2)
-        
+                    running_cash += line.total_wt * bill.karat_18 + line.charges
+            # Round the retail cash total to the nearest whole rupee.
+            bill.total_cash = float_round(running_cash, precision_digits=0)
+
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
