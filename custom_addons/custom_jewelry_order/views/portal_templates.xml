@@ -236,7 +236,7 @@
                                             </video>
                                         </t>
                                         <t t-else="">
-                                            <img t-attf-src="/web/image/#{img.id}" class="d-block carousel-img-custom"/>
+                                            <img t-attf-src="/web/image/#{img.id}?access_token=#{img.access_token}" class="d-block reference-media"/>
                                         </t>
                                     </t>
                                 </div>

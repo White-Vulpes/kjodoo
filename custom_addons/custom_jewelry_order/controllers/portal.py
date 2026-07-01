@@ -29,6 +29,15 @@ class JewelryPortal(CustomerPortal):
         if not order_sudo:
             return request.not_found()
 
+        # The reference gallery is made of ir.attachment records. A public
+        # visitor (no login) can only fetch them through /web/image or
+        # /web/content when the attachment carries an access_token that is
+        # passed in the URL. Ensure every reference attachment has one so the
+        # design references actually render on the token-authenticated page.
+        for attachment in order_sudo.reference_image_ids:
+            if not attachment.access_token:
+                attachment.sudo().generate_access_token()
+
         request.env['jewelry.order.visit'].sudo().create({
             'order_id': order_sudo.id,
             'ip_address': request.httprequest.remote_addr,
