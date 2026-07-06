@@ -207,6 +207,13 @@
                                         </div>
                                     </t>
                                 </div>
+
+                                <t t-if="order.description">
+                                    <div class="mt-5 pt-4 border-top">
+                                        <span class="spec-label">Design Notes</span>
+                                        <p class="mb-0 mt-2" style="font-size: 1.05rem; color: #334155; white-space: pre-line;" t-field="order.description"/>
+                                    </div>
+                                </t>
                             </div>
 
                             <!-- Premium Chatter Wrapper -->

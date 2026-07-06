@@ -74,6 +74,14 @@ class JewelryBarcodeItem(models.Model):
         digits=(16, 3)
     )
 
+    total_charges = fields.Float(
+        string='Total Charges',
+        compute='_compute_total_charges',
+        store=True,
+        readonly=True,
+        digits=(16, 2)
+    )
+
     less_deduction_pct = fields.Float(
         string='Less Deduction %',
         digits=(5, 2),
@@ -199,6 +207,14 @@ class JewelryBarcodeItem(models.Model):
             total_less = sum(less_line.weight for less_line in item.less_ids)
             # Using float_round to prevent floating point microscopic errors
             item.net_weight = float_round(item.weight - total_less, precision_digits=3)
+
+    @api.depends('charge_ids.amount')
+    def _compute_total_charges(self):
+        for item in self:
+            item.total_charges = float_round(
+                sum(charge.amount for charge in item.charge_ids),
+                precision_digits=2
+            )
 
 
 # --- RELATIONAL SUB-MODELS ---

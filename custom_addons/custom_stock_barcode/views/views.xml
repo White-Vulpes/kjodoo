@@ -21,23 +21,39 @@
                         </h2>
                     </div>
 
-                    <group>
-                        <group string="Specifications">
-                            <field name="m_code"/>
-                            <field name="size"/>
-                            <field name="pieces"/>
-                            <field name="design_tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
-                        </group>
-                        <group string="Weight Details">
-                            <field name="weight"/>
-                            <field name="net_weight" class="fw-bold text-success"/>
-                            <field name="less_deduction_pct"/>
-                            <field name="charge_deduction_pct"/>
-                        </group>
+                    <group string="Specifications">
+                        <field name="m_code"/>
+                        <field name="size"/>
+                        <field name="pieces"/>
+                        <field name="design_tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
                     </group>
 
-                    <group string="Item Details">
-                        <group>
+                    <group string="Weight Details">
+                        <field name="weight"/>
+                        <field name="net_weight" class="fw-bold text-success"/>
+                        <field name="total_charges"/>
+                    </group>
+
+                    <group string="Less (Deductions)">
+                        <field name="less_ids" nolabel="1" colspan="2">
+                            <list editable="bottom">
+                                <field name="less_type"/>
+                                <field name="weight" sum="Total Less"/>
+                            </list>
+                        </field>
+                    </group>
+
+                    <group string="Charges">
+                        <field name="charge_ids" nolabel="1" colspan="2">
+                            <list editable="bottom">
+                                <field name="name"/>
+                                <field name="amount" sum="Total Charges"/>
+                            </list>
+                        </field>
+                    </group>
+
+                    <group>
+                        <group string="Item Details">
                             <field name="item_code"/>
                             <field name="purity"/>
                             <field name="category"/>
@@ -45,33 +61,16 @@
                             <field name="make"/>
                         </group>
                         <group string="Selling Price">
+                            <field name="less_deduction_pct"/>
+                            <field name="charge_deduction_pct"/>
                             <field name="min_price"/>
                             <field name="max_price"/>
                         </group>
                     </group>
 
-                    <notebook>
-                        <page string="Less (Deductions)">
-                            <field name="less_ids">
-                                <list editable="bottom">
-                                    <field name="less_type"/>
-                                    <field name="name"/>
-                                    <field name="weight" sum="Total Less"/>
-                                </list>
-                            </field>
-                        </page>
-                        <page string="Charges">
-                            <field name="charge_ids">
-                                <list editable="bottom">
-                                    <field name="name"/>
-                                    <field name="amount" sum="Total Charges"/>
-                                </list>
-                            </field>
-                        </page>
-                        <page string="Narration">
-                            <field name="narration" placeholder="Add any additional notes about this item here..."/>
-                        </page>
-                    </notebook>
+                    <group string="Narration">
+                        <field name="narration" nolabel="1" colspan="2" placeholder="Add any additional notes about this item here..."/>
+                    </group>
                 </sheet>
             </form>
         </field>
