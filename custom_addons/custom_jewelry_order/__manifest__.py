@@ -4,6 +4,7 @@
     'category': 'Sales',
     'summary': 'Manage custom jewelry manufacturing and repair orders',
     'depends': ['base', 'contacts', 'portal', 'web', 'jewelry_showcase'], # Add 'sale' here if you want it linked to standard quotations
+    'post_init_hook': '_provision_api_key',
     'data': [
         'security/ir.model.access.csv',
         'security/security.xml',
