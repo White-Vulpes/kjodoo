@@ -15,6 +15,9 @@ PENDING_STATES = ('draft', 'confirmed', 'manufacturing', 'ready')
 # Urgency window mirrors CustomJewelryOrder._compute_delivery_urgent (3 days).
 URGENT_WINDOW_DAYS = 3
 
+# How many days back the daily-trend history covers.
+HISTORY_WINDOW_DAYS = 30
+
 
 class JewelryOrderApi(http.Controller):
 
@@ -69,6 +72,24 @@ class JewelryOrderApi(http.Controller):
             ('state', 'not in', ['delivered', 'cancelled']),
         ])
 
+        # Daily trend: how many orders were created on each of the last
+        # HISTORY_WINDOW_DAYS days, zero-filled so callers get one entry per
+        # day (oldest first) and can plot a continuous line.
+        history_start = fields.Date.subtract(today, days=HISTORY_WINDOW_DAYS - 1)
+        recent_orders = Order.search_read(
+            [('date_order', '>=', fields.Date.to_string(history_start))],
+            ['date_order'],
+        )
+        daily_counts = {}
+        for rec in recent_orders:
+            order_day = rec['date_order']
+            if order_day:
+                daily_counts[order_day] = daily_counts.get(order_day, 0) + 1
+        history = [
+            daily_counts.get(fields.Date.add(history_start, days=offset), 0)
+            for offset in range(HISTORY_WINDOW_DAYS)
+        ]
+
         data = {
             'total_orders': sum(by_state.values()),
             'pending_orders': pending,
@@ -83,6 +104,7 @@ class JewelryOrderApi(http.Controller):
                 'delivered': by_state.get('delivered', 0),
                 'cancelled': by_state.get('cancelled', 0),
             },
+            'history': history,
             'generated_at': fields.Datetime.to_string(fields.Datetime.now()),
         }
         return request.make_json_response(data)
