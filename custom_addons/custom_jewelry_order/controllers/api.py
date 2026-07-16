@@ -12,6 +12,11 @@ API_KEY_PARAM = 'custom_jewelry_order.api_key'
 # States that count as "still open" (not yet handed to the customer, not dropped)
 PENDING_STATES = ('draft', 'confirmed', 'manufacturing', 'ready')
 
+# For the per-manufacturer breakdown, "pending" is narrower: only orders that
+# are actively in the pipeline (confirmed or in manufacturing) — ready ones are
+# finished work awaiting pickup, so they are excluded.
+MANUFACTURER_PENDING_STATES = ('confirmed', 'manufacturing')
+
 # Urgency window mirrors CustomJewelryOrder._compute_delivery_urgent (3 days).
 URGENT_WINDOW_DAYS = 3
 
@@ -90,6 +95,22 @@ class JewelryOrderApi(http.Controller):
             for offset in range(HISTORY_WINDOW_DAYS)
         ]
 
+        # Pending orders per manufacturer (confirmed + manufacturing only),
+        # sorted from busiest to quietest. Orders without a manufacturer are
+        # skipped since they have no vendor to attribute the workload to.
+        manufacturer_groups = Order.read_group(
+            [('state', 'in', list(MANUFACTURER_PENDING_STATES))],
+            ['manufacturer_id'],
+            ['manufacturer_id'],
+        )
+        by_manufacturer = {
+            g['manufacturer_id'][1]: g['manufacturer_id_count']
+            for g in manufacturer_groups if g['manufacturer_id']
+        }
+        by_manufacturer = dict(
+            sorted(by_manufacturer.items(), key=lambda kv: kv[1], reverse=True)
+        )
+
         data = {
             'total_orders': sum(by_state.values()),
             'pending_orders': pending,
@@ -105,6 +126,7 @@ class JewelryOrderApi(http.Controller):
                 'cancelled': by_state.get('cancelled', 0),
             },
             'history': history,
+            'by_manufacturer': by_manufacturer,
             'generated_at': fields.Datetime.to_string(fields.Datetime.now()),
         }
         return request.make_json_response(data)
