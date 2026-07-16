@@ -11,27 +11,42 @@
                 <sheet>
                     <field name="image_1920" widget="image" class="oe_avatar"/>
                     <div class="oe_title">
-                        <label for="barcode" string="Barcode ID"/>
-                        <h1>
-                            <field name="barcode" placeholder="e.g. BCD-10045" default_focus="1"/>
-                        </h1>
                         <label for="name" string="Item Name"/>
-                        <h2>
-                            <field name="name" placeholder="e.g. Gold Floral Ring"/>
-                        </h2>
+                        <h1>
+                            <field name="name" placeholder="e.g. Gold Floral Ring" default_focus="1"/>
+                        </h1>
+                        <label for="barcode" string="Barcode ID"/>
+                        <field name="barcode"/>
                     </div>
 
-                    <group string="Specifications">
-                        <field name="m_code"/>
-                        <field name="size"/>
-                        <field name="pieces"/>
-                        <field name="design_tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                    <group>
+                        <group string="Classification">
+                            <field name="category"/>
+                            <field name="subcategory"/>
+                            <field name="item_code" placeholder="Auto (category-subcategory)"/>
+                        </group>
+                        <group string="Attributes">
+                            <field name="purity"/>
+                            <field name="make"/>
+                            <field name="size"/>
+                            <field name="m_code"/>
+                            <field name="pieces"/>
+                            <field name="design_tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                        </group>
                     </group>
 
-                    <group string="Weight Details">
-                        <field name="weight"/>
-                        <field name="net_weight" class="fw-bold text-success"/>
-                        <field name="total_charges"/>
+                    <group>
+                        <group string="Weight">
+                            <field name="weight"/>
+                            <field name="net_weight" class="fw-bold text-success"/>
+                            <field name="total_charges"/>
+                        </group>
+                        <group string="Pricing">
+                            <field name="less_deduction_pct"/>
+                            <field name="charge_deduction_pct"/>
+                            <field name="min_price"/>
+                            <field name="max_price"/>
+                        </group>
                     </group>
 
                     <group string="Less (Deductions)">
@@ -50,22 +65,6 @@
                                 <field name="amount" sum="Total Charges"/>
                             </list>
                         </field>
-                    </group>
-
-                    <group>
-                        <group string="Item Details">
-                            <field name="item_code"/>
-                            <field name="purity"/>
-                            <field name="category"/>
-                            <field name="subcategory"/>
-                            <field name="make"/>
-                        </group>
-                        <group string="Selling Price">
-                            <field name="less_deduction_pct"/>
-                            <field name="charge_deduction_pct"/>
-                            <field name="min_price"/>
-                            <field name="max_price"/>
-                        </group>
                     </group>
 
                     <group string="Narration">
@@ -146,22 +145,62 @@
         <field name="view_mode">list,form</field>
     </record>
 
-    <record id="action_jewelry_item_code" model="ir.actions.act_window">
-        <field name="name">Item Codes</field>
-        <field name="res_model">jewelry.item.code</field>
-        <field name="view_mode">list,form</field>
-    </record>
-
     <record id="action_jewelry_purity" model="ir.actions.act_window">
         <field name="name">Purities</field>
         <field name="res_model">jewelry.purity</field>
         <field name="view_mode">list,form</field>
     </record>
 
+    <record id="view_jewelry_category_list" model="ir.ui.view">
+        <field name="name">jewelry.category.list</field>
+        <field name="model">jewelry.category</field>
+        <field name="arch" type="xml">
+            <list string="Categories" editable="bottom">
+                <field name="code"/>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_jewelry_category_form" model="ir.ui.view">
+        <field name="name">jewelry.category.form</field>
+        <field name="model">jewelry.category</field>
+        <field name="arch" type="xml">
+            <form string="Category">
+                <sheet>
+                    <group>
+                        <field name="code" placeholder="e.g. RG"/>
+                        <field name="name" placeholder="e.g. Rings"/>
+                    </group>
+                    <group string="Sub-Categories">
+                        <field name="subcategory_ids" nolabel="1" colspan="2">
+                            <list editable="bottom">
+                                <field name="code"/>
+                                <field name="name"/>
+                            </list>
+                        </field>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
     <record id="action_jewelry_category" model="ir.actions.act_window">
         <field name="name">Categories</field>
         <field name="res_model">jewelry.category</field>
         <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_jewelry_subcategory_list" model="ir.ui.view">
+        <field name="name">jewelry.subcategory.list</field>
+        <field name="model">jewelry.subcategory</field>
+        <field name="arch" type="xml">
+            <list string="Sub-Categories" editable="bottom">
+                <field name="category_id"/>
+                <field name="code"/>
+                <field name="name"/>
+            </list>
+        </field>
     </record>
 
     <record id="action_jewelry_subcategory" model="ir.actions.act_window">
@@ -185,7 +224,6 @@
     <menuitem id="menu_config_size" name="Sizes" parent="menu_jewelry_config" action="action_jewelry_size" sequence="20"/>
     <menuitem id="menu_config_less_type" name="Less Types" parent="menu_jewelry_config" action="action_jewelry_less_type" sequence="30"/>
     <menuitem id="menu_config_design_tag" name="Design Tags" parent="menu_jewelry_config" action="action_jewelry_design_tag" sequence="40"/>
-    <menuitem id="menu_config_item_code" name="Item Codes" parent="menu_jewelry_config" action="action_jewelry_item_code" sequence="50"/>
     <menuitem id="menu_config_purity" name="Purities" parent="menu_jewelry_config" action="action_jewelry_purity" sequence="60"/>
     <menuitem id="menu_config_category" name="Categories" parent="menu_jewelry_config" action="action_jewelry_category" sequence="70"/>
     <menuitem id="menu_config_subcategory" name="Sub-Categories" parent="menu_jewelry_config" action="action_jewelry_subcategory" sequence="80"/>

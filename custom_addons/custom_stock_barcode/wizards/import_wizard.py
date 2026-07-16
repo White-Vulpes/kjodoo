@@ -104,6 +104,12 @@ class JewelryImportWizard(models.TransientModel):
                 rec = self.env[model_name].create(vals)
             return rec.id
 
+        def derive_code(name_val):
+            """Fallback short code (first 3 alphanumerics, uppercased) used when
+            importing categories / sub-categories that have no explicit code."""
+            letters = ''.join(ch for ch in (name_val or '') if ch.isalnum()).upper()
+            return letters[:3] or 'XXX'
+
         _karat_map = {9999: 24, 9166: 22, 8750: 21, 8333: 20, 7500: 18, 5833: 14, 5000: 12}
         ItemModel = self.env['jewelry.barcode.item']
         created_ids = []
@@ -136,12 +142,30 @@ class JewelryImportWizard(models.TransientModel):
             charge_ded_pct  = col_float(row, 'Charge Deduction %', default=less_ded_pct)
 
             # ── get-or-create lookups ────────────────────────────────────────
-            item_code_id   = get_or_create('jewelry.item.code', item_code_str)
             size_id        = get_or_create('jewelry.size', size_name)
             mcode_id       = get_or_create('jewelry.mcode', brand_code)
-            category_id    = get_or_create('jewelry.category', category_str)
-            subcategory_id = get_or_create('jewelry.subcategory', subcategory_str)
+            category_id    = get_or_create(
+                'jewelry.category', category_str,
+                extra={'code': derive_code(category_str)},
+            )
             make_id        = get_or_create('jewelry.make', make_str)
+
+            # Sub-categories now belong to a category and carry their own code.
+            # Without a category there is nothing to attach them to, so skip.
+            subcategory_id = False
+            if subcategory_str and category_id:
+                Sub = self.env['jewelry.subcategory']
+                sub = Sub.search([
+                    ('name', '=', subcategory_str),
+                    ('category_id', '=', category_id),
+                ], limit=1)
+                if not sub:
+                    sub = Sub.create({
+                        'name': subcategory_str,
+                        'code': derive_code(subcategory_str),
+                        'category_id': category_id,
+                    })
+                subcategory_id = sub.id
 
             purity_id = False
             if purity_int:
@@ -189,7 +213,6 @@ class JewelryImportWizard(models.TransientModel):
             # ── Create ───────────────────────────────────────────────────────
             try:
                 item = ItemModel.create({
-                    'item_code':           item_code_id,
                     'name':                item_name,
                     'm_code':              mcode_id,
                     'size':                size_id,

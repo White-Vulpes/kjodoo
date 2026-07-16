@@ -7,7 +7,6 @@ access_jewelry_design_tag,jewelry.design.tag.access,model_jewelry_design_tag,bas
 access_jewelry_mcode,jewelry.mcode.access,model_jewelry_mcode,base.group_user,1,1,1,1
 access_jewelry_size,jewelry.size.access,model_jewelry_size,base.group_user,1,1,1,1
 access_jewelry_less_type,jewelry.less.type.access,model_jewelry_less_type,base.group_user,1,1,1,1
-access_jewelry_item_code,jewelry.item.code.access,model_jewelry_item_code,base.group_user,1,1,1,1
 access_jewelry_purity,jewelry.purity.access,model_jewelry_purity,base.group_user,1,1,1,1
 access_jewelry_category,jewelry.category.access,model_jewelry_category,base.group_user,1,1,1,1
 access_jewelry_subcategory,jewelry.subcategory.access,model_jewelry_subcategory,base.group_user,1,1,1,1

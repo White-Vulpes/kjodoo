@@ -20,7 +20,7 @@ class JewelryMCode(models.Model):
     _name = 'jewelry.mcode'
     _description = 'Manufacturer Code'
     
-    name = fields.Char(string='M. Code', required=True)
+    name = fields.Char(string='M. Code', required=True, size=3)
     partner_id = fields.Many2one('res.partner', string='Vendor / Manufacturer') # Optional: link to actual vendor
     
     _sql_constraints = [('name_uniq', 'unique(name)', 'This Manufacturer Code already exists!')]
@@ -99,11 +99,37 @@ class JewelryBarcodeItem(models.Model):
     def _onchange_less_deduction_pct(self):
         self.charge_deduction_pct = self.less_deduction_pct
 
+    # --- Item code derivation ------------------------------------------------
+    @api.depends('category.code', 'subcategory.code')
+    def _compute_item_code(self):
+        for item in self:
+            parts = [p for p in (item.category.code, item.subcategory.code) if p]
+            item.item_code = '-'.join(parts) if parts else False
+
+    @api.onchange('category')
+    def _onchange_category(self):
+        # Drop a sub-category that no longer belongs to the chosen category so
+        # the pair shown on screen is always consistent.
+        if self.subcategory and self.subcategory.category_id != self.category:
+            self.subcategory = False
+
     # --- Item Details ---
-    item_code   = fields.Many2one('jewelry.item.code', string='Item Code', index=True)
+    # item_code is no longer picked by hand: it is derived from the category
+    # and sub-category codes as "<category.code>-<subcategory.code>".
+    item_code   = fields.Char(
+        string='Item Code',
+        compute='_compute_item_code',
+        store=True,
+        index=True,
+        readonly=True,
+        help='Built automatically from the category and sub-category codes.',
+    )
     purity      = fields.Many2one('jewelry.purity', string='Purity')
     category    = fields.Many2one('jewelry.category', string='Category')
-    subcategory = fields.Many2one('jewelry.subcategory', string='Sub-Category')
+    subcategory = fields.Many2one(
+        'jewelry.subcategory', string='Sub-Category',
+        domain="[('category_id', '=', category)]",
+    )
     make        = fields.Many2one('jewelry.make', string='Make')
     active      = fields.Boolean(default=True, string='Active')
     min_price   = fields.Float(string='Min Selling Price', digits=(16, 2))
@@ -153,8 +179,8 @@ class JewelryBarcodeItem(models.Model):
 
     @staticmethod
     def _encode_tag_price(price):
-        """Return MYKOTHARIZ-encoded price string (2 decimal places)."""
-        return _encode_price(f'{price:.2f}')
+        """Return MYKOTHARIZ-encoded price string (whole rupees, no decimals)."""
+        return _encode_price(f'{price:.0f}')
 
     def _tag_date_str(self):
         """Return date formatted as dd/mmyy (e.g. 16/626 for 16-Jun-2026)."""
@@ -254,16 +280,6 @@ class JewelryDesignTag(models.Model):
 
 # --- ITEM DETAIL CONFIGURATION MODELS ---
 
-class JewelryItemCode(models.Model):
-    _name = 'jewelry.item.code'
-    _description = 'Item Code'
-    _order = 'name'
-
-    name = fields.Char(string='Code', required=True)
-
-    _sql_constraints = [('name_uniq', 'unique(name)', 'Item code must be unique!')]
-
-
 class JewelryPurity(models.Model):
     _name = 'jewelry.purity'
     _description = 'Purity'
@@ -282,18 +298,38 @@ class JewelryCategory(models.Model):
     _order = 'name'
 
     name = fields.Char(required=True)
+    code = fields.Char(
+        string='Category Code', required=True, size=3,
+        help='Short code (max 3 letters) used to build the item code, e.g. "RG" for Rings.',
+    )
+    subcategory_ids = fields.One2many(
+        'jewelry.subcategory', 'category_id', string='Sub-Categories',
+    )
 
-    _sql_constraints = [('name_uniq', 'unique(name)', 'Category already exists!')]
+    _sql_constraints = [
+        ('name_uniq', 'unique(name)', 'Category already exists!'),
+        ('code_uniq', 'unique(code)', 'Category code must be unique!'),
+    ]
 
 
 class JewelrySubcategory(models.Model):
     _name = 'jewelry.subcategory'
     _description = 'Jewelry Sub-Category'
-    _order = 'name'
+    _order = 'category_id, name'
 
     name = fields.Char(required=True)
+    code = fields.Char(
+        string='Sub-Category Code', required=True, size=3,
+        help='Short code (max 3 letters) used to build the item code, e.g. "ST" for Studs.',
+    )
+    category_id = fields.Many2one(
+        'jewelry.category', string='Category', required=True, ondelete='cascade',
+    )
 
-    _sql_constraints = [('name_uniq', 'unique(name)', 'Sub-category already exists!')]
+    _sql_constraints = [
+        ('name_category_uniq', 'unique(name, category_id)',
+         'This sub-category already exists under the selected category!'),
+    ]
 
 
 class JewelryMake(models.Model):

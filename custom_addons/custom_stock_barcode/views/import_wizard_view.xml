@@ -15,7 +15,7 @@
                     <b>Required:</b> Gross Weight
                 </p>
                 <p style="color:#555; font-size:12px; margin:0 0 4px 0;">
-                    <b>Optional scalars:</b> Item Code · Brand Name · Brand Code · Category · Subcategory · Make · Size · Piece Name · Purity · Status · Min Price · Max Price · Narration · Less Deduction % · Charge Deduction %
+                    <b>Optional scalars:</b> Brand Name · Brand Code · Category · Subcategory · Make · Size · Piece Name · Purity · Status · Min Price · Max Price · Narration · Less Deduction % · Charge Deduction %
                 </p>
                 <p style="color:#555; font-size:12px; margin:0 0 4px 0;">
                     <b>Multiple less deductions</b> (repeat for each):
