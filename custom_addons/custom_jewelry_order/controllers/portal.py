@@ -44,15 +44,37 @@ class JewelryPortal(CustomerPortal):
         })
 
         showcase_collections = request.env['jewelry.collection'].sudo().search([
-            ('display_location', '=', 'portal'), 
+            ('display_location', '=', 'portal'),
             ('active', '=', True)
         ])
+
+        # Open Graph preview: when the portal link is shared (WhatsApp, etc.),
+        # the crawler fetches this public page and reads og: meta tags from the
+        # <head> to build the rich preview card. Point og:image at the first
+        # reference image, using an ABSOLUTE url that carries the attachment's
+        # access_token so the unauthenticated crawler can actually fetch it.
+        og_image = og_title = og_description = False
+        preview_att = next(
+            (a for a in order_sudo.reference_image_ids
+             if a.mimetype and a.mimetype.startswith('image')),
+            False,
+        )
+        if preview_att:
+            base_url = request.env['ir.config_parameter'].sudo().get_param('web.base.url')
+            og_image = f"{base_url}/web/image/{preview_att.id}?access_token={preview_att.access_token}"
+            og_title = f"{order_sudo.name} – {order_sudo.partner_id.name}"
+            og_description = order_sudo.description or (
+                order_sudo.item_type.name if order_sudo.item_type else 'Custom Jewelry Order'
+            )
 
         values = {
             'order': order_sudo,
             'page_name': 'jewelry_order',
-            'token': access_token, 
-            'showcase_collections': showcase_collections, 
+            'token': access_token,
+            'showcase_collections': showcase_collections,
+            'og_image': og_image,
+            'og_title': og_title,
+            'og_description': og_description,
         }
         return request.render("custom_jewelry_order.portal_jewelry_order_detail", values)
 

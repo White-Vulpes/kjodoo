@@ -1,6 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <!-- 0. OPEN GRAPH PREVIEW META (WhatsApp / social link cards)
+         Meta tags must live in <head>, but the portal body renders inside
+         <main>, so we inject them via a layout inherit. Gated on og_image so
+         they only appear on the secure order page that sets those values. -->
+    <template id="jewelry_order_og_meta" inherit_id="web.frontend_layout" name="Jewelry Order Link Preview">
+        <xpath expr="//head/meta" position="after">
+            <t t-if="og_image">
+                <meta property="og:type" content="website"/>
+                <meta property="og:title" t-att-content="og_title"/>
+                <meta property="og:description" t-att-content="og_description"/>
+                <meta property="og:image" t-att-content="og_image"/>
+                <meta name="twitter:card" content="summary_large_image"/>
+                <meta property="twitter:title" t-att-content="og_title"/>
+                <meta property="twitter:description" t-att-content="og_description"/>
+                <meta property="twitter:image" t-att-content="og_image"/>
+            </t>
+        </xpath>
+    </template>
+
     <!-- 1. PORTAL HOME LINK -->
     <template id="portal_my_home_jewelry" name="Show Jewelry Orders" inherit_id="portal.portal_my_home" priority="20">
         <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
