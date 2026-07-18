@@ -94,37 +94,60 @@
                 <t t-set="adj_charges" t-value="doc.total_charges * (1.0 - charge_pct / 100.0) if charge_pct else doc.total_charges"/>
                 <t t-set="adj_charges_int" t-value="int(round(adj_charges))"/>
 
-                <div t-attf-style="page-break-after: {{'always' if not doc_last else 'auto'}}; width: 100%; height: 100%; display: table; table-layout: fixed; border-collapse: collapse; overflow: hidden;">
+                <!--
+                    Each tag is a BLOCK wrapper (not a table) with a definite height and
+                    overflow:hidden. This matters:
+                      * display:table IGNORES overflow:hidden in wkhtmltopdf, so the table
+                        can never be relied on to clamp its own height. A block wrapper does
+                        honour overflow:hidden, so anything taller than 18vw is clipped
+                        instead of spilling onto a second (blank) physical page.
+                      * height MUST be a definite length (18vw ≈ 18mm on this 100mm page),
+                        not height:100% — the body has no fixed height, so % resolves
+                        ambiguously and stacked tags grow unbounded.
+                    The QR <img> is given a FIXED square size (14vw) so every tag renders an
+                    identical QR — otherwise its intrinsic pixel size varies per tag, which
+                    both changed the row height (blank pages) and shifted the vertical
+                    centring (columns no longer lined up).
+                -->
+                <div t-attf-style="page-break-after: {{'always' if not doc_last else 'auto'}}; width: 100%; height: 18vw; overflow: hidden;">
+                    <div style="width: 100%; height: 18vw; display: table; table-layout: fixed; border-collapse: collapse;">
 
-                    <!-- Col 1 (30%): handle/loop hole, intentionally blank -->
-                    <div style="display: table-cell; width: 30%;"/>
+                        <!-- Col 1 (30%): handle/loop hole, intentionally blank -->
+                        <div style="display: table-cell; width: 30%;"/>
 
-                    <!-- Col 2 (32.5%): QR image + primary specs in nested table -->
-                    <div style="display: table-cell; width: 32.5%; vertical-align: middle; font-family: 'Courier New', Courier, monospace; overflow: hidden;">
-                        <div style="display: table; width: 100%; height: 100%; border-collapse: collapse;">
-                            <div t-if="doc.barcode_qr_data" style="display: table-cell; vertical-align: middle; padding-right: 2px;">
-                                <img t-att-src="doc.barcode_qr_data" style="width: 100%; height: auto; display: block;"/>
-                            </div>
-                            <div style="display: table-cell; vertical-align: middle;">
-                                <div style="white-space: nowrap; overflow: hidden;">KJ-<t t-esc="doc.item_code or ''"/></div>
-                                <div style="white-space: nowrap; overflow: hidden;">WT-<t t-esc="'%.3f' % gross_wt"/>/<t t-esc="doc.pieces"/></div>
-                                <div style="white-space: nowrap; overflow: hidden;">S-<t t-esc="(doc.size.name if doc.size else '')"/> K<t t-esc="karat"/></div>
-                                <div style="white-space: nowrap; overflow: hidden;">N<t t-esc="adj_net_int"/>C<t t-esc="adj_charges_int"/></div>
-                            </div>
+                        <!--
+                            QR gets its OWN fixed-width column. wkhtmltopdf's old WebKit
+                            ignores vw/px sizing on an <img> and falls back to the image's
+                            intrinsic pixel size (which is why 5vw/7vw all looked the same),
+                            but it DOES honour a % width on a fixed-layout table cell — that
+                            is exactly how the text columns size correctly. So this cell's %
+                            width defines the QR box and the image just fills it. Change this
+                            width (rebalancing the others toward 100%) to resize the QR.
+                        -->
+                        <div style="display: table-cell; width: 10%; vertical-align: middle;">
+                            <img t-if="doc.barcode_qr_data" t-att-src="doc.barcode_qr_data" style="width: 100%; height: auto; display: block;"/>
                         </div>
+
+                        <!-- Specs face (31%) -->
+                        <div style="display: table-cell; width: 31%; padding-left: 3px; vertical-align: middle; font-family: 'Courier New', Courier, monospace;">
+                            <div style="white-space: nowrap; overflow: hidden;">KJ-<t t-esc="doc.item_code or ''"/></div>
+                            <div style="white-space: nowrap; overflow: hidden;">WT-<t t-esc="'%.3f' % gross_wt"/>/<t t-esc="doc.pieces"/></div>
+                            <div style="white-space: nowrap; overflow: hidden;">S-<t t-esc="(doc.size.name if doc.size else '')"/> K<t t-esc="karat"/></div>
+                            <div style="white-space: nowrap; overflow: hidden;">N<t t-esc="adj_net_int"/>C<t t-esc="adj_charges_int"/></div>
+                        </div>
+
+                        <!-- Gap (1%) -->
+                        <div style="display: table-cell; width: 1%;"/>
+
+                        <!-- Barcode / price face (30%) -->
+                        <div style="display: table-cell; width: 30%; vertical-align: middle; font-family: 'Courier New', Courier, monospace;">
+                            <div style="white-space: nowrap; overflow: hidden;"><t t-esc="doc.barcode"/></div>
+                            <div style="white-space: nowrap; overflow: hidden;"><t t-esc="mcode_name"/> <t t-esc="doc._tag_date_str()"/></div>
+                            <div t-if="enc_min or enc_max" style="white-space: nowrap; overflow: hidden;"><t t-esc="enc_min"/><t t-if="enc_min and enc_max">-</t><t t-esc="enc_max"/></div>
+                            <div t-if="doc.narration" style="white-space: nowrap; overflow: hidden;"><t t-esc="doc.narration"/></div>
+                        </div>
+
                     </div>
-
-                    <!-- Gap (5%) -->
-                    <div style="display: table-cell; width: 5%;"/>
-
-                    <!-- Col 3 (32.5%): barcode identifiers + narration -->
-                    <div style="display: table-cell; width: 32.5%; vertical-align: middle; font-family: 'Courier New', Courier, monospace; overflow: hidden;">
-                        <div style="white-space: nowrap; overflow: hidden;"><t t-esc="doc.barcode"/></div>
-                        <div style="white-space: nowrap; overflow: hidden;"><t t-esc="mcode_name"/> <t t-esc="doc._tag_date_str()"/></div>
-                        <div t-if="enc_min or enc_max" style="white-space: nowrap; overflow: hidden;"><t t-esc="enc_min"/><t t-if="enc_min and enc_max">-</t><t t-esc="enc_max"/></div>
-                        <div t-if="doc.narration" style="word-wrap: break-word; white-space: normal; overflow: hidden;"><t t-esc="doc.narration"/></div>
-                    </div>
-
                 </div>
             </t>
         </t>
