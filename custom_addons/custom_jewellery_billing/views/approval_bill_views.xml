@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Surface the bill generated when an approval memo is closed. -->
+    <record id="view_jewelry_approval_form_billing" model="ir.ui.view">
+        <field name="name">jewelry.approval.form.billing</field>
+        <field name="model">jewelry.approval</field>
+        <field name="inherit_id" ref="custom_stock_barcode.view_jewelry_approval_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='date_closed']" position="after">
+                <field name="bill_id" readonly="1" invisible="not bill_id"/>
+            </xpath>
+            <xpath expr="//header" position="inside">
+                <button name="action_open_bill" type="object" string="Open Bill"
+                        class="btn-secondary" invisible="not bill_id"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

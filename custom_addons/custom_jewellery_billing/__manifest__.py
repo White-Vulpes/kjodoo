@@ -10,13 +10,15 @@
     """,
     'author': 'Your Name/Company',
     
-    # We only depend on the 'base' Odoo engine. No Enterprise traps here.
-    'depends': ['base'],
-    
+    # Base engine plus the barcode inventory module: bills are raised by
+    # scanning tags, and closing an approval memo bills the kept pieces.
+    'depends': ['base', 'custom_stock_barcode'],
+
     # The order here is strictly important: Security MUST load before Views.
     'data': [
         'security/ir.model.access.csv',
         'views/bill_view.xml',
+        'views/approval_bill_views.xml',
         'views/bill_report.xml',
     ],
     

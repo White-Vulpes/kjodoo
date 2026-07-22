@@ -2,7 +2,8 @@ import base64
 import io
 import random
 from odoo import models, fields, api
-from odoo.tools.float_utils import float_round
+from odoo.exceptions import UserError
+from odoo.tools.float_utils import float_compare, float_round
 
 _BLACKSTONE_TABLE = str.maketrans('0123456789', 'EBLACKSTON')
 _MYKOTHARIZ_TABLE = str.maketrans('0123456789', 'ZMYKOTHARI')
@@ -60,6 +61,17 @@ class JewelryBarcodeItem(models.Model):
     
     pieces = fields.Integer(string='Pieces', default=1, help='Number of pieces that make up this specific item.')
     narration = fields.Text(string='Narration')
+
+    # --- Consumption baseline -------------------------------------------------
+    # A tag is one physical lot. When part of it is sold (or handed out on
+    # approval) the less/charge lines must shrink by the pieces ratio. Scaling
+    # the *current* values repeatedly is not reversible (once the tag hits 0
+    # pieces the ratio is 0/0), so the very first time a tag is consumed we
+    # freeze its original figures and always re-derive the children as
+    # `original x pieces / orig_pieces`. Snapshotting lazily means existing
+    # tags need no data migration.
+    orig_pieces = fields.Integer(string='Original Pieces', readonly=True, copy=False)
+    baseline_set = fields.Boolean(string='Baseline Frozen', readonly=True, copy=False)
 
     # --- Weights & Calculations ---
     weight = fields.Float(string='Gross Weight', digits=(16, 3), required=True, default=0.0)
@@ -242,6 +254,127 @@ class JewelryBarcodeItem(models.Model):
                 precision_digits=2
             )
 
+    # ── Consumption engine ────────────────────────────────────────────────────
+    # Shared by scan-to-bill / tag splitting (custom_jewellery_billing) and by
+    # the approval memos below. Everything that removes stock from a tag goes
+    # through _apply_consumption so splits, edits and returns stay exact.
+
+    @api.model
+    def _find_by_barcode(self, code):
+        """Look a tag up by the string its QR encodes. Archived (fully sold)
+        tags are included so the caller can say 'out of stock' rather than
+        'unknown barcode'."""
+        if not code:
+            return self.browse()
+        return self.with_context(active_test=False).search(
+            [('barcode', '=', code.strip())], limit=1,
+        )
+
+    def _ensure_consumption_baseline(self):
+        """Freeze the original pieces / less / charges the first time a tag is
+        touched. Idempotent."""
+        for tag in self.sudo():
+            if tag.baseline_set:
+                continue
+            tag.write({'orig_pieces': tag.pieces or 1, 'baseline_set': True})
+            for less in tag.less_ids:
+                less.write({'orig_weight': less.weight})
+            for charge in tag.charge_ids:
+                charge.write({'orig_amount': charge.amount})
+
+    def _per_piece_rates(self):
+        """Return (less_per_piece, charges_per_piece) off the frozen baseline.
+        Read-only: safe to call from an onchange, and falls back to the current
+        figures for a tag that has never been consumed."""
+        self.ensure_one()
+        if self.baseline_set and self.orig_pieces:
+            base_pieces = self.orig_pieces
+            total_less = sum(line.orig_weight for line in self.less_ids)
+            total_charges = sum(charge.orig_amount for charge in self.charge_ids)
+        else:
+            base_pieces = self.pieces or 1
+            total_less = sum(line.weight for line in self.less_ids)
+            total_charges = sum(charge.amount for charge in self.charge_ids)
+        return total_less / base_pieces, total_charges / base_pieces
+
+    def _apply_consumption(self, d_pieces, d_weight):
+        """Take `d_pieces` pieces and `d_weight` grams off this tag; negative
+        values put them back. Less/charge lines are always re-derived from the
+        frozen baseline, so any sequence of splits and reversals — including a
+        restore from zero pieces — lands on the exact original figures. A tag
+        that reaches 0 pieces is archived."""
+        self.ensure_one()
+        if not d_pieces and not d_weight:
+            return
+        tag = self.sudo()
+        tag._ensure_consumption_baseline()
+
+        new_pieces = tag.pieces - d_pieces
+        if new_pieces < 0:
+            raise UserError(
+                f'Tag {tag.barcode} ({tag.name}) only has {tag.pieces} piece(s) left; '
+                f'cannot take {d_pieces}.'
+            )
+        new_weight = float_round(tag.weight - d_weight, precision_digits=3)
+        if float_compare(new_weight, 0.0, precision_digits=3) < 0:
+            raise UserError(
+                f'Tag {tag.barcode} ({tag.name}) only has {tag.weight:.3f} g left; '
+                f'cannot take {d_weight:.3f} g.'
+            )
+
+        # Leaving pieces behind with no weight means the cashier took the whole
+        # lot's weight for a partial sale — almost always a forgotten weighing.
+        if (new_pieces > 0
+                and float_compare(tag.weight, 0.0, precision_digits=3) > 0
+                and float_compare(new_weight, 0.0, precision_digits=3) == 0):
+            raise UserError(
+                f'Tag {tag.barcode} ({tag.name}) would keep {new_pieces} piece(s) with no '
+                f'weight left. Enter the weighed gross weight of the pieces being taken.'
+            )
+
+        ratio = (new_pieces / tag.orig_pieces) if tag.orig_pieces else 0.0
+        old_ratio = (tag.pieces / tag.orig_pieces) if tag.orig_pieces else 0.0
+
+        tag.write({'pieces': new_pieces, 'weight': new_weight})
+
+        for less in tag.less_ids:
+            # A deduction line added after the baseline was frozen has no
+            # original of its own — back-derive one from where it stands now.
+            if not less.orig_weight and less.weight and old_ratio:
+                less.write({'orig_weight': float_round(less.weight / old_ratio, precision_digits=3)})
+            less.write({'weight': float_round(less.orig_weight * ratio, precision_digits=3)})
+        for charge in tag.charge_ids:
+            if not charge.orig_amount and charge.amount and old_ratio:
+                charge.write({'orig_amount': float_round(charge.amount / old_ratio, precision_digits=2)})
+            charge.write({'amount': float_round(charge.orig_amount * ratio, precision_digits=2)})
+
+        # Archive last so the child writes above are not done on an inactive
+        # record; un-archive automatically when stock comes back.
+        if bool(new_pieces) != tag.active:
+            tag.write({'active': bool(new_pieces)})
+
+    def _prepare_bill_line_vals(self):
+        """Values for a custom.bill.line covering this whole tag. The cashier
+        then lowers `pieces_taken` and types the weighed gross for a split."""
+        self.ensure_one()
+        return {
+            'name': f'{self.name} [{self.barcode}]',
+            'source_item_id': self.id,
+            'pieces_taken': self.pieces,
+            'weight': self.weight,
+            'less': float_round(sum(line.weight for line in self.less_ids), precision_digits=3),
+            'charges': self.total_charges,
+            'touch': (self.purity.value / 100.0) if self.purity else 0.0,
+        }
+
+    def _prepare_approval_line_vals(self):
+        """Values for a jewelry.approval.line covering this whole tag."""
+        self.ensure_one()
+        return {
+            'source_item_id': self.id,
+            'pieces_taken': self.pieces,
+        }
+
 
 # --- RELATIONAL SUB-MODELS ---
 
@@ -255,6 +388,8 @@ class JewelryItemLess(models.Model):
     
     name = fields.Char(string='Description (Optional)')
     weight = fields.Float(string='Less Weight', digits=(16, 3), required=True)
+    # Frozen full-lot weight; see JewelryBarcodeItem._ensure_consumption_baseline.
+    orig_weight = fields.Float(string='Original Less Weight', digits=(16, 3), readonly=True, copy=False)
 
 
 class JewelryItemCharge(models.Model):
@@ -264,6 +399,8 @@ class JewelryItemCharge(models.Model):
     item_id = fields.Many2one('jewelry.barcode.item', string='Item', required=True, ondelete='cascade')
     name = fields.Char(string='Charge Name (e.g., Making, Hallmarking)', required=True)
     amount = fields.Float(string='Amount', required=True, digits=(16, 2))
+    # Frozen full-lot amount; see JewelryBarcodeItem._ensure_consumption_baseline.
+    orig_amount = fields.Float(string='Original Amount', digits=(16, 2), readonly=True, copy=False)
 
 
 class JewelryDesignTag(models.Model):

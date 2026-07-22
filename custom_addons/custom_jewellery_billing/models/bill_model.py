@@ -41,6 +41,37 @@ class CustomBill(models.Model):
 
     remarks = fields.Text(string='Remarks')
 
+    # Non-stored scan fields (UI only). A USB scanner types the barcode and
+    # presses Enter, which fires the onchange below — no JS needed.
+    scan_barcode = fields.Char(string='Scan Barcode', store=False)
+    last_scan_result = fields.Char(string='Last Scan Result', store=False, readonly=True)
+
+    @api.onchange('scan_barcode')
+    def _onchange_scan_barcode(self):
+        if not self.scan_barcode:
+            return
+        code = self.scan_barcode.strip()
+        self.scan_barcode = ''
+        item = self.env['jewelry.barcode.item']._find_by_barcode(code)
+        if not item:
+            self.last_scan_result = f'Not found: {code}'
+            return
+        if item.pieces <= 0:
+            self.last_scan_result = f'Out of stock: {item.name} ({code})'
+            return
+        if any(line.source_item_id.id == item.id for line in self.item_ids):
+            self.last_scan_result = f'Already on this bill: {item.name} ({code})'
+            return
+        self.item_ids = [(0, 0, item._prepare_bill_line_vals())]
+        self.last_scan_result = f'Added: {item.name} ({code}) — {item.pieces} pc'
+
+    def unlink(self):
+        # A one2many with ondelete='cascade' is dropped at database level, which
+        # would skip the bill line's own unlink and strand the stock. Delete the
+        # lines explicitly so every tag gets its pieces back.
+        self.mapped('item_ids').unlink()
+        return super().unlink()
+
     @api.depends(
         'total_pure', 'total_charges', 
         'transaction_ids.ttype', 'transaction_ids.pure_weight', 'transaction_ids.amount'

@@ -9,8 +9,11 @@
                     <group>
                         <group string="Item Details">
                             <field name="name"/>
+                            <field name="source_item_id" readonly="1"/>
+                            <field name="from_approval" readonly="1" invisible="not from_approval"/>
                         </group>
                         <group string="Quantity">
+                            <field name="pieces_taken"/>
                             <field name="weight" options="{'digits': [16, 3]}"/>
                             <field name="less" options="{'digits': [16, 3]}"/>
                             <field name="net_weight" options="{'digits': [16, 3]}"/>
@@ -38,6 +41,8 @@
         <field name="arch" type="xml">
             <list editable="bottom">
                 <field name="name"/>
+                <field name="source_item_id" string="Tag" readonly="1" optional="show"/>
+                <field name="pieces_taken" string="Pcs"/>
                 <field name="weight" options="{'digits': [16, 3]}"/>
                 <field name="less" options="{'digits': [16, 3]}"/>
                 <field name="net_weight" options="{'digits': [16, 3]}"/>
@@ -76,6 +81,14 @@
                     </group>
                     <notebook>
                         <page string="Bill Items">
+                            <!-- Scan a tag to drop it in as a line. Lower "Pcs"
+                                 for a partial sale and type the weighed gross;
+                                 the remainder stays on the same tag. -->
+                            <group string="Scan Item">
+                                <field name="scan_barcode" string="Barcode"
+                                       placeholder="Scan or type barcode and press Enter…"/>
+                                <field name="last_scan_result" string="Result" readonly="1"/>
+                            </group>
                             <field name="item_ids" context="{'list_view_ref': 'custom_jewellery_billing.view_custom_bill_line_list'}"/>
                             <group class="oe_subtotal_footer oe_right">
                                 <field name="total_weight" options="{'digits': [16, 3]}"/>

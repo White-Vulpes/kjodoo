@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- FORM VIEW -->
+    <record id="view_jewelry_approval_form" model="ir.ui.view">
+        <field name="name">jewelry.approval.form</field>
+        <field name="model">jewelry.approval</field>
+        <field name="arch" type="xml">
+            <form string="Approval Memo">
+                <header>
+                    <button name="action_issue" type="object" string="Issue Items"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_register_return" type="object" string="Register Return"
+                            class="btn-secondary" invisible="state != 'issued'"/>
+                    <button name="action_close" type="object" string="Close &amp; Bill Kept Items"
+                            class="btn-primary" invisible="state != 'issued'"
+                            confirm="Kept pieces will be treated as sold. Close this memo?"/>
+                    <button name="action_cancel" type="object" string="Cancel"
+                            invisible="state not in ('draft', 'issued')"
+                            confirm="Everything still out will be returned to stock. Cancel this memo?"/>
+                    <button name="action_reset_to_draft" type="object" string="Reset to Draft"
+                            invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,issued,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id" readonly="state != 'draft'"/>
+                            <field name="date_issued" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="user_id"/>
+                            <field name="date_closed" invisible="state != 'closed'"/>
+                        </group>
+                    </group>
+
+                    <!-- Barcode scan input: draft only, items are picked before issuing -->
+                    <group string="Scan Item" invisible="state != 'draft'">
+                        <field name="scan_barcode" string="Barcode"
+                               placeholder="Scan or type barcode and press Enter…"/>
+                        <field name="last_scan_result" string="Result" readonly="1"/>
+                    </group>
+
+                    <notebook>
+                        <page string="Items">
+                            <field name="line_ids" readonly="state in ('closed', 'cancelled')">
+                                <list editable="bottom">
+                                    <field name="source_item_id" readonly="state != 'draft'"
+                                           options="{'no_create': True}"/>
+                                    <field name="barcode"/>
+                                    <field name="item_name"/>
+                                    <field name="pieces_taken" readonly="state != 'draft'"/>
+                                    <field name="pieces_returned" readonly="state != 'issued'"/>
+                                    <field name="pieces_kept"/>
+                                    <field name="weight" options="{'digits': [16, 3]}"/>
+                                    <field name="less" options="{'digits': [16, 3]}"/>
+                                    <field name="charges" options="{'digits': [16, 2]}"/>
+                                    <field name="state" column_invisible="1"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="total_taken"/>
+                                <field name="total_returned"/>
+                                <field name="total_kept"/>
+                            </group>
+                        </page>
+                        <page string="Remarks">
+                            <field name="remarks" widget="text"
+                                   placeholder="Notes about this approval memo…"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- LIST VIEW -->
+    <record id="view_jewelry_approval_list" model="ir.ui.view">
+        <field name="name">jewelry.approval.list</field>
+        <field name="model">jewelry.approval</field>
+        <field name="arch" type="xml">
+            <list string="Approval Memos">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="date_issued"/>
+                <field name="total_taken"/>
+                <field name="total_returned"/>
+                <field name="total_kept"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'issued'"
+                       decoration-success="state == 'closed'"
+                       decoration-danger="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- SEARCH VIEW -->
+    <record id="view_jewelry_approval_search" model="ir.ui.view">
+        <field name="name">jewelry.approval.search</field>
+        <field name="model">jewelry.approval</field>
+        <field name="arch" type="xml">
+            <search string="Approval Memos">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="line_ids" string="Barcode" filter_domain="[('line_ids.barcode', '=', self)]"/>
+                <filter name="filter_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_issued" string="Issued (Out)" domain="[('state', '=', 'issued')]"/>
+                <filter name="filter_closed" string="Closed" domain="[('state', '=', 'closed')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_partner" string="Customer" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_jewelry_approval" model="ir.actions.act_window">
+        <field name="name">Approval Memos</field>
+        <field name="res_model">jewelry.approval</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_filter_issued': 1}</field>
+    </record>
+
+    <menuitem id="menu_jewelry_approval"
+              name="On Approval"
+              parent="menu_jewelry_inventory"
+              action="action_jewelry_approval"
+              sequence="30"/>
+</odoo>
