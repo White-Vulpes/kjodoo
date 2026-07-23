@@ -8,6 +8,9 @@ custom_addons/.claude/
 # graphify files
 custom_addons/graphify-out/
 
+# local MCP server (not part of the app)
+addons/mcp_server/
+
 # dotfiles
 .*
 !.gitignore
