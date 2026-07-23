@@ -26,15 +26,14 @@ class JewelryApprovalBilling(models.Model):
         line_vals = []
         for line in kept_lines:
             item = line.source_item_id
-            ratio = (line.pieces_kept / line.pieces_taken) if line.pieces_taken else 0.0
             less_pp, charges_pp = item._per_piece_rates()
             line_vals.append((0, 0, {
                 'name': f'{item.name} [{item.barcode}]',
                 'source_item_id': item.id,
                 'pieces_taken': line.pieces_kept,
-                # The tag's recorded weight, prorated to the kept pieces. The
-                # goods are not re-weighed; the cashier can still correct it.
-                'weight': float_round(line.weight * ratio, precision_digits=3),
+                # Exactly what went out and never came back — both figures were
+                # weighed, so no proration is needed. Still editable on the bill.
+                'weight': float_round(line.weight - line.weight_returned, precision_digits=3),
                 'less': float_round(less_pp * line.pieces_kept, precision_digits=3),
                 'charges': float_round(charges_pp * line.pieces_kept, precision_digits=2),
                 'touch': (item.purity.value / 100.0) if item.purity else 0.0,
@@ -49,6 +48,14 @@ class JewelryApprovalBilling(models.Model):
         })
         self.bill_id = bill.id
         return bill
+
+    def action_close(self):
+        """After the memo is settled, drop the cashier straight onto the bill
+        raised for the kept pieces so they can take payment right away."""
+        res = super().action_close()
+        if len(self) == 1 and self.bill_id:
+            return self.action_open_bill()
+        return res
 
     def action_open_bill(self):
         self.ensure_one()

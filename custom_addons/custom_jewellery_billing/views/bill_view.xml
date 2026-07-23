@@ -9,7 +9,7 @@
                     <group>
                         <group string="Item Details">
                             <field name="name"/>
-                            <field name="source_item_id" readonly="1"/>
+                            <field name="source_item_id" readonly="1" force_save="1"/>
                             <field name="from_approval" readonly="1" invisible="not from_approval"/>
                         </group>
                         <group string="Quantity">
@@ -41,7 +41,7 @@
         <field name="arch" type="xml">
             <list editable="bottom">
                 <field name="name"/>
-                <field name="source_item_id" string="Tag" readonly="1" optional="show"/>
+                <field name="source_item_id" string="Tag" readonly="1" force_save="1" optional="show"/>
                 <field name="pieces_taken" string="Pcs"/>
                 <field name="weight" options="{'digits': [16, 3]}"/>
                 <field name="less" options="{'digits': [16, 3]}"/>

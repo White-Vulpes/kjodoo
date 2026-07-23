@@ -52,11 +52,20 @@
                                     <field name="barcode"/>
                                     <field name="item_name"/>
                                     <field name="pieces_taken" readonly="state != 'draft'"/>
+                                    <!-- Weights are seeded per piece but always
+                                         weighed: pieces are rarely equal. -->
+                                    <field name="weight" string="Weight Out"
+                                           readonly="state != 'draft'"
+                                           options="{'digits': [16, 3]}"/>
+                                    <field name="less" readonly="state != 'draft'"
+                                           options="{'digits': [16, 3]}"/>
+                                    <field name="charges" readonly="state != 'draft'"
+                                           options="{'digits': [16, 2]}"/>
                                     <field name="pieces_returned" readonly="state != 'issued'"/>
+                                    <field name="weight_returned" string="Weight Back"
+                                           readonly="state != 'issued'"
+                                           options="{'digits': [16, 3]}"/>
                                     <field name="pieces_kept"/>
-                                    <field name="weight" options="{'digits': [16, 3]}"/>
-                                    <field name="less" options="{'digits': [16, 3]}"/>
-                                    <field name="charges" options="{'digits': [16, 2]}"/>
                                     <field name="state" column_invisible="1"/>
                                 </list>
                             </field>
@@ -64,6 +73,9 @@
                                 <field name="total_taken"/>
                                 <field name="total_returned"/>
                                 <field name="total_kept"/>
+                                <field name="total_weight_taken" options="{'digits': [16, 3]}"/>
+                                <field name="total_weight_returned" options="{'digits': [16, 3]}"/>
+                                <field name="total_weight_kept" options="{'digits': [16, 3]}"/>
                             </group>
                         </page>
                         <page string="Remarks">
@@ -103,13 +115,14 @@
         <field name="model">jewelry.approval</field>
         <field name="arch" type="xml">
             <search string="Approval Memos">
-                <field name="name"/>
+                <!-- Typing a tag's barcode here finds the memo it is out on. -->
+                <field name="name" string="Reference / Barcode"
+                       filter_domain="['|', ('name', 'ilike', self), ('line_ids.barcode', '=', self)]"/>
                 <field name="partner_id"/>
-                <field name="line_ids" string="Barcode" filter_domain="[('line_ids.barcode', '=', self)]"/>
                 <filter name="filter_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
                 <filter name="filter_issued" string="Issued (Out)" domain="[('state', '=', 'issued')]"/>
                 <filter name="filter_closed" string="Closed" domain="[('state', '=', 'closed')]"/>
-                <group expand="0" string="Group By">
+                <group name="group_by">
                     <filter name="group_partner" string="Customer" context="{'group_by': 'partner_id'}"/>
                     <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
                 </group>

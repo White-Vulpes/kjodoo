@@ -71,6 +71,12 @@ class JewelryBarcodeItem(models.Model):
     # `original x pieces / orig_pieces`. Snapshotting lazily means existing
     # tags need no data migration.
     orig_pieces = fields.Integer(string='Original Pieces', readonly=True, copy=False)
+    orig_weight = fields.Float(
+        string='Original Gross Weight', digits=(16, 3), readonly=True, copy=False,
+        help='Gross weight of the whole lot before anything was taken off it. '
+             'Only used to suggest a per-piece weight — pieces are rarely equal, '
+             'so the weighed value always wins.',
+    )
     baseline_set = fields.Boolean(string='Baseline Frozen', readonly=True, copy=False)
 
     # --- Weights & Calculations ---
@@ -276,7 +282,11 @@ class JewelryBarcodeItem(models.Model):
         for tag in self.sudo():
             if tag.baseline_set:
                 continue
-            tag.write({'orig_pieces': tag.pieces or 1, 'baseline_set': True})
+            tag.write({
+                'orig_pieces': tag.pieces or 1,
+                'orig_weight': tag.weight,
+                'baseline_set': True,
+            })
             for less in tag.less_ids:
                 less.write({'orig_weight': less.weight})
             for charge in tag.charge_ids:
@@ -296,6 +306,20 @@ class JewelryBarcodeItem(models.Model):
             total_less = sum(line.weight for line in self.less_ids)
             total_charges = sum(charge.amount for charge in self.charge_ids)
         return total_less / base_pieces, total_charges / base_pieces
+
+    def _per_piece_weight(self):
+        """Suggested gross weight of one piece, off the frozen baseline so it
+        stays meaningful after the tag has been partly consumed.
+
+        Pieces of a lot are rarely equal, so this is only ever a starting
+        figure: whoever takes the goods weighs them and overwrites it.
+        """
+        self.ensure_one()
+        # orig_weight is 0 on tags whose baseline was frozen before this field
+        # existed; fall back to what is left on the tag rather than suggest 0 g.
+        if self.baseline_set and self.orig_pieces and self.orig_weight:
+            return self.orig_weight / self.orig_pieces
+        return (self.weight / self.pieces) if self.pieces else 0.0
 
     def _apply_consumption(self, d_pieces, d_weight):
         """Take `d_pieces` pieces and `d_weight` grams off this tag; negative
@@ -373,6 +397,9 @@ class JewelryBarcodeItem(models.Model):
         return {
             'source_item_id': self.id,
             'pieces_taken': self.pieces,
+            'weight': self.weight,
+            'less': float_round(sum(line.weight for line in self.less_ids), precision_digits=3),
+            'charges': self.total_charges,
         }
 
 

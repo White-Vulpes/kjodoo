@@ -59,12 +59,18 @@ class CustomBillLine(models.Model):
 
     @api.onchange('pieces_taken')
     def _onchange_pieces_taken(self):
-        """Selling part of a lot scales the deductions by the same pieces ratio:
-        3 of 4 pieces carry 3/4 of the less and 3/4 of the charges. Both stay
-        editable afterwards — this only seeds them."""
+        """Selling part of a lot scales the line by the same pieces ratio: 3 of
+        4 pieces carry 3/4 of the weight, less and charges.
+
+        Every field stays editable — this only seeds them. The weight in
+        particular is a guess (pieces of a lot are rarely equal), so put the
+        pieces on the scale and type what they actually weigh.
+        """
         if not self.source_item_id or self.from_approval:
             return
-        less_pp, charges_pp = self.source_item_id._per_piece_rates()
+        item = self.source_item_id
+        less_pp, charges_pp = item._per_piece_rates()
+        self.weight = float_round(item._per_piece_weight() * self.pieces_taken, precision_digits=3)
         self.less = float_round(less_pp * self.pieces_taken, precision_digits=3)
         self.charges = float_round(charges_pp * self.pieces_taken, precision_digits=2)
 

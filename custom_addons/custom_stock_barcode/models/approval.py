@@ -1,6 +1,6 @@
 from odoo import models, fields, api
 from odoo.exceptions import UserError, ValidationError
-from odoo.tools.float_utils import float_round
+from odoo.tools.float_utils import float_compare, float_round
 
 
 class JewelryApproval(models.Model):
@@ -36,12 +36,28 @@ class JewelryApproval(models.Model):
     total_returned = fields.Integer(string='Pieces Returned', compute='_compute_totals')
     total_kept = fields.Integer(string='Pieces Kept', compute='_compute_totals')
 
-    @api.depends('line_ids.pieces_taken', 'line_ids.pieces_returned')
+    # Gross weight the same way, so the memo shows how much metal is out on
+    # approval, how much came back, and how much the customer kept.
+    total_weight_taken = fields.Float(
+        string='Weight Out', digits=(16, 3), compute='_compute_totals')
+    total_weight_returned = fields.Float(
+        string='Weight Back', digits=(16, 3), compute='_compute_totals')
+    total_weight_kept = fields.Float(
+        string='Weight Kept', digits=(16, 3), compute='_compute_totals')
+
+    @api.depends('line_ids.pieces_taken', 'line_ids.pieces_returned',
+                 'line_ids.weight', 'line_ids.weight_returned')
     def _compute_totals(self):
         for memo in self:
             memo.total_taken = sum(memo.line_ids.mapped('pieces_taken'))
             memo.total_returned = sum(memo.line_ids.mapped('pieces_returned'))
             memo.total_kept = memo.total_taken - memo.total_returned
+            memo.total_weight_taken = float_round(
+                sum(memo.line_ids.mapped('weight')), precision_digits=3)
+            memo.total_weight_returned = float_round(
+                sum(memo.line_ids.mapped('weight_returned')), precision_digits=3)
+            memo.total_weight_kept = float_round(
+                memo.total_weight_taken - memo.total_weight_returned, precision_digits=3)
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -91,18 +107,17 @@ class JewelryApproval(models.Model):
                         f'Tag {item.barcode} ({item.name}) only has {item.pieces} piece(s) '
                         f'in stock; cannot issue {line.pieces_taken}.'
                     )
-                # Approval weight is the tag's recorded weight, prorated — the
-                # pieces are not re-weighed on the way out.
-                d_weight = float_round(
-                    item.weight * line.pieces_taken / item.pieces, precision_digits=3,
-                ) if item.pieces else 0.0
-                less_pp, charges_pp = item._per_piece_rates()
-                item._apply_consumption(line.pieces_taken, d_weight)
-                line.write({
-                    'weight': d_weight,
-                    'less': float_round(less_pp * line.pieces_taken, precision_digits=3),
-                    'charges': float_round(charges_pp * line.pieces_taken, precision_digits=2),
-                })
+                # The weight that leaves is whatever was weighed on the line.
+                # Pieces of a lot are rarely equal, so a prorated figure is only
+                # ever the suggestion the line was seeded with.
+                if (line.pieces_taken < item.pieces
+                        and float_compare(item.weight, 0.0, precision_digits=3) > 0
+                        and float_compare(line.weight, 0.0, precision_digits=3) <= 0):
+                    raise UserError(
+                        f'Weigh the {line.pieces_taken} piece(s) being taken from tag '
+                        f'{item.barcode} ({item.name}) and enter their gross weight.'
+                    )
+                item._apply_consumption(line.pieces_taken, line.weight)
             memo.state = 'issued'
 
     def action_register_return(self):
@@ -141,8 +156,12 @@ class JewelryApproval(models.Model):
             if memo.state not in ('draft', 'issued'):
                 raise UserError('Only a draft or issued memo can be cancelled.')
             if memo.state == 'issued':
+                # Nothing was sold, so everything goes back exactly as it left.
                 for line in memo.line_ids:
-                    line.pieces_returned = line.pieces_taken
+                    line.write({
+                        'pieces_returned': line.pieces_taken,
+                        'weight_returned': line.weight,
+                    })
                     line._restore_returned()
             memo.state = 'cancelled'
 
@@ -172,10 +191,14 @@ class JewelryApprovalLine(models.Model):
     pieces_returned = fields.Integer(string='Pieces Returned', default=0)
     pieces_kept = fields.Integer(string='Pieces Kept', compute='_compute_pieces_kept', store=True)
 
-    # Snapshots taken at issue time (the tag itself has already shrunk by then).
-    weight = fields.Float(string='Weight Out', digits=(16, 3), readonly=True)
-    less = fields.Float(string='Less', digits=(16, 3), readonly=True)
-    charges = fields.Float(string='Charges', digits=(16, 2), readonly=True)
+    # Weighed on the way out. Seeded per-piece from the tag, then overwritten
+    # with what the scale says — pieces of a lot are rarely equal.
+    weight = fields.Float(string='Weight Out', digits=(16, 3))
+    less = fields.Float(string='Less', digits=(16, 3))
+    charges = fields.Float(string='Charges', digits=(16, 2))
+
+    # Weighed on the way back in, for the same reason.
+    weight_returned = fields.Float(string='Weight Returned', digits=(16, 3))
 
     # How much has actually been pushed back into stock so far, so repeated
     # partial returns never double-restore or drift.
@@ -203,31 +226,57 @@ class JewelryApprovalLine(models.Model):
                 )
         return super().unlink()
 
+    @api.onchange('pieces_taken')
+    def _onchange_pieces_taken(self):
+        """Seed the line from the tag at the pieces ratio. Suggestions only —
+        weigh the pieces and correct the gross weight before issuing."""
+        if not self.source_item_id:
+            return
+        item = self.source_item_id
+        less_pp, charges_pp = item._per_piece_rates()
+        self.weight = float_round(item._per_piece_weight() * self.pieces_taken, precision_digits=3)
+        self.less = float_round(less_pp * self.pieces_taken, precision_digits=3)
+        self.charges = float_round(charges_pp * self.pieces_taken, precision_digits=2)
+
+    @api.onchange('pieces_returned')
+    def _onchange_pieces_returned(self):
+        """Same idea coming back: suggest the returned pieces' share of what
+        went out, then weigh them and correct it."""
+        if not self.pieces_taken:
+            return
+        self.weight_returned = float_round(
+            self.weight * self.pieces_returned / self.pieces_taken, precision_digits=3,
+        )
+
     @api.depends('pieces_taken', 'pieces_returned')
     def _compute_pieces_kept(self):
         for line in self:
             line.pieces_kept = line.pieces_taken - line.pieces_returned
 
-    @api.constrains('pieces_returned', 'pieces_taken')
-    def _check_pieces_returned(self):
+    @api.constrains('pieces_returned', 'pieces_taken', 'weight_returned', 'weight')
+    def _check_returned(self):
         for line in self:
             if line.pieces_returned < 0 or line.pieces_returned > line.pieces_taken:
                 raise ValidationError(
                     f'Returned pieces for {line.barcode} must be between 0 and '
                     f'{line.pieces_taken}.'
                 )
+            if float_compare(line.weight_returned, line.weight, precision_digits=3) > 0:
+                raise ValidationError(
+                    f'{line.weight_returned:.3f} g cannot come back from tag '
+                    f'{line.barcode}; only {line.weight:.3f} g went out.'
+                )
 
     def _restore_returned(self):
         """Put the not-yet-restored share of the returned pieces back on the tag.
-        The weight is derived from the cumulative target rather than per return,
-        so restoring everything lands exactly on the issued weight."""
+        `weight_returned` is cumulative, so it is compared against what has
+        already gone back rather than added blindly — restoring everything then
+        lands exactly on the issued weight."""
         for line in self:
             d_pieces = line.pieces_returned - line.pieces_restored
             if not d_pieces:
                 continue
-            target_weight = float_round(
-                line.weight * line.pieces_returned / line.pieces_taken, precision_digits=3,
-            ) if line.pieces_taken else 0.0
+            target_weight = line.weight_returned
             d_weight = float_round(target_weight - line.weight_restored, precision_digits=3)
             line.source_item_id._apply_consumption(-d_pieces, -d_weight)
             line.write({
