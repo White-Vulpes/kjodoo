@@ -78,7 +78,6 @@
             <t t-foreach="docs" t-as="doc">
                 <!-- Base values -->
                 <t t-set="gross_wt" t-value="doc.weight"/>
-                <t t-set="less_wt" t-value="(doc.less_ids[0].weight if doc.less_ids else 0.0)"/>
                 <t t-set="karat" t-value="(doc.purity.karat if doc.purity else '')"/>
                 <t t-set="mcode_name" t-value="(doc.m_code.name if doc.m_code else '')"/>
                 <t t-set="enc_min" t-value="(doc._encode_tag_price(doc.min_price) if doc.min_price else '')"/>
@@ -86,13 +85,14 @@
 
                 <!-- Adjusted net weight for N display -->
                 <t t-set="less_pct" t-value="doc.less_deduction_pct"/>
-                <t t-set="adj_less_wt" t-value="less_wt * (1.0 - less_pct / 100.0) if (less_pct and less_wt) else less_wt"/>
+                <t t-set="adj_less_wt" t-value="doc.total_less * (1.0 - less_pct / 100.0) if (less_pct and doc.total_less) else doc.total_less"/>
                 <t t-set="adj_net_int" t-value="int(round((gross_wt - adj_less_wt) * 100))"/>
 
                 <!-- Charges (after the tag's charge deduction %) for the N…C… line -->
                 <t t-set="charge_pct" t-value="doc.charge_deduction_pct"/>
                 <t t-set="adj_charges" t-value="doc.total_charges * (1.0 - charge_pct / 100.0) if charge_pct else doc.total_charges"/>
                 <t t-set="adj_charges_int" t-value="int(round(adj_charges))"/>
+
 
                 <!--
                     Each tag is a BLOCK wrapper (not a table) with a definite height and
