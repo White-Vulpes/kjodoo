@@ -84,9 +84,17 @@ class JewelryBarcodeItem(models.Model):
 
     less_ids = fields.One2many('jewelry.item.less', 'item_id', string='Less (Deductions)')
 
+    total_less = fields.Float(
+        string='Total Less Weight',
+        compute='_compute_weights',
+        store=True,
+        readonly=True,
+        digits=(16, 3)
+    )
+
     net_weight = fields.Float(
         string='Net Weight',
-        compute='_compute_net_weight',
+        compute='_compute_weights',  # Updated to the combined method
         store=True,
         readonly=True,
         digits=(16, 3)
@@ -246,11 +254,15 @@ class JewelryBarcodeItem(models.Model):
     # ── Weight computation ────────────────────────────────────────────────────
 
     @api.depends('weight', 'less_ids.weight')
-    def _compute_net_weight(self):
+    def _compute_weights(self):
         for item in self:
-            total_less = sum(less_line.weight for less_line in item.less_ids)
-            # Using float_round to prevent floating point microscopic errors
-            item.net_weight = float_round(item.weight - total_less, precision_digits=3)
+            # Calculate the sum once
+            calculated_total_less = sum(less_line.weight for less_line in item.less_ids)
+            
+            # Assign to both fields using float_round for precision
+            item.total_less = float_round(calculated_total_less, precision_digits=3)
+            item.net_weight = float_round(item.weight - calculated_total_less, precision_digits=3)
+
 
     @api.depends('charge_ids.amount')
     def _compute_total_charges(self):
