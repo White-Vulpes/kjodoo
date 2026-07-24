@@ -50,7 +50,7 @@ class JewelryBarcodeItem(models.Model):
     ]
 
     # --- Core Identifiers ---
-    barcode = fields.Char(string='Barcode ID', required=True, copy=False, readonly=True, index=True, default=lambda self: 'New')
+    barcode = fields.Char(string='Barcode ID', required=True, copy=False, readonly=False, index=True, default=lambda self: 'New')
     name = fields.Char(string='Item Name', required=True)
     m_code = fields.Many2one('jewelry.mcode', string='M. Code (Manufacturer)')
     size = fields.Many2one('jewelry.size', string='Size')
