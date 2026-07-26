@@ -33,19 +33,13 @@
             <t t-call="web.basic_layout">
                 <t t-foreach="docs" t-as="doc">
                     <!--
-                        Fit-to-page: the whole bill scales down as the number of item +
-                        transaction rows grows, so a single bill always stays on ONE A6
-                        page (smaller text instead of spilling over). page-break-after
-                        forces the NEXT bill onto a fresh page — one bill per page —
-                        instead of packing two bills together when there is room.
-                        Headers use em units so they scale with this base font-size.
+                        One bill per page: page-break-after forces the NEXT bill onto a
+                        fresh page instead of packing two bills together when there is room.
                     -->
                     <t t-set="txn_shown" t-value="doc.transaction_ids and doc.show_transaction"/>
-                    <t t-set="row_count" t-value="len(doc.item_ids) + (len(doc.transaction_ids) if txn_shown else 0)"/>
-                    <t t-set="base_fs" t-value="'11px' if row_count &lt;= 12 else ('9px' if row_count &lt;= 18 else ('7.5px' if row_count &lt;= 26 else ('6px' if row_count &lt;= 36 else '5px')))"/>
-                    <div class="page w-100" t-attf-style="page-break-after: {{'always' if not doc_last else 'auto'}}; font-size: {{base_fs}};">
+                    <div class="page w-100" t-attf-style="page-break-after: {{'always' if not doc_last else 'auto'}};">
 
-                        <div style="text-align:center; font-size: 1.1em;">
+                        <div style="text-align:center;">
                             ||SHREE||
                             <br/>
                             <strong>Rough Estimate / On Approval</strong>
@@ -53,10 +47,10 @@
 
                         <div class="row mt-2 mb-3">
                             <div class="col-8">
-                                <div style="font-size: 1.4em; font-weight: bold;">
+                                <h5>
                                     <span t-field="doc.bill_number"/> -
                                     <span t-field="doc.partner_id"/>
-                                </div>
+                                </h5>
                             </div>
                             <div class="col-4 text-end">
                                 Date:
