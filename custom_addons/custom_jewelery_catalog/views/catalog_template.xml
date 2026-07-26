@@ -319,8 +319,8 @@
             <div id="catalog-breakout">
 
                 <div id="catalog-header">
-                    <h1>Collection</h1>
-                    <form id="filter-form" action="/catalog" method="get">
+                    <h1><t t-esc="'Selected For You' if share_mode else 'Collection'"/></h1>
+                    <form t-if="not share_mode" id="filter-form" action="/catalog" method="get">
                         <input class="search-input" type="text" name="search" placeholder="Search by name or ID" t-att-value="search"/>
                         <select name="size_id">
                             <option value="">All Sizes</option>
@@ -408,7 +408,26 @@
                 $(document).ready(function() {
                     $('.o_select2_tags').select2({ width: '180px', allowClear: true });
 
-                    let selectedItems = JSON.parse(localStorage.getItem('jewelry_cart')) || {};
+                    // Each share link keeps its OWN cart, namespaced by token, so
+                    // selections never bleed between /catalog and different customers.
+                    var SHARE_MODE = <t t-esc="'true' if share_mode else 'false'"/>;
+                    var SHARE_TOKEN = "<t t-esc="share_token or ''"/>";
+                    var CART_KEY = SHARE_MODE ? ('jewelry_cart_' + SHARE_TOKEN) : 'jewelry_cart';
+
+                    let selectedItems = JSON.parse(localStorage.getItem(CART_KEY)) || {};
+
+                    // On a share link, mirror the customer's picks back to Odoo.
+                    function saveCartToServer() {
+                        if (!SHARE_MODE) return;
+                        fetch('/catalog/share/' + SHARE_TOKEN + '/cart', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                jsonrpc: '2.0', method: 'call',
+                                params: { barcodes: Object.keys(selectedItems) }
+                            })
+                        }).catch(function() {});
+                    }
 
                     function updateCartUI() {
                         let count = Object.keys(selectedItems).length;
@@ -439,8 +458,9 @@
                         } else {
                             selectedItems[barcode] = name;
                         }
-                        localStorage.setItem('jewelry_cart', JSON.stringify(selectedItems));
+                        localStorage.setItem(CART_KEY, JSON.stringify(selectedItems));
                         updateCartUI();
+                        saveCartToServer();
                     });
 
                     $(document).on('click', '.select-btn', function(e) {
@@ -459,6 +479,26 @@
                     });
                 });
             </script>
+        </t>
+    </template>
+
+    <template id="jewelry_catalog_expired" name="Catalog Link Expired">
+        <t t-call="website.layout">
+            <t t-set="no_header" t-value="True"/>
+            <t t-set="no_footer" t-value="True"/>
+            <div style="min-height:100vh; display:flex; align-items:center; justify-content:center;
+                        background:#fafbfc; font-family:'Quicksand',sans-serif; text-align:center; padding:2rem;">
+                <div>
+                    <div style="font-size:3rem; margin-bottom:1rem;">🔒</div>
+                    <h1 style="font-size:1.4rem; font-weight:700; color:#0f172a; margin-bottom:0.5rem;">
+                        This link has expired
+                    </h1>
+                    <p style="color:#94a3b8; font-size:0.95rem; font-weight:500;">
+                        The selection you were sent is no longer available.<br/>
+                        Please contact us for an updated link.
+                    </p>
+                </div>
+            </div>
         </t>
     </template>
 </odoo>

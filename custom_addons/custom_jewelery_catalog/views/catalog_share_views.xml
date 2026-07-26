@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_jewelry_catalog_share_list" model="ir.ui.view">
+        <field name="name">jewelry.catalog.share.list</field>
+        <field name="model">jewelry.catalog.share</field>
+        <field name="arch" type="xml">
+            <list string="Catalog Links" decoration-muted="is_expired">
+                <field name="name"/>
+                <field name="item_count" string="Designs"/>
+                <field name="customer_cart_count" string="Customer Picked"/>
+                <field name="cart_updated_on" string="Selection Updated"/>
+                <field name="create_date" string="Created"/>
+                <field name="expiry" string="Expires"/>
+                <field name="is_expired"/>
+                <button name="action_open_share_link" type="object"
+                        string="Open" icon="fa-external-link"
+                        invisible="is_expired"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_jewelry_catalog_share_form" model="ir.ui.view">
+        <field name="name">jewelry.catalog.share.form</field>
+        <field name="model">jewelry.catalog.share</field>
+        <field name="arch" type="xml">
+            <form string="Catalog Link">
+                <header>
+                    <button name="action_open_share_link" type="object"
+                            string="Open Link" class="btn-primary"
+                            invisible="not id or is_expired"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="not is_expired">
+                        This link has expired and no longer shows anything to the customer.
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Mrs. Sharma - Diamond rings"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="valid_hours"/>
+                            <field name="item_count"/>
+                        </group>
+                        <group>
+                            <field name="create_date" invisible="not id"/>
+                            <field name="expiry" invisible="not id"/>
+                            <field name="is_expired" invisible="not id"/>
+                            <field name="share_url" widget="CopyClipboardChar"
+                                   invisible="not id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Designs" name="designs">
+                            <field name="item_ids">
+                                <list>
+                                    <field name="barcode"/>
+                                    <field name="name"/>
+                                    <field name="weight"/>
+                                    <field name="pieces"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Customer Selection" name="customer_cart">
+                            <group>
+                                <field name="customer_cart_count"/>
+                                <field name="cart_updated_on"/>
+                            </group>
+                            <field name="customer_cart_item_ids" readonly="1">
+                                <list>
+                                    <field name="barcode"/>
+                                    <field name="name"/>
+                                    <field name="weight"/>
+                                    <field name="pieces"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_jewelry_catalog_share_search" model="ir.ui.view">
+        <field name="name">jewelry.catalog.share.search</field>
+        <field name="model">jewelry.catalog.share</field>
+        <field name="arch" type="xml">
+            <search string="Catalog Links">
+                <field name="name"/>
+                <filter name="filter_active" string="Live" domain="[('is_expired', '=', False)]"/>
+                <filter name="filter_expired" string="Expired" domain="[('is_expired', '=', True)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_jewelry_catalog_share" model="ir.actions.act_window">
+        <field name="name">Catalog Links</field>
+        <field name="res_model">jewelry.catalog.share</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a catalog link</p>
+            <p>Pick the designs you want a customer to see, then share the
+               generated link. It works for a limited time only.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_jewelry_catalog_share"
+              name="Catalog Links"
+              parent="custom_stock_barcode.menu_jewelry_inventory"
+              action="action_jewelry_catalog_share"
+              sequence="30"/>
+
+</odoo>

@@ -1,3 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_public_jewelry_item,jewelry.barcode.item.public,custom_stock_barcode.model_jewelry_barcode_item,base.group_public,1,0,0,0
 access_portal_jewelry_item,jewelry.barcode.item.portal,custom_stock_barcode.model_jewelry_barcode_item,base.group_portal,1,0,0,0
+access_catalog_share_user,jewelry.catalog.share.user,model_jewelry_catalog_share,base.group_user,1,1,1,1

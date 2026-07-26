@@ -50,4 +50,46 @@ class JewelryCatalog(http.Controller):
             'selected_tags': selected_tags,  # Pass the LIST of selected tags back to the UI
             'min_weight': min_weight,
             'max_weight': max_weight,
+            'share_mode': False,
+            'share_token': '',
         })
+
+    @http.route(['/catalog/share/<string:token>'], type='http',
+                auth="public", website=True, sitemap=False)
+    def show_shared_catalog(self, token, **kwargs):
+        """A curated, time-limited link: shows ONLY the designs staff picked
+        for this token, and refuses the page once the link has expired."""
+        share = request.env['jewelry.catalog.share'].sudo().search(
+            [('token', '=', token)], limit=1)
+
+        # Unknown token or past its expiry window -> generic closed page.
+        if not share or share.is_expired:
+            return request.render('custom_jewelery_catalog.jewelry_catalog_expired', {})
+
+        # Only surface designs that are still in stock (0-piece tags are archived).
+        items = share.item_ids.filtered(lambda i: i.active)
+
+        return request.render('custom_jewelery_catalog.jewelry_public_catalog', {
+            'items': items,
+            'sizes': [],
+            'tags': [],
+            'search': '',
+            'selected_size': 0,
+            'selected_tags': [],
+            'min_weight': '',
+            'max_weight': '',
+            'share_mode': True,
+            'share_token': token,
+        })
+
+    @http.route(['/catalog/share/<string:token>/cart'], type='jsonrpc',
+                auth="public", methods=['POST'])
+    def save_shared_cart(self, token, barcodes=None, **kwargs):
+        """Store the customer's live selection on the share record so staff
+        can see what they picked, straight from Odoo."""
+        share = request.env['jewelry.catalog.share'].sudo().search(
+            [('token', '=', token)], limit=1)
+        if not share or share.is_expired:
+            return {'ok': False}
+        count = share._record_customer_cart(barcodes)
+        return {'ok': True, 'count': count}

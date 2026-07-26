@@ -11,6 +11,7 @@
     'data': [
         'security/ir.model.access.csv',
         'security/ir_rule.xml',
+        'views/catalog_share_views.xml',
         'views/catalog_template.xml',
     ],
     'installable': True,
