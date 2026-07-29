@@ -14,6 +14,11 @@
         'views/catalog_share_views.xml',
         'views/catalog_template.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'custom_jewelery_catalog/static/src/js/select_create_kanban_patch.js',
+        ],
+    },
     'installable': True,
     'application': False,
     'license': 'LGPL-3',

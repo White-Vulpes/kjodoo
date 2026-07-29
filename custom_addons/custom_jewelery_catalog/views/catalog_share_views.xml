@@ -1,6 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <!-- Image-first picker used when staff click "Add" on a link's Designs.
+         Lets designs be chosen by photo instead of by barcode ID. -->
+    <record id="view_jewelry_barcode_item_kanban_picker" model="ir.ui.view">
+        <field name="name">jewelry.barcode.item.kanban.picker</field>
+        <field name="model">jewelry.barcode.item</field>
+        <field name="arch" type="xml">
+            <kanban string="Designs">
+                <field name="barcode"/>
+                <field name="name"/>
+                <field name="weight"/>
+                <field name="pieces"/>
+                <field name="size"/>
+                <field name="image_1920"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="o_kanban_image text-center">
+                            <field name="image_1920" widget="image"
+                                   options="{'size': [0, 150]}"
+                                   class="w-100"/>
+                        </div>
+                        <div class="mt-1">
+                            <strong class="o_kanban_record_title">
+                                <field name="name"/>
+                            </strong>
+                            <div class="text-muted">
+                                <field name="barcode"/>
+                            </div>
+                            <div>
+                                <field name="weight"/> g
+                                <span t-if="record.size.value"> · <field name="size"/></span>
+                            </div>
+                            <div class="text-muted">
+                                <field name="pieces"/> pc(s)
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
     <record id="view_jewelry_catalog_share_list" model="ir.ui.view">
         <field name="name">jewelry.catalog.share.list</field>
         <field name="model">jewelry.catalog.share</field>
@@ -54,13 +95,46 @@
                     </group>
                     <notebook>
                         <page string="Designs" name="designs">
-                            <field name="item_ids">
-                                <list>
+                            <field name="item_ids" mode="kanban"
+                                   context="{'kanban_view_ref': 'custom_jewelery_catalog.view_jewelry_barcode_item_kanban_picker', 'force_dialog_view_type': 'kanban'}">
+                                <kanban>
                                     <field name="barcode"/>
                                     <field name="name"/>
                                     <field name="weight"/>
                                     <field name="pieces"/>
-                                </list>
+                                    <field name="size"/>
+                                    <field name="image_1920"/>
+                                    <templates>
+                                        <t t-name="card">
+                                            <div class="position-relative">
+                                                <a type="delete" role="button"
+                                                   title="Remove design" aria-label="Remove design"
+                                                   class="fa fa-trash-o text-danger position-absolute top-0 end-0 p-1"
+                                                   style="z-index: 2; background: rgba(255,255,255,0.85); border-radius: 4px; line-height: 1;"/>
+                                                <div class="o_kanban_image text-center">
+                                                    <field name="image_1920" widget="image"
+                                                           options="{'size': [0, 140]}"
+                                                           class="w-100"/>
+                                                </div>
+                                                <div class="mt-1">
+                                                    <strong class="o_kanban_record_title">
+                                                        <field name="name"/>
+                                                    </strong>
+                                                    <div class="text-muted">
+                                                        <field name="barcode"/>
+                                                    </div>
+                                                    <div>
+                                                        <field name="weight"/> g
+                                                        <span t-if="record.size.value"> · <field name="size"/></span>
+                                                    </div>
+                                                    <div class="text-muted">
+                                                        <field name="pieces"/> pc(s)
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </templates>
+                                </kanban>
                             </field>
                         </page>
                         <page string="Customer Selection" name="customer_cart">
