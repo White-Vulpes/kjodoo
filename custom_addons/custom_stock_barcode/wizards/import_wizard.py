@@ -125,6 +125,7 @@ class JewelryImportWizard(models.TransientModel):
                 continue
 
             # ── Scalar fields ────────────────────────────────────────────────
+            barcode_str     = col_str(row, 'Barcode')  # <-- ADDED
             item_code_str   = col_str(row, 'Item Code')
             brand_name      = col_str(row, 'Brand Name')
             brand_code      = col_str(row, 'Brand Code')
@@ -213,23 +214,24 @@ class JewelryImportWizard(models.TransientModel):
             # ── Create ───────────────────────────────────────────────────────
             try:
                 item = ItemModel.create({
-                    'name':                item_name,
-                    'm_code':              mcode_id,
-                    'size':                size_id,
-                    'pieces':              pieces,
-                    'weight':              gross_weight,
-                    'purity':              purity_id,
-                    'category':            category_id,
-                    'subcategory':         subcategory_id,
-                    'make':                make_id,
-                    'active':              status.lower() == 'active',
-                    'min_price':           min_price,
-                    'max_price':           max_price,
-                    'narration':           narration,
-                    'less_deduction_pct':  less_ded_pct,
+                    'name':                 item_name,
+                    'barcode':              barcode_str,  # <-- ADDED
+                    'm_code':               mcode_id,
+                    'size':                 size_id,
+                    'pieces':               pieces,
+                    'weight':               gross_weight,
+                    'purity':               purity_id,
+                    'category':             category_id,
+                    'subcategory':          subcategory_id,
+                    'make':                 make_id,
+                    'active':               status.lower() == 'active',
+                    'min_price':            min_price,
+                    'max_price':            max_price,
+                    'narration':            narration,
+                    'less_deduction_pct':   less_ded_pct,
                     'charge_deduction_pct': charge_ded_pct,
-                    'less_ids':            less_lines,
-                    'charge_ids':          charge_lines,
+                    'less_ids':             less_lines,
+                    'charge_ids':           charge_lines,
                 })
                 created_ids.append(item.id)
             except Exception as e:
