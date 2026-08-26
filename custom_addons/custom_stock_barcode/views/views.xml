@@ -89,6 +89,8 @@
                 <field name="design_tag_ids" widget="many2many_tags" optional="show"/>
                 <field name="weight" sum="Total Gross Weight"/>
                 <field name="net_weight" sum="Total Net Weight"/>
+                <field name="dispatch_id" string="Out On" optional="show"/>
+                <field name="dispatch_location" string="Currently At" optional="hide"/>
             </list>
         </field>
     </record>
@@ -106,10 +108,16 @@
                 <field name="design_tag_ids" string="Design Tags" filter_domain="[('design_tag_ids.name', 'ilike', self)]"/>
                 <filter string="Active" name="active" domain="[('active','=',True)]"/>
                 <filter string="Archived" name="archived" domain="[('active','=',False)]"/>
+                <separator/>
+                <!-- Stock away on an exhibition / route is still ours, just not
+                     in the building. -->
+                <filter string="In Shop" name="in_shop" domain="[('dispatch_id','=',False)]"/>
+                <filter string="Out on Dispatch" name="on_dispatch" domain="[('dispatch_id','!=',False)]"/>
                 <group>
                     <filter string="Category" name="group_category" domain="[]" context="{'group_by':'category'}"/>
                     <filter string="Manufacturer Code" name="group_m_code" domain="[]" context="{'group_by':'m_code'}"/>
                     <filter string="Size" name="group_size" domain="[]" context="{'group_by':'size'}"/>
+                    <filter string="Out On" name="group_dispatch" domain="[]" context="{'group_by':'dispatch_id'}"/>
                 </group>
             </search>
         </field>

@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- FORM VIEW -->
+    <record id="view_jewelry_dispatch_form" model="ir.ui.view">
+        <field name="name">jewelry.dispatch.form</field>
+        <field name="model">jewelry.dispatch</field>
+        <field name="arch" type="xml">
+            <form string="Stock Dispatch">
+                <header>
+                    <button name="action_dispatch" type="object" string="Dispatch Out"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_start_return_check" type="object"
+                            string="Start Return Check" class="btn-primary"
+                            invisible="state != 'out'"/>
+                    <button name="action_open_verification" type="object"
+                            string="Open Return Check" class="btn-primary"
+                            invisible="state != 'verifying'"/>
+                    <button name="action_apply_verification" type="object"
+                            string="Apply Return Check" class="btn-secondary"
+                            invisible="state != 'verifying'"/>
+                    <button name="action_close" type="object" string="Close Dispatch"
+                            invisible="state not in ('out', 'verifying')"
+                            confirm="The tags go back into ordinary circulation and this dispatch's figures are frozen. Close it?"/>
+                    <button name="action_write_off_missing" type="object"
+                            string="Write Off Missing" class="btn-danger"
+                            invisible="state != 'closed' or not has_shortage"
+                            confirm="The missing pieces will be taken out of stock. Do this only once the shortage is confirmed lost."/>
+                    <button name="action_print_dispatch" type="object" string="Print"
+                            class="btn-secondary" invisible="state == 'draft'"/>
+                    <button name="action_cancel" type="object" string="Cancel"
+                            invisible="state not in ('draft', 'out', 'verifying')"
+                            confirm="Every tag's away flag is dropped. Nothing was consumed, so no stock changes. Cancel this dispatch?"/>
+                    <button name="action_reset_to_draft" type="object" string="Reset to Draft"
+                            invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,out,verifying,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" icon="fa-tags" type="button">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value"><field name="total_tags"/></span>
+                                <span class="o_stat_text">Tags</span>
+                            </div>
+                        </button>
+                        <button class="oe_stat_button" icon="fa-shopping-cart" type="button"
+                                invisible="state == 'draft'">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value"><field name="total_pieces_sold"/></span>
+                                <span class="o_stat_text">Sold</span>
+                            </div>
+                        </button>
+                        <button class="oe_stat_button" icon="fa-undo" type="button"
+                                invisible="state not in ('verifying', 'closed')">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value"><field name="total_pieces_back"/></span>
+                                <span class="o_stat_text">Back</span>
+                            </div>
+                        </button>
+                        <button class="oe_stat_button" icon="fa-exclamation-triangle" type="button"
+                                invisible="state not in ('verifying', 'closed')">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value"><field name="total_pieces_missing"/></span>
+                                <span class="o_stat_text">Missing</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="alert alert-danger" role="alert"
+                         invisible="state != 'closed' or not has_shortage">
+                        This dispatch came back short — see the Missing column below.
+                        Use <b>Write Off Missing</b> only once the shortage is confirmed
+                        lost; a tag found later should never be written off.
+                    </div>
+
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="dispatch_type" readonly="state != 'draft'"/>
+                            <field name="destination" readonly="state != 'draft'"
+                                   placeholder="e.g. Jaipur Expo, Rajkot Branch"/>
+                            <field name="partner_id" readonly="state != 'draft'"
+                                   options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="user_id"/>
+                            <field name="date_out" readonly="state != 'draft'"/>
+                            <field name="date_due" readonly="state in ('closed', 'cancelled')"/>
+                            <field name="date_closed" invisible="state != 'closed'"/>
+                            <field name="verification_id" readonly="1"
+                                   invisible="not verification_id"/>
+                            <field name="verification_applied" readonly="1"
+                                   invisible="state not in ('verifying', 'closed')"/>
+                            <field name="has_shortage" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <!-- Barcode scan input: draft only, the goods are picked before they leave -->
+                    <group string="Scan Tag" invisible="state != 'draft'">
+                        <field name="scan_barcode" string="Barcode"
+                               placeholder="Scan or type barcode and press Enter…"/>
+                        <field name="last_scan_result" string="Result" readonly="1"/>
+                    </group>
+
+                    <notebook>
+                        <page string="Tags" name="tags">
+                            <field name="line_ids" readonly="state in ('closed', 'cancelled')">
+                                <list editable="bottom"
+                                      decoration-danger="pieces_missing &gt; 0"
+                                      decoration-muted="written_off">
+                                    <field name="source_item_id" readonly="state != 'draft'"
+                                           options="{'no_create': True}"/>
+                                    <field name="barcode"/>
+                                    <field name="item_name"/>
+                                    <field name="category_id" optional="show"/>
+                                    <field name="purity_id" optional="hide"/>
+                                    <field name="pieces_out" sum="Pieces Out"/>
+                                    <field name="weight_out" sum="Weight Out"
+                                           options="{'digits': [16, 3]}"/>
+                                    <field name="pieces_sold" sum="Sold"
+                                           column_invisible="parent.state == 'draft'"/>
+                                    <field name="pieces_expected" sum="Expected"
+                                           column_invisible="parent.state == 'draft'"/>
+                                    <field name="pieces_returned" sum="Back"
+                                           readonly="state != 'verifying'"
+                                           column_invisible="parent.state not in ('verifying', 'closed')"/>
+                                    <field name="pieces_missing" sum="Missing"
+                                           column_invisible="parent.state not in ('verifying', 'closed')"/>
+                                    <field name="missing_weight" optional="hide"
+                                           options="{'digits': [16, 3]}"
+                                           column_invisible="parent.state not in ('verifying', 'closed')"/>
+                                    <field name="written_off"
+                                           column_invisible="parent.state != 'closed'"/>
+                                    <field name="line_notes" string="Notes" optional="show"/>
+                                    <field name="state" column_invisible="1"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="total_pieces_out"/>
+                                <field name="total_weight_out" options="{'digits': [16, 3]}"/>
+                                <field name="total_pieces_sold" invisible="state == 'draft'"/>
+                                <field name="total_pieces_expected" invisible="state == 'draft'"/>
+                                <field name="total_pieces_back"
+                                       invisible="state not in ('verifying', 'closed')"/>
+                                <field name="total_pieces_missing"
+                                       invisible="state not in ('verifying', 'closed')"/>
+                                <field name="total_weight_missing" options="{'digits': [16, 3]}"
+                                       invisible="state not in ('verifying', 'closed')"/>
+                            </group>
+                        </page>
+                        <page string="Remarks" name="remarks">
+                            <field name="remarks" widget="text"
+                                   placeholder="Notes about this dispatch…"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- LIST VIEW -->
+    <record id="view_jewelry_dispatch_list" model="ir.ui.view">
+        <field name="name">jewelry.dispatch.list</field>
+        <field name="model">jewelry.dispatch</field>
+        <field name="arch" type="xml">
+            <list string="Stock Dispatches" decoration-danger="has_shortage">
+                <field name="name"/>
+                <field name="dispatch_type"/>
+                <field name="destination"/>
+                <field name="user_id"/>
+                <field name="date_out"/>
+                <field name="date_due" optional="show"/>
+                <field name="total_tags" string="Tags"/>
+                <field name="total_pieces_out" string="Out"/>
+                <field name="total_pieces_sold" string="Sold"/>
+                <field name="total_pieces_back" string="Back"/>
+                <field name="total_pieces_missing" string="Missing"/>
+                <field name="has_shortage" column_invisible="1"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state in ('out', 'verifying')"
+                       decoration-success="state == 'closed'"
+                       decoration-danger="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- SEARCH VIEW -->
+    <record id="view_jewelry_dispatch_search" model="ir.ui.view">
+        <field name="name">jewelry.dispatch.search</field>
+        <field name="model">jewelry.dispatch</field>
+        <field name="arch" type="xml">
+            <search string="Stock Dispatches">
+                <!-- Typing a tag's barcode here finds the dispatch it went out on. -->
+                <field name="name" string="Reference / Barcode"
+                       filter_domain="['|', ('name', 'ilike', self), ('line_ids.barcode', '=', self)]"/>
+                <field name="destination"/>
+                <field name="user_id"/>
+                <filter name="filter_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_open" string="Out"
+                        domain="[('state', 'in', ('out', 'verifying'))]"/>
+                <filter name="filter_closed" string="Closed" domain="[('state', '=', 'closed')]"/>
+                <separator/>
+                <filter name="filter_date_out" string="Date Out" date="date_out"/>
+                <group name="group_by">
+                    <filter name="group_type" string="Type" context="{'group_by': 'dispatch_type'}"/>
+                    <filter name="group_destination" string="Destination"
+                            context="{'group_by': 'destination'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_jewelry_dispatch" model="ir.actions.act_window">
+        <field name="name">Exhibition / Route</field>
+        <field name="res_model">jewelry.dispatch</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_filter_open': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Record stock going out</p>
+            <p>Scan the tags that leave for an exhibition, a route or another shop.
+               They stay in stock — just flagged as away — so they can be sold
+               normally from there, and are scanned back in on return.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_jewelry_dispatch"
+              name="Exhibition / Route"
+              parent="menu_jewelry_inventory"
+              action="action_jewelry_dispatch"
+              sequence="40"/>
+</odoo>

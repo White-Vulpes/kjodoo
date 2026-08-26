@@ -18,7 +18,10 @@
                         <!-- Header -->
                         <div class="row mb-4">
                             <div class="col-6">
-                                <h2>Stock Verification Report</h2>
+                                <h2>
+                                    <t t-if="doc.dispatch_id">Dispatch Return Check</t>
+                                    <t t-else="">Stock Verification Report</t>
+                                </h2>
                                 <table class="table table-sm table-borderless" style="width:auto;">
                                     <tr>
                                         <td><strong>Reference:</strong></td>
@@ -31,6 +34,13 @@
                                     <tr>
                                         <td><strong>Verified By:</strong></td>
                                         <td><t t-esc="doc.user_id.name"/></td>
+                                    </tr>
+                                    <tr t-if="doc.dispatch_id">
+                                        <td><strong>Dispatch:</strong></td>
+                                        <td>
+                                            <t t-esc="doc.dispatch_id.name"/>
+                                            (<t t-esc="doc.dispatch_id.destination"/>)
+                                        </td>
                                     </tr>
                                 </table>
                             </div>

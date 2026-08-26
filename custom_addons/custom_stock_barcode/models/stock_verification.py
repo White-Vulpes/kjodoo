@@ -18,6 +18,14 @@ class JewelryStockVerification(models.Model):
     ], string='Status', default='draft', readonly=True)
     notes = fields.Text(string='Notes')
 
+    # Set when this session is the return check of a dispatch (exhibition,
+    # route, other shop). It scopes _generate_lines below to that dispatch's
+    # tags instead of the whole shop.
+    dispatch_id = fields.Many2one(
+        'jewelry.dispatch', string='Return Check For', readonly=True, copy=False,
+        ondelete='cascade',
+    )
+
     line_ids = fields.One2many('jewelry.stock.verification.line', 'verification_id', string='Items')
 
     # Non-stored scan fields (UI only)
@@ -53,7 +61,19 @@ class JewelryStockVerification(models.Model):
     def _generate_lines(self):
         self.ensure_one()
         self.line_ids.unlink()
-        items = self.env['jewelry.barcode.item'].search([('active', '=', True)])
+        if self.dispatch_id:
+            # Return check: only this dispatch's tags, and only the pieces that
+            # are still out. Anything sold at the venue is already off the tag.
+            items = self.dispatch_id.line_ids.mapped('source_item_id').filtered(
+                lambda item: item.pieces > 0
+            )
+        else:
+            # Shop floor: stock that is legitimately away on a dispatch is not
+            # in the building, so counting it would report it missing.
+            items = self.env['jewelry.barcode.item'].search([
+                ('active', '=', True),
+                ('dispatch_id', '=', False),
+            ])
         line_vals = [{'verification_id': self.id, 'item_id': item.id} for item in items]
         if line_vals:
             self.env['jewelry.stock.verification.line'].create(line_vals)
@@ -109,6 +129,11 @@ class JewelryStockVerificationLine(models.Model):
     category_id = fields.Many2one('jewelry.category', related='item_id.category', store=True, string='Category')
     purity_id = fields.Many2one('jewelry.purity', related='item_id.purity', store=True, string='Purity')
     weight = fields.Float(related='item_id.weight', store=True, string='Weight (g)', digits=(16, 3))
+
+    # Not stored: a tag's dispatch flag is cleared when the dispatch closes,
+    # and old sessions should not all be recomputed for that.
+    dispatch_id = fields.Many2one(
+        'jewelry.dispatch', related='item_id.dispatch_id', string='Out On', readonly=True)
 
     is_verified = fields.Boolean(string='Found', default=False)
     verified_date = fields.Datetime(string='Verified At')

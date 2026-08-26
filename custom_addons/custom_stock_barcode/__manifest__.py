@@ -1,6 +1,6 @@
 {
     'name': 'Jewelry Barcode Inventory',
-    'version': '19.0.1.2.0',
+    'version': '19.0.1.3.0',
     'category': 'Inventory/Jewelry',
     'summary': 'Manage jewelry items using unique Barcode IDs',
     'description': """
@@ -28,12 +28,15 @@
         'security/ir.model.access.csv',
         'data/stock_verification_sequence.xml',
         'data/approval_sequence.xml',
+        'data/dispatch_sequence.xml',
         'views/views.xml',
         'views/import_wizard_view.xml',
         'views/stock_verification_views.xml',
         'views/approval_views.xml',
+        'views/dispatch_views.xml',
         'reports/tag_report.xml',
         'reports/stock_verification_report.xml',
+        'reports/dispatch_report.xml',
     ],
 
     # Images/Assets

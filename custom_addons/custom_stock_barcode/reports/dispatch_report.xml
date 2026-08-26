@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_jewelry_dispatch" model="ir.actions.report">
+        <field name="name">Stock Dispatch</field>
+        <field name="model">jewelry.dispatch</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">custom_stock_barcode.report_jewelry_dispatch_document</field>
+        <field name="report_file">custom_stock_barcode.report_jewelry_dispatch_document</field>
+        <field name="print_report_name">'Dispatch - %s' % object.name</field>
+        <field name="binding_model_id" ref="model_jewelry_dispatch"/>
+    </record>
+
+    <!-- One template for both jobs: a packing list on the way out, and the
+         out / sold / back / missing reconciliation once the goods are back. -->
+    <template id="report_jewelry_dispatch_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <t t-set="settled" t-value="doc.state in ('verifying', 'closed')"/>
+
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <h2>
+                                    <t t-if="settled">Dispatch Reconciliation</t>
+                                    <t t-else="">Dispatch Packing List</t>
+                                </h2>
+                                <table class="table table-sm table-borderless" style="width:auto;">
+                                    <tr>
+                                        <td><strong>Reference:</strong></td>
+                                        <td><t t-esc="doc.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Type:</strong></td>
+                                        <td><span t-field="doc.dispatch_type"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Destination:</strong></td>
+                                        <td><t t-esc="doc.destination"/></td>
+                                    </tr>
+                                    <tr t-if="doc.partner_id">
+                                        <td><strong>Host / Shop:</strong></td>
+                                        <td><t t-esc="doc.partner_id.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Taken By:</strong></td>
+                                        <td><t t-esc="doc.user_id.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Date Out:</strong></td>
+                                        <td><t t-esc="doc.date_out"/></td>
+                                    </tr>
+                                    <tr t-if="doc.date_due and not doc.date_closed">
+                                        <td><strong>Expected Back:</strong></td>
+                                        <td><t t-esc="doc.date_due"/></td>
+                                    </tr>
+                                    <tr t-if="doc.date_closed">
+                                        <td><strong>Closed On:</strong></td>
+                                        <td><t t-esc="doc.date_closed"/></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-6 text-end">
+                                <table class="table table-sm table-bordered" style="width:auto; margin-left:auto;">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Tags</th>
+                                            <th>Pcs Out</th>
+                                            <th>Wt Out (g)</th>
+                                            <th t-if="settled">Sold</th>
+                                            <th t-if="settled">Back</th>
+                                            <th t-if="settled">Missing</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-center"><t t-esc="doc.total_tags"/></td>
+                                            <td class="text-center"><t t-esc="doc.total_pieces_out"/></td>
+                                            <td class="text-end"><t t-esc="'%.3f' % doc.total_weight_out"/></td>
+                                            <td class="text-center" t-if="settled"><t t-esc="doc.total_pieces_sold"/></td>
+                                            <td class="text-center text-success" t-if="settled">
+                                                <strong><t t-esc="doc.total_pieces_back"/></strong>
+                                            </td>
+                                            <td class="text-center text-danger" t-if="settled">
+                                                <strong><t t-esc="doc.total_pieces_missing"/></strong>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Shortage first: it is the reason this page gets printed. -->
+                        <t t-set="short_lines" t-value="doc.line_ids.filtered(lambda l: l.pieces_missing &gt; 0)"/>
+                        <t t-if="settled and short_lines">
+                            <h4 class="text-danger mt-4">
+                                Shortage (<t t-esc="len(short_lines)"/> tag(s),
+                                <t t-esc="doc.total_pieces_missing"/> piece(s),
+                                <t t-esc="'%.3f' % doc.total_weight_missing"/> g)
+                            </h4>
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-danger">
+                                    <tr>
+                                        <th>Barcode</th>
+                                        <th>Item</th>
+                                        <th>Category</th>
+                                        <th class="text-center">Expected</th>
+                                        <th class="text-center">Back</th>
+                                        <th class="text-center">Missing</th>
+                                        <th class="text-end">Wt (g)</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="short_lines" t-as="line">
+                                        <td><t t-esc="line.barcode"/></td>
+                                        <td><t t-esc="line.item_name"/></td>
+                                        <td><t t-esc="line.category_id.name or ''"/></td>
+                                        <td class="text-center"><t t-esc="line.pieces_expected"/></td>
+                                        <td class="text-center"><t t-esc="line.pieces_returned"/></td>
+                                        <td class="text-center"><strong><t t-esc="line.pieces_missing"/></strong></td>
+                                        <td class="text-end"><t t-esc="'%.3f' % line.missing_weight"/></td>
+                                        <td><t t-esc="line.line_notes or ''"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+
+                        <h4 class="mt-4">
+                            <t t-if="settled">All Tags</t>
+                            <t t-else="">Tags Taken Out</t>
+                            (<t t-esc="doc.total_tags"/>)
+                        </h4>
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-secondary">
+                                <tr>
+                                    <th>Barcode</th>
+                                    <th>Item</th>
+                                    <th>Category</th>
+                                    <th>Purity</th>
+                                    <th class="text-center">Pcs Out</th>
+                                    <th class="text-end">Wt Out (g)</th>
+                                    <th class="text-center" t-if="settled">Sold</th>
+                                    <th class="text-center" t-if="settled">Expected</th>
+                                    <th class="text-center" t-if="settled">Back</th>
+                                    <th class="text-center" t-if="settled">Missing</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="doc.line_ids" t-as="line">
+                                    <td><t t-esc="line.barcode"/></td>
+                                    <td><t t-esc="line.item_name"/></td>
+                                    <td><t t-esc="line.category_id.name or ''"/></td>
+                                    <td><t t-esc="line.purity_id.name or ''"/></td>
+                                    <td class="text-center"><t t-esc="line.pieces_out"/></td>
+                                    <td class="text-end"><t t-esc="'%.3f' % line.weight_out"/></td>
+                                    <td class="text-center" t-if="settled"><t t-esc="line.pieces_sold"/></td>
+                                    <td class="text-center" t-if="settled"><t t-esc="line.pieces_expected"/></td>
+                                    <td class="text-center" t-if="settled"><t t-esc="line.pieces_returned"/></td>
+                                    <td t-if="settled"
+                                        t-attf-class="text-center #{'text-danger fw-bold' if line.pieces_missing else ''}">
+                                        <t t-esc="line.pieces_missing"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div t-if="doc.remarks" class="mt-4">
+                            <h5>Remarks</h5>
+                            <p><t t-esc="doc.remarks"/></p>
+                        </div>
+
+                        <div class="row mt-5">
+                            <div class="col-4">
+                                <div style="border-top:1px solid #000; padding-top:4px;">Handed Over By</div>
+                            </div>
+                            <div class="col-4 offset-4">
+                                <div style="border-top:1px solid #000; padding-top:4px;">Received By</div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

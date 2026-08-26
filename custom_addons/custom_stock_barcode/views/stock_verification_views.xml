@@ -41,6 +41,14 @@
                     <div class="oe_title">
                         <h1><field name="name" readonly="1"/></h1>
                     </div>
+                    <div class="alert alert-info" role="alert" invisible="not dispatch_id">
+                        Return check: this session holds only the tags still out on the
+                        dispatch named below. Scan each one back in, then close the dispatch.
+                    </div>
+                    <div class="alert alert-info" role="alert" invisible="dispatch_id">
+                        Tags currently away on an exhibition or route are left out of this
+                        count — they are not in the building.
+                    </div>
                     <group>
                         <group>
                             <field name="date"/>
@@ -48,6 +56,8 @@
                         </group>
                         <group>
                             <field name="progress_pct" string="Progress" widget="progressbar"/>
+                            <field name="dispatch_id" readonly="1"
+                                   invisible="not dispatch_id"/>
                         </group>
                     </group>
 
@@ -91,6 +101,7 @@
                 <field name="name"/>
                 <field name="date"/>
                 <field name="user_id"/>
+                <field name="dispatch_id" string="Return Check For" optional="show"/>
                 <field name="total_count" string="Total"/>
                 <field name="verified_count" string="Verified"/>
                 <field name="missing_count" string="Missing"/>
@@ -114,6 +125,9 @@
                 <filter string="Draft" name="draft" domain="[('state','=','draft')]"/>
                 <filter string="In Progress" name="in_progress" domain="[('state','=','in_progress')]"/>
                 <filter string="Done" name="done" domain="[('state','=','done')]"/>
+                <separator/>
+                <filter string="Shop Floor" name="shop_floor" domain="[('dispatch_id','=',False)]"/>
+                <filter string="Dispatch Returns" name="dispatch_returns" domain="[('dispatch_id','!=',False)]"/>
                 <separator/>
                 <filter string="Verification Date" name="filter_date" date="date"/>
                 <group>

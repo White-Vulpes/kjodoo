@@ -63,7 +63,14 @@ class CustomBill(models.Model):
             self.last_scan_result = f'Already on this bill: {item.name} ({code})'
             return
         self.item_ids = [(0, 0, item._prepare_bill_line_vals())]
-        self.last_scan_result = f'Added: {item.name} ({code}) — {item.pieces} pc'
+        result = f'Added: {item.name} ({code}) — {item.pieces} pc'
+        # The tag may be away at an exhibition or another shop. Selling from
+        # there is the normal case, so the line still goes on the bill — but at
+        # the counter this is the warning that the piece is not in the building.
+        away = item.dispatch_id
+        if away and away.state in ('out', 'verifying'):
+            result += f' — NOTE: this tag is out on {away.name} ({away.destination})'
+        self.last_scan_result = result
 
     def unlink(self):
         # A one2many with ondelete='cascade' is dropped at database level, which

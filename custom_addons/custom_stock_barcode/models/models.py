@@ -162,6 +162,20 @@ class JewelryBarcodeItem(models.Model):
     max_price   = fields.Float(string='Max Selling Price', digits=(16, 2))
     barcode_qr_data = fields.Char(string='QR Data URI', compute='_compute_barcode_qr')
 
+    # --- Out on dispatch ------------------------------------------------------
+    # Exhibition / route / other-shop stock is still ours, so it is never
+    # consumed: the tag keeps its pieces and weight and is only flagged as being
+    # away. Selling from the venue is an ordinary bill, which depletes the tag
+    # through the consumption engine above. See models/dispatch.py.
+    dispatch_id = fields.Many2one(
+        'jewelry.dispatch', string='Out On', readonly=True, copy=False,
+        ondelete='set null',
+        help='Dispatch this tag is currently away on. Empty means it is in the shop.',
+    )
+    dispatch_location = fields.Char(
+        related='dispatch_id.destination', string='Currently At', readonly=True,
+    )
+
     # --- Financial & Categorization ---
     charge_ids = fields.One2many('jewelry.item.charge', 'item_id', string='Charges')
     design_tag_ids = fields.Many2many('jewelry.design.tag', string='Design Tags')
@@ -401,6 +415,17 @@ class JewelryBarcodeItem(models.Model):
             'less': float_round(sum(line.weight for line in self.less_ids), precision_digits=3),
             'charges': self.total_charges,
             'touch': (self.purity.value / 100.0) if self.purity else 0.0,
+        }
+
+    def _prepare_dispatch_line_vals(self):
+        """Values for a jewelry.dispatch.line covering this tag. A dispatched
+        tag travels as a whole lot, so the figures are simply the tag's own;
+        they are snapshotted again when the dispatch actually goes out."""
+        self.ensure_one()
+        return {
+            'source_item_id': self.id,
+            'pieces_out': self.pieces,
+            'weight_out': self.weight,
         }
 
     def _prepare_approval_line_vals(self):
