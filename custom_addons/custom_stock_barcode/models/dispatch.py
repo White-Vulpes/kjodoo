@@ -84,7 +84,7 @@ class JewelryDispatch(models.Model):
     scan_barcode = fields.Char(string='Scan Barcode', store=False)
     last_scan_result = fields.Char(string='Last Scan Result', store=False, readonly=True)
 
-    total_tags = fields.Integer(string='Tags', compute='_compute_totals')
+    total_tags = fields.Integer(string='Tag Count', compute='_compute_totals')
     total_pieces_out = fields.Integer(string='Pieces Out', compute='_compute_totals')
     total_weight_out = fields.Float(
         string='Weight Out', digits=(16, 3), compute='_compute_totals')
