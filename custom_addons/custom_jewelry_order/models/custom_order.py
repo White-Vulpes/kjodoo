@@ -175,10 +175,10 @@ class CustomJewelryOrder(models.Model):
     visit_count = fields.Integer(string='Portal Views', compute='_compute_visit_count')
 
     def _compute_visit_count(self):
-        visit_data = self.env['jewelry.order.visit'].read_group(
-            [('order_id', 'in', self.ids)], ['order_id'], ['order_id']
+        visit_data = self.env['jewelry.order.visit']._read_group(
+            [('order_id', 'in', self.ids)], ['order_id'], ['__count'],
         )
-        count_map = {v['order_id'][0]: v['order_id_count'] for v in visit_data}
+        count_map = {order.id: count for order, count in visit_data}
         for order in self:
             order.visit_count = count_map.get(order.id, 0)
 

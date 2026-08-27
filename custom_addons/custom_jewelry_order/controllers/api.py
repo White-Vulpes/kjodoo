@@ -57,8 +57,8 @@ class JewelryOrderApi(http.Controller):
         today_str = fields.Date.to_string(today)
 
         # One grouped read gives us every per-state count in a single query.
-        state_groups = Order.read_group([], ['state'], ['state'])
-        by_state = {g['state']: g['state_count'] for g in state_groups if g['state']}
+        state_groups = Order._read_group([], ['state'], ['__count'])
+        by_state = {state: count for state, count in state_groups if state}
 
         pending = sum(by_state.get(s, 0) for s in PENDING_STATES)
 
@@ -98,14 +98,14 @@ class JewelryOrderApi(http.Controller):
         # Pending orders per manufacturer (confirmed + manufacturing only),
         # sorted from busiest to quietest. Orders without a manufacturer are
         # skipped since they have no vendor to attribute the workload to.
-        manufacturer_groups = Order.read_group(
+        manufacturer_groups = Order._read_group(
             [('state', 'in', list(MANUFACTURER_PENDING_STATES))],
             ['manufacturer_id'],
-            ['manufacturer_id'],
+            ['__count'],
         )
         by_manufacturer = {
-            g['manufacturer_id'][1]: g['manufacturer_id_count']
-            for g in manufacturer_groups if g['manufacturer_id']
+            manufacturer.display_name: count
+            for manufacturer, count in manufacturer_groups if manufacturer
         }
         by_manufacturer = dict(
             sorted(by_manufacturer.items(), key=lambda kv: kv[1], reverse=True)
