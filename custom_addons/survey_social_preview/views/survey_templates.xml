@@ -50,6 +50,15 @@
               name="Survey: link preview tags">
         <xpath expr="//head/meta" position="after">
             <t t-if="survey">
+                <!-- website.layout extends portal.frontend_layout, so its own
+                     og: block reaches this primary child too and emits the site
+                     defaults (home page title, social_default_image) alongside
+                     ours. Blanking seo_object leaves website_meta empty, so that
+                     block renders nothing and the survey's tags stand alone.
+                     This t-set has to precede it, which it does: the website
+                     block is injected after the last <meta>, ours after the
+                     first. -->
+                <t t-set="seo_object" t-value="False"/>
                 <meta property="og:type" content="website"/>
                 <meta property="og:title" t-att-content="survey.title"/>
                 <meta property="og:url" t-att-content="survey.og_share_url"/>
