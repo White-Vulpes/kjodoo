@@ -50,9 +50,8 @@ class JewelryCatalogShare(models.Model):
         string='Share Link', compute='_compute_share_url')
     active = fields.Boolean(default=True)
 
-    _sql_constraints = [
-        ('token_uniq', 'unique(token)', 'The share token must be unique.'),
-    ]
+    _token_uniq = models.Constraint('unique(token)',
+        "The share token must be unique.")
 
     @api.depends('item_ids')
     def _compute_item_count(self):

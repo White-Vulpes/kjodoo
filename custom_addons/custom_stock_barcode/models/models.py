@@ -24,7 +24,8 @@ class JewelryMCode(models.Model):
     name = fields.Char(string='M. Code', required=True, size=3)
     partner_id = fields.Many2one('res.partner', string='Vendor / Manufacturer') # Optional: link to actual vendor
     
-    _sql_constraints = [('name_uniq', 'unique(name)', 'This Manufacturer Code already exists!')]
+    _name_uniq = models.Constraint('unique(name)',
+        "This Manufacturer Code already exists!")
 
 class JewelrySize(models.Model):
     _name = 'jewelry.size'
@@ -45,9 +46,8 @@ class JewelryBarcodeItem(models.Model):
     _rec_name = 'barcode' # Makes the Barcode the default display name across Odoo
 
     # Enforce strict database uniqueness for the Barcode
-    _sql_constraints = [
-        ('barcode_uniq', 'unique(barcode)', 'This Barcode ID already exists! Each tag must be unique.')
-    ]
+    _barcode_uniq = models.Constraint('unique(barcode)',
+        "This Barcode ID already exists! Each tag must be unique.")
 
     # --- Core Identifiers ---
     barcode = fields.Char(string='Barcode ID', required=True, copy=False, readonly=False, index=True, default=lambda self: 'New')
@@ -474,9 +474,8 @@ class JewelryDesignTag(models.Model):
     name = fields.Char(string='Tag Name', required=True)
     color = fields.Integer(string='Color Index')
 
-    _sql_constraints = [
-        ('name_uniq', 'unique(name)', 'Tag name must be unique!')
-    ]
+    _name_uniq = models.Constraint('unique(name)',
+        "Tag name must be unique!")
 
 
 # --- ITEM DETAIL CONFIGURATION MODELS ---
@@ -490,7 +489,8 @@ class JewelryPurity(models.Model):
     value = fields.Integer(string='Purity Value', required=True, help='e.g. 9166 for 22K')
     karat = fields.Integer(string='Karat', required=True, help='e.g. 22')
 
-    _sql_constraints = [('value_uniq', 'unique(value)', 'This purity value already exists!')]
+    _value_uniq = models.Constraint('unique(value)',
+        "This purity value already exists!")
 
 
 class JewelryCategory(models.Model):
@@ -507,10 +507,10 @@ class JewelryCategory(models.Model):
         'jewelry.subcategory', 'category_id', string='Sub-Categories',
     )
 
-    _sql_constraints = [
-        ('name_uniq', 'unique(name)', 'Category already exists!'),
-        ('code_uniq', 'unique(code)', 'Category code must be unique!'),
-    ]
+    _name_uniq = models.Constraint('unique(name)',
+        "Category already exists!")
+    _code_uniq = models.Constraint('unique(code)',
+        "Category code must be unique!")
 
 
 class JewelrySubcategory(models.Model):
@@ -527,10 +527,8 @@ class JewelrySubcategory(models.Model):
         'jewelry.category', string='Category', required=True, ondelete='cascade',
     )
 
-    _sql_constraints = [
-        ('name_category_uniq', 'unique(name, category_id)',
-         'This sub-category already exists under the selected category!'),
-    ]
+    _name_category_uniq = models.Constraint('unique(name, category_id)',
+        "This sub-category already exists under the selected category!")
 
 
 class JewelryMake(models.Model):
@@ -540,4 +538,5 @@ class JewelryMake(models.Model):
 
     name = fields.Char(required=True)
 
-    _sql_constraints = [('name_uniq', 'unique(name)', 'Make already exists!')]
+    _name_uniq = models.Constraint('unique(name)',
+        "Make already exists!")
