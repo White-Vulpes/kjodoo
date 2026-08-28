@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- The page a social scraper gets instead of the /survey/start/ redirect.
+
+         Deliberately standalone rather than a t-call to survey.layout: that
+         layout reads question/page/answer/survey_data from the render context,
+         none of which exist here, and a scraper only ever parses <head>. The
+         body is there for the rare human who lands on it. -->
+    <template id="survey_social_preview_page" name="Survey: social link preview">
+        <html>
+            <head>
+                <meta charset="utf-8"/>
+                <meta name="viewport" content="width=device-width, initial-scale=1"/>
+                <title t-esc="survey.title"/>
+
+                <meta property="og:type" content="website"/>
+                <meta property="og:title" t-att-content="survey.title"/>
+                <meta property="og:url" t-att-content="survey.og_share_url"/>
+                <meta t-if="survey.og_description_text"
+                      property="og:description" t-att-content="survey.og_description_text"/>
+                <meta property="og:site_name"
+                      t-att-content="survey.create_uid.company_id.name or ''"/>
+
+                <meta name="twitter:title" t-att-content="survey.title"/>
+                <meta t-if="survey.og_description_text"
+                      name="twitter:description" t-att-content="survey.og_description_text"/>
+
+                <!-- No image means no large card: claiming summary_large_image
+                     without one gets the card downgraded or dropped entirely. -->
+                <t t-if="survey.og_image_url">
+                    <meta property="og:image" t-att-content="survey.og_image_url"/>
+                    <meta name="twitter:card" content="summary_large_image"/>
+                    <meta name="twitter:image" t-att-content="survey.og_image_url"/>
+                </t>
+                <t t-else="">
+                    <meta name="twitter:card" content="summary"/>
+                </t>
+            </head>
+            <body>
+                <h1 t-esc="survey.title"/>
+                <p t-if="survey.og_description_text" t-esc="survey.og_description_text"/>
+                <p><a t-att-href="survey.og_share_url">Take the survey</a></p>
+            </body>
+        </html>
+    </template>
+
+    <!-- The survey page itself also carries the tags, for scrapers that do keep
+         cookies and for anyone sharing the URL from inside the survey. -->
+    <template id="survey_social_preview_meta" inherit_id="survey.layout"
+              name="Survey: link preview tags">
+        <xpath expr="//head/meta" position="after">
+            <t t-if="survey">
+                <meta property="og:type" content="website"/>
+                <meta property="og:title" t-att-content="survey.title"/>
+                <meta property="og:url" t-att-content="survey.og_share_url"/>
+                <meta t-if="survey.og_description_text"
+                      property="og:description" t-att-content="survey.og_description_text"/>
+                <meta name="twitter:title" t-att-content="survey.title"/>
+                <t t-if="survey.og_image_url">
+                    <meta property="og:image" t-att-content="survey.og_image_url"/>
+                    <meta name="twitter:card" content="summary_large_image"/>
+                    <meta name="twitter:image" t-att-content="survey.og_image_url"/>
+                </t>
+            </t>
+        </xpath>
+    </template>
+</odoo>

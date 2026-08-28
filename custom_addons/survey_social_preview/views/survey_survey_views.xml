@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="survey_survey_view_form_social_preview" model="ir.ui.view">
+        <field name="name">survey.survey.form.social.preview</field>
+        <field name="model">survey.survey</field>
+        <field name="inherit_id" ref="survey.survey_survey_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='options']/group[@name='options']" position="inside">
+                <group string="Link Preview" name="social_preview">
+                    <div class="text-muted mb-2" colspan="2">
+                        Shown when this survey's link is shared on WhatsApp,
+                        Facebook or X. Left empty, the Background Image is used.
+                    </div>
+                    <field name="og_image" widget="image" nolabel="1"
+                           options="{'size': [0, 180]}"/>
+                    <field name="og_share_url" widget="CopyClipboardChar"
+                           string="Share Link" readonly="1"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
