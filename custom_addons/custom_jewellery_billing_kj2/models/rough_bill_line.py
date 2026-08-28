@@ -4,7 +4,7 @@ class RoughBillLine(models.Model):
     _name = 'custom.rough.bill2.line'
     _description = 'Rough Bill Line Item'
 
-    bill_id = fields.Many2one('custom.rough.bill2', string='Rough Bill Reference', invisible=True, readonly=True, ondelete='cascade')
+    bill_id = fields.Many2one('custom.rough.bill2', string='Rough Bill Reference', readonly=True, ondelete='cascade')
 
     name = fields.Char(string='Name', required=True)
     weight = fields.Float(string='Weight', digits=(16, 4))

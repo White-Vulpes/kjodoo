@@ -6,7 +6,7 @@ class CustomBillLine(models.Model):
     _description = 'Jewelry Bill Line Item'
 
     # --- The Invisible Link Back to the Header ---
-    bill_id = fields.Many2one('custom.bill', string='Bill Reference',invisible=True,readonly=True,ondelete='cascade')
+    bill_id = fields.Many2one('custom.bill', string='Bill Reference',readonly=True,ondelete='cascade')
 
     # --- Line Item Fields ---
     name = fields.Char(string='Name', required=True)
