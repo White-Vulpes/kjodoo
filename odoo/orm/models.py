@@ -322,7 +322,7 @@ READ_GROUP_DISPLAY_FORMAT = {
     # Mixing both formats, e.g. 'MMM YYYY' would yield wrong results,
     # such as 2006-01-01 being formatted as "January 2005" in some locales.
     # Cfr: http://babel.pocoo.org/en/latest/dates.html#date-fields
-    'hour': 'hh:00 dd MMM',
+    'hour': 'HH:00 dd MMM',
     'day': 'dd MMM yyyy', # yyyy = normal year
     'week': "'W'w YYYY",  # w YYYY = ISO week-year
     'month': 'MMMM yyyy',
@@ -1313,7 +1313,7 @@ class BaseModel(metaclass=MetaModel):
                 continue
 
             # 5. delegate to parent model
-            if field.inherited:
+            if field.inherited and self._has_field_access(field, 'write'):
                 field = field.related_field
                 parent_fields[field.model_name].append(field.name)
 
@@ -1772,7 +1772,7 @@ class BaseModel(metaclass=MetaModel):
         query.order = self._read_group_orderby(order, groupby_terms, query)
         # GROUPING SET ((a, b), (a), ())
         grouping_sets_sql = [
-            SQL("(%s)", SQL(", ").join(groupby_terms[groupby_spec] for groupby_spec in grouping_set))
+            SQL("(%s)", SQL(", ").join(unique(groupby_terms[groupby_spec] for groupby_spec in grouping_set)))
             for grouping_set in grouping_sets
         ]
         query.groupby = SQL("GROUPING SETS (%s)", SQL(", ").join(unique(grouping_sets_sql)))
@@ -1792,9 +1792,13 @@ class BaseModel(metaclass=MetaModel):
         # grouping set defined by the user.
         aggregates_indexes = tuple(range(len(all_groupby_specs), len(all_groupby_specs) + len(aggregates)))
 
-        # Map each possible GROUPING() bitmask to its corresponding result list and value extractor.
-        # {GROUPING(...): (append_method, extractor_method)}
-        mask_grouping_mapping = {}
+        # Map each possible GROUPING() bitmask to the corresponding result lists and value
+        # extractors: several grouping sets can share the same bitmask (either because
+        # they are literally the same groupby list: [['foo'], ['foo']], or because one of them
+        # repeats a term [['foo'], ['foo', 'foo']], so a single SQL result row may need to
+        # be dispatched to more than one of them.
+        # {GROUPING(...): [(append_method, extractor_method), ...]}
+        mask_grouping_mapping = defaultdict(list)
 
         # Create a mapping from each unique SQL GROUP BY term to its bitmask value.
         # The terms are reversed to match the PostgreSQL logic where the bitmask was
@@ -1805,7 +1809,6 @@ class BaseModel(metaclass=MetaModel):
             for i, sql_groupby in enumerate(unique(reversed(groupby_terms.values())))
         }
 
-        mask_grouping_result_indexes = defaultdict(list)  # To manage "duplicated" groupby
         for result_index, groupby in enumerate(grouping_sets):
             # E.g. GROUPING SET ((a, b), (a), ())
             # GROUPING(a, b): a and b included = 0, a included = 1, b included = 2, none included = 3
@@ -1817,15 +1820,13 @@ class BaseModel(metaclass=MetaModel):
                 if sql_term not in sql_terms
             )
 
-            mask_grouping_result_indexes[groupby_mask].append(result_index)
-            if groupby_mask not in mask_grouping_mapping:
-                mask_grouping_mapping[groupby_mask] = (
-                    result[result_index].append,
-                    itemgetter_tuple(list(itertools.chain(
-                        (all_groupby_specs.index(groupby_spec) for groupby_spec in groupby),
-                        aggregates_indexes,
-                    ))),
-                )
+            mask_grouping_mapping[groupby_mask].append((
+                result[result_index].append,
+                itemgetter_tuple(list(itertools.chain(
+                    (all_groupby_specs.index(groupby_spec) for groupby_spec in groupby),
+                    aggregates_indexes,
+                ))),
+            ))
 
         aggregates_start_index = len(all_groupby_specs) + 1
         # Transpose rows to columns for efficient, column-wise post-processing.
@@ -1843,17 +1844,9 @@ class BaseModel(metaclass=MetaModel):
         #   [(a1, <aggregates>), (a2, <aggregates>), ...],
         #   [(<aggregates>)],
         # ]
-        for (append_method, extractor), *row in zip(dispatch_info, *columns, strict=True):
-            append_method(extractor(row))
-
-        # Manage groupbys targetting the same column(s), then having the same results
-        for duplicate_groups_indexes in mask_grouping_result_indexes.values():
-            if len(duplicate_groups_indexes) < 2:
-                continue
-            # The first index's result is the source for all others in this group
-            source_result_group = result[duplicate_groups_indexes[0]]
-            for duplicate_group_index in duplicate_groups_indexes[1:]:
-                result[duplicate_group_index] = source_result_group[:]
+        for append_extractors, *row in zip(dispatch_info, *columns, strict=True):
+            for append_method, extractor in append_extractors:
+                append_method(extractor(row))
 
         return result
 
@@ -3910,7 +3903,7 @@ class BaseModel(metaclass=MetaModel):
                     # otherwise, re-create the SQL without flushing
                     if not field.translate:
                         to_flush = (f for f in sql.to_flush if f != field)
-                        sql = SQL(sql.code, *sql.params, to_flush=to_flush)
+                        sql = SQL("%s", sql, to_flush=to_flush)
                 sql_terms.append(sql)
 
             # select the given columns from the rows in the query
@@ -4684,6 +4677,8 @@ class BaseModel(metaclass=MetaModel):
                 # against (re)computation
                 if field.compute and (not field.readonly or field.precompute):
                     protected.update(self.pool.field_computed.get(field, [field]))
+                if field.type == 'many2one' and field.bypass_search_access and not self.env.su:
+                    self.env[field.comodel_name].browse(field.convert_to_cache(val, self)).check_access('read')
 
             data_list.append(data)
 
@@ -6970,12 +6965,13 @@ class BaseModel(metaclass=MetaModel):
             for dep in self.pool.get_dependent_fields(field.base_field)
         )
 
-    def _apply_onchange_methods(self, field_name: str, result: dict) -> None:
-        """ Apply onchange method(s) for field ``field_name`` on ``self``. Value
-            assignments are applied on ``self``, while warning messages are put
-            in dictionary ``result``.
+    def _apply_onchange_methods(self, field_name: str, result: dict, excluded_methods=()) -> None:
+        """ Apply onchange method(s) (not in ``excluded_methods``) for field ``field_name`` on ``self``.
+        Value assignments are applied on ``self``, while warning messages are put in dictionary ``result``.
         """
         for method in self._onchange_methods.get(field_name, ()):
+            if method in excluded_methods:
+                continue
             res = method(self)
             if not res:
                 continue

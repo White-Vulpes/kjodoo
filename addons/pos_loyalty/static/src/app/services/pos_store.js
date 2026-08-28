@@ -401,23 +401,21 @@ patch(PosStore.prototype, {
             selectedProgram = linkedPrograms[0];
         }
 
-        const orderTotal = this.getOrder().priceIncl;
-        if (
-            selectedProgram &&
-            ["gift_card", "ewallet"].includes(selectedProgram.program_type) &&
-            orderTotal < 0
-        ) {
-            opt.price_unit = -orderTotal;
-        }
-        if (selectedProgram && selectedProgram.program_type == "gift_card") {
-            const shouldProceed = await this._setupGiftCardOptions(selectedProgram, opt);
-            if (!shouldProceed) {
-                return;
+        if (selectedProgram) {
+            const orderTotal = this.getOrder().priceIncl;
+            if (["gift_card", "ewallet"].includes(selectedProgram.program_type) && orderTotal < 0) {
+                opt.price_unit = -orderTotal;
             }
-        } else if (selectedProgram && selectedProgram.program_type == "ewallet") {
-            const shouldProceed = await this.setupEWalletOptions(selectedProgram, opt);
-            if (!shouldProceed) {
-                return;
+            if (selectedProgram.program_type == "gift_card") {
+                const shouldProceed = await this._setupGiftCardOptions(selectedProgram, opt);
+                if (!shouldProceed) {
+                    return;
+                }
+            } else if (selectedProgram.program_type == "ewallet") {
+                const shouldProceed = await this.setupEWalletOptions(selectedProgram, opt);
+                if (!shouldProceed) {
+                    return;
+                }
             }
         }
         const potentialRewards = this.getPotentialFreeProductRewards();
@@ -702,7 +700,7 @@ patch(PosStore.prototype, {
      *   - This way, we don't need to remember the lines linked to negative coupon ids and relink them after pushing the order.
      */
     async preSyncAllOrders(orders) {
-        await super.preSyncAllOrders(orders);
+        const result = await super.preSyncAllOrders(orders);
 
         for (const order of orders) {
             Object.assign(
@@ -726,6 +724,7 @@ patch(PosStore.prototype, {
                 }, {})
             );
         }
+        return result;
     },
     async postSyncAllOrders(orders) {
         super.postSyncAllOrders(orders);
